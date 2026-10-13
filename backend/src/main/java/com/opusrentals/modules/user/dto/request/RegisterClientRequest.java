@@ -1,0 +1,42 @@
+package com.opusrentals.modules.user.dto.request;
+
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class RegisterClientRequest {
+
+    @NotBlank(message = "El email es obligatorio")
+    @Email(message = "Email con formato inválido")
+    private String email;
+
+    @NotBlank(message = "La contraseña es obligatoria")
+    @Size(min = 6, message = "La contraseña debe tener al menos 6 caracteres")
+    private String password;
+
+    @NotBlank(message = "El nombre es obligatorio")
+    private String firstName;
+
+    @NotBlank(message = "El apellido es obligatorio")
+    private String lastName;
+
+    @NotBlank(message = "El tipo de documento es obligatorio")
+    private String documentType;
+
+    @NotBlank(message = "El número de documento es obligatorio")
+    private String documentNumber;
+
+    @NotBlank(message = "El teléfono es obligatorio")
+    private String phone;
+
+    @NotBlank(message = "La dirección es obligatoria")
+    private String address;
+}
