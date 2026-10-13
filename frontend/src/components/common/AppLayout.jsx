@@ -2,6 +2,22 @@ import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import { useCart } from '../../context/CartContext';
+import {
+  Wrench,
+  Search,
+  Globe,
+  Sun,
+  Moon,
+  User,
+  LogOut,
+  ShoppingCart,
+  CheckCircle2,
+  Phone,
+  Mail,
+  Shield,
+  Layers,
+  Award
+} from 'lucide-react';
 
 export const AppLayout = ({ currentTab, onNavigate, children }) => {
   const { user, isAuthenticated, isAdmin, isProvider, isClient, logout } = useAuth();
@@ -15,24 +31,24 @@ export const AppLayout = ({ currentTab, onNavigate, children }) => {
   }
 
   return (
-    <div className={`min-h-screen flex flex-col font-body ${isDark ? 'dark bg-[#0b1120] text-slate-100' : 'bg-background text-on-surface'} antialiased`}>
+    <div className={`min-h-screen flex flex-col font-sans ${isDark ? 'dark bg-[#0b1120] text-slate-100' : 'bg-[#faf8ff] text-slate-900'} antialiased`}>
       {/* Stitch 1:1 Precision Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-surface-container-lowest/90 dark:bg-[#0f172a]/95 backdrop-blur-md border-b border-outline-variant/40 dark:border-slate-800">
-        <div className="max-w-[1240px] mx-auto h-20 px-gutter-desktop flex items-center justify-between gap-space-md">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 dark:bg-[#0f172a]/95 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800 shadow-xs">
+        <div className="w-full max-w-[1440px] mx-auto h-20 px-4 sm:px-8 flex items-center justify-between gap-4">
           {/* Logo & Quick Search */}
-          <div className="flex items-center gap-space-lg">
+          <div className="flex items-center gap-6">
             <button
               onClick={() => onNavigate('catalog')}
-              className="flex items-center gap-space-sm group text-left cursor-pointer"
+              className="flex items-center gap-3 group text-left cursor-pointer focus:outline-none"
             >
-              <div className="w-10 h-10 rounded-lg bg-primary-container text-on-primary flex items-center justify-center transition-transform group-hover:scale-105 shadow-sm">
-                <span className="material-symbols-outlined text-[22px]">precision_manufacturing</span>
+              <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center transition-transform group-hover:scale-105 shadow-sm shadow-blue-500/20 shrink-0">
+                <Wrench className="w-5 h-5 text-white" />
               </div>
               <div className="flex flex-col">
-                <span className="font-section text-section tracking-tight text-on-surface dark:text-white font-bold leading-tight">
+                <span className="text-[17px] font-bold tracking-tight text-slate-900 dark:text-white leading-tight">
                   OPUS RENTALS
                 </span>
-                <span className="font-caption text-caption text-outline dark:text-slate-400 uppercase tracking-wider">
+                <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                   COLOMBIA • INDUSTRIAL
                 </span>
               </div>
@@ -40,30 +56,28 @@ export const AppLayout = ({ currentTab, onNavigate, children }) => {
 
             {/* Global Search Bar */}
             <div className="relative hidden xl:block w-72">
-              <span className="material-symbols-outlined absolute left-space-sm top-1/2 -translate-y-1/2 text-outline text-[18px]">
-                search
-              </span>
+              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Buscar equipo o código..."
-                className="w-full h-10 pl-9 pr-14 rounded-lg bg-surface-container-low dark:bg-slate-900 border border-outline-variant/60 dark:border-slate-700 font-body text-body text-on-surface dark:text-slate-100 placeholder:text-outline focus:outline-none focus:border-primary-container focus:ring-2 focus:ring-primary-container/20 transition-all"
+                className="w-full h-10 pl-9 pr-14 rounded-lg bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 transition-all"
               />
-              <kbd className="absolute right-space-xs top-1/2 -translate-y-1/2 px-1.5 py-0.5 rounded bg-surface-container-high dark:bg-slate-800 border border-outline-variant dark:border-slate-700 text-[10px] font-caption text-on-surface-variant dark:text-slate-400 font-mono">
+              <kbd className="absolute right-2 top-1/2 -translate-y-1/2 px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-700 text-[10px] font-mono text-slate-600 dark:text-slate-300">
                 ⌘K
               </kbd>
             </div>
           </div>
 
           {/* Navigation Links */}
-          <nav className="hidden lg:flex items-center gap-space-lg text-body font-body-medium">
+          <nav className="hidden lg:flex items-center gap-6 text-sm font-medium">
             <button
               onClick={() => onNavigate('catalog')}
               className={`transition-colors cursor-pointer ${
                 currentTab === 'catalog'
-                  ? 'text-primary-container font-semibold'
-                  : 'text-on-surface-variant dark:text-slate-300 hover:text-on-surface dark:hover:text-white'
+                  ? 'text-blue-600 dark:text-blue-400 font-semibold'
+                  : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
               Catálogo de Maquinaria
@@ -72,13 +86,13 @@ export const AppLayout = ({ currentTab, onNavigate, children }) => {
               onClick={() => onNavigate('checkout')}
               className={`transition-colors cursor-pointer flex items-center gap-1.5 ${
                 currentTab === 'checkout'
-                  ? 'text-primary-container font-semibold'
-                  : 'text-on-surface-variant dark:text-slate-300 hover:text-on-surface dark:hover:text-white'
+                  ? 'text-blue-600 dark:text-blue-400 font-semibold'
+                  : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
               <span>Reserva & Alquiler</span>
               {items && items.length > 0 && (
-                <span className="px-1.5 py-0.2 rounded-full bg-primary-container text-white text-[11px] font-mono">
+                <span className="px-1.5 py-0.5 rounded-full bg-blue-600 text-white text-[10px] font-bold">
                   {items.length}
                 </span>
               )}
@@ -87,8 +101,8 @@ export const AppLayout = ({ currentTab, onNavigate, children }) => {
               onClick={() => onNavigate('system-states')}
               className={`transition-colors cursor-pointer ${
                 currentTab === 'system-states'
-                  ? 'text-primary-container font-semibold'
-                  : 'text-on-surface-variant dark:text-slate-300 hover:text-on-surface dark:hover:text-white'
+                  ? 'text-blue-600 dark:text-blue-400 font-semibold'
+                  : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
               Estados del Sistema
@@ -101,8 +115,8 @@ export const AppLayout = ({ currentTab, onNavigate, children }) => {
                     onClick={() => onNavigate('client-dashboard')}
                     className={`transition-colors cursor-pointer ${
                       currentTab === 'client-dashboard'
-                        ? 'text-primary-container font-semibold'
-                        : 'text-on-surface-variant dark:text-slate-300 hover:text-on-surface dark:hover:text-white'
+                        ? 'text-blue-600 dark:text-blue-400 font-semibold'
+                        : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
                     }`}
                   >
                     Mis Alquileres
@@ -113,8 +127,8 @@ export const AppLayout = ({ currentTab, onNavigate, children }) => {
                     onClick={() => onNavigate('provider-dashboard')}
                     className={`transition-colors cursor-pointer ${
                       currentTab === 'provider-dashboard'
-                        ? 'text-primary-container font-semibold'
-                        : 'text-on-surface-variant dark:text-slate-300 hover:text-on-surface dark:hover:text-white'
+                        ? 'text-blue-600 dark:text-blue-400 font-semibold'
+                        : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
                     }`}
                   >
                     Portal Proveedor
@@ -125,8 +139,8 @@ export const AppLayout = ({ currentTab, onNavigate, children }) => {
                     onClick={() => onNavigate('admin-dashboard')}
                     className={`transition-colors cursor-pointer ${
                       currentTab === 'admin-dashboard'
-                        ? 'text-primary-container font-semibold'
-                        : 'text-on-surface-variant dark:text-slate-300 hover:text-on-surface dark:hover:text-white'
+                        ? 'text-blue-600 dark:text-blue-400 font-semibold'
+                        : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
                     }`}
                   >
                     Portal Admin
@@ -137,16 +151,16 @@ export const AppLayout = ({ currentTab, onNavigate, children }) => {
           </nav>
 
           {/* Right Action Controls: Lang, Theme, Auth */}
-          <div className="flex items-center gap-space-sm">
+          <div className="flex items-center gap-3">
             {/* Lang Switch */}
-            <div className="flex items-center p-0.5 rounded-full bg-surface-container-high dark:bg-slate-800 border border-outline-variant/50 dark:border-slate-700 text-caption font-caption">
+            <div className="flex items-center p-0.5 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs">
               <button
                 type="button"
                 onClick={toggleLang}
-                className={`px-2 py-0.5 rounded-full transition-colors ${
+                className={`px-2 py-1 rounded-md transition-colors cursor-pointer ${
                   lang === 'ES'
-                    ? 'bg-surface-container-lowest dark:bg-slate-900 text-on-surface dark:text-white shadow-sm font-bold'
-                    : 'text-on-surface-variant dark:text-slate-400 hover:text-on-surface'
+                    ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs font-bold'
+                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-900'
                 }`}
               >
                 ES
@@ -154,10 +168,10 @@ export const AppLayout = ({ currentTab, onNavigate, children }) => {
               <button
                 type="button"
                 onClick={toggleLang}
-                className={`px-2 py-0.5 rounded-full transition-colors ${
+                className={`px-2 py-1 rounded-md transition-colors cursor-pointer ${
                   lang === 'EN'
-                    ? 'bg-surface-container-lowest dark:bg-slate-900 text-on-surface dark:text-white shadow-sm font-bold'
-                    : 'text-on-surface-variant dark:text-slate-400 hover:text-on-surface'
+                    ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs font-bold'
+                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-900'
                 }`}
               >
                 EN
@@ -165,30 +179,14 @@ export const AppLayout = ({ currentTab, onNavigate, children }) => {
             </div>
 
             {/* Theme Switch */}
-            <div className="flex items-center p-0.5 rounded-full bg-surface-container-high dark:bg-slate-800 border border-outline-variant/50 dark:border-slate-700">
+            <div className="flex items-center p-0.5 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
               <button
                 type="button"
                 onClick={toggleTheme}
-                title="Modo Claro"
-                className={`w-7 h-7 rounded-full flex items-center justify-center transition-colors ${
-                  !isDark
-                    ? 'bg-surface-container-lowest text-on-surface shadow-sm'
-                    : 'text-on-surface-variant hover:text-on-surface'
-                }`}
+                title="Alternar Modo Oscuro/Claro"
+                className="w-8 h-8 rounded-md flex items-center justify-center text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer"
               >
-                <span className="material-symbols-outlined text-[16px]">light_mode</span>
-              </button>
-              <button
-                type="button"
-                onClick={toggleTheme}
-                title="Modo Oscuro"
-                className={`w-7 h-7 rounded-full flex items-center justify-center transition-colors ${
-                  isDark
-                    ? 'bg-slate-900 text-white shadow-sm'
-                    : 'text-on-surface-variant hover:text-on-surface'
-                }`}
-              >
-                <span className="material-symbols-outlined text-[16px]">dark_mode</span>
+                {isDark ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-blue-600" />}
               </button>
             </div>
 
@@ -197,19 +195,19 @@ export const AppLayout = ({ currentTab, onNavigate, children }) => {
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => onNavigate(isAdmin ? 'admin-dashboard' : isProvider ? 'provider-dashboard' : 'client-dashboard')}
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-container-low dark:bg-slate-800 border border-outline-variant/60 dark:border-slate-700 text-on-surface dark:text-white text-body-medium font-medium hover:border-primary-container transition-all"
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-sm font-medium hover:border-blue-600 transition-all cursor-pointer"
                 >
-                  <div className="w-6 h-6 rounded-full bg-primary-container text-white flex items-center justify-center font-bold text-xs">
+                  <div className="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs">
                     {user?.name?.charAt(0) || 'U'}
                   </div>
-                  <span className="hidden md:inline text-sm font-medium">{user?.name || 'Usuario'}</span>
+                  <span className="hidden sm:inline text-xs font-semibold">{user?.displayName || user?.name || 'Mi Cuenta'}</span>
                 </button>
                 <button
                   onClick={logout}
                   title="Cerrar sesión"
-                  className="p-2 rounded-lg text-outline hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
+                  className="p-2 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors cursor-pointer"
                 >
-                  <span className="material-symbols-outlined text-[18px]">logout</span>
+                  <LogOut className="w-4 h-4" />
                 </button>
               </div>
             ) : (
@@ -217,14 +215,14 @@ export const AppLayout = ({ currentTab, onNavigate, children }) => {
                 <button
                   type="button"
                   onClick={() => onNavigate('login')}
-                  className="hidden sm:inline-flex items-center justify-center h-10 px-space-md rounded-lg border border-outline-variant/80 dark:border-slate-700 font-body-medium text-body-medium text-on-surface dark:text-slate-200 hover:bg-surface-container-high dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                  className="inline-flex items-center justify-center h-10 px-4 rounded-lg border border-slate-300 dark:border-slate-700 font-medium text-sm text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                 >
                   Iniciar Sesión
                 </button>
                 <button
                   type="button"
                   onClick={() => onNavigate('register')}
-                  className="inline-flex items-center justify-center h-10 px-space-md rounded-lg bg-primary-container text-on-primary font-body-medium text-body-medium hover:bg-secondary active:scale-[0.98] transition-all shadow-sm cursor-pointer"
+                  className="inline-flex items-center justify-center h-10 px-4 rounded-lg bg-blue-600 text-white font-medium text-sm hover:bg-blue-700 active:scale-[0.98] transition-all shadow-sm shadow-blue-500/20 cursor-pointer"
                 >
                   Publicar Equipo
                 </button>
@@ -240,93 +238,93 @@ export const AppLayout = ({ currentTab, onNavigate, children }) => {
       </main>
 
       {/* Stitch 1:1 Precision Footer */}
-      <footer className="w-full bg-surface-container-lowest dark:bg-[#0f172a] border-t border-outline-variant/40 dark:border-slate-800 mt-auto">
-        <div className="max-w-[1240px] mx-auto px-gutter-desktop py-space-xl">
-          <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-12 gap-gutter-desktop pb-space-xl border-b border-outline-variant/30 dark:border-slate-800">
+      <footer className="w-full bg-white dark:bg-[#0f172a] border-t border-slate-200 dark:border-slate-800 mt-auto">
+        <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-8 py-12">
+          <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-12 gap-8 pb-10 border-b border-slate-200 dark:border-slate-800">
             {/* Columna 1: Info Empresa */}
-            <div className="lg:col-span-4 flex flex-col gap-space-sm">
-              <div className="flex items-center gap-space-sm">
-                <div className="w-8 h-8 rounded-lg bg-primary-container text-on-primary flex items-center justify-center">
-                  <span className="material-symbols-outlined text-[18px]">precision_manufacturing</span>
+            <div className="lg:col-span-4 flex flex-col gap-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center font-bold">
+                  <Wrench className="w-4 h-4" />
                 </div>
-                <span className="font-section text-section tracking-tight text-on-surface dark:text-white font-bold">
+                <span className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">
                   OPUS RENTALS
                 </span>
               </div>
-              <p className="font-body text-body text-on-surface-variant dark:text-slate-400 max-w-sm">
+              <p className="text-sm text-slate-600 dark:text-slate-400 max-w-sm leading-relaxed">
                 Plataforma líder en Colombia para el despliegue, gestión telemática y arrendamiento corporativo de maquinaria pesada y equipos para infraestructura vial, minería y obras civiles.
               </p>
-              <div className="flex items-center gap-space-xs mt-space-xs">
-                <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-surface-container-high dark:bg-slate-800 text-caption font-caption text-on-surface-variant dark:text-slate-300">
-                  <span className="w-1.5 h-1.5 rounded-full bg-primary-container mr-1.5"></span>
+              <div className="flex items-center gap-2 mt-2">
+                <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300">
+                  <span className="w-1.5 h-1.5 rounded-full bg-blue-600 mr-1.5"></span>
                   SLA OPERATIVO 99.8%
                 </span>
-                <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-surface-container-high dark:bg-slate-800 text-caption font-caption text-on-surface-variant dark:text-slate-300">
+                <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300">
                   ISO 9001:2015
                 </span>
               </div>
             </div>
 
             {/* Columna 2: Hubs Logísticos */}
-            <div className="lg:col-span-3 flex flex-col gap-space-sm">
-              <h3 className="font-caption text-caption text-on-surface dark:text-slate-200 uppercase tracking-wider font-bold">
+            <div className="lg:col-span-3 flex flex-col gap-3">
+              <h3 className="text-xs font-bold text-slate-900 dark:text-slate-200 uppercase tracking-wider">
                 Centros Logísticos Activos
               </h3>
-              <ul className="space-y-space-xs font-body text-body text-on-surface-variant dark:text-slate-400">
+              <ul className="space-y-2 text-sm text-slate-600 dark:text-slate-400">
                 <li className="flex items-center justify-between">
-                  <span className="flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-primary-container"></span>
+                  <span className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-blue-600"></span>
                     Bogotá D.C. (Cota Hub)
                   </span>
-                  <span className="font-caption text-caption text-outline dark:text-slate-500">Disp. Alta</span>
+                  <span className="text-xs text-slate-400">Disp. Alta</span>
                 </li>
                 <li className="flex items-center justify-between">
-                  <span className="flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-primary-container"></span>
+                  <span className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-blue-600"></span>
                     Medellín (Guarne Hub)
                   </span>
-                  <span className="font-caption text-caption text-outline dark:text-slate-500">Disp. Alta</span>
+                  <span className="text-xs text-slate-400">Disp. Alta</span>
                 </li>
                 <li className="flex items-center justify-between">
-                  <span className="flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-primary-container"></span>
+                  <span className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-blue-600"></span>
                     Cali (Yumbo Patio)
                   </span>
-                  <span className="font-caption text-caption text-outline dark:text-slate-500">Normal</span>
+                  <span className="text-xs text-slate-400">Normal</span>
                 </li>
                 <li className="flex items-center justify-between">
-                  <span className="flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-primary-container"></span>
+                  <span className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-blue-600"></span>
                     Barranquilla (Zona Portuaria)
                   </span>
-                  <span className="font-caption text-caption text-outline dark:text-slate-500">Normal</span>
+                  <span className="text-xs text-slate-400">Normal</span>
                 </li>
               </ul>
             </div>
 
             {/* Columna 3: Navegación */}
-            <div className="lg:col-span-2 flex flex-col gap-space-sm">
-              <h3 className="font-caption text-caption text-on-surface dark:text-slate-200 uppercase tracking-wider font-bold">
+            <div className="lg:col-span-2 flex flex-col gap-3">
+              <h3 className="text-xs font-bold text-slate-900 dark:text-slate-200 uppercase tracking-wider">
                 Navegación
               </h3>
-              <ul className="space-y-space-xs font-body text-body text-on-surface-variant dark:text-slate-400">
+              <ul className="space-y-2 text-sm text-slate-600 dark:text-slate-400">
                 <li>
-                  <button onClick={() => onNavigate('catalog')} className="hover:text-primary transition-colors text-left cursor-pointer">
+                  <button onClick={() => onNavigate('catalog')} className="hover:text-blue-600 transition-colors text-left cursor-pointer">
                     Catálogo General
                   </button>
                 </li>
                 <li>
-                  <button onClick={() => onNavigate('checkout')} className="hover:text-primary transition-colors text-left cursor-pointer">
+                  <button onClick={() => onNavigate('checkout')} className="hover:text-blue-600 transition-colors text-left cursor-pointer">
                     Tarifas & Seguros
                   </button>
                 </li>
                 <li>
-                  <button onClick={() => onNavigate('provider-dashboard')} className="hover:text-primary transition-colors text-left cursor-pointer">
+                  <button onClick={() => onNavigate('provider-dashboard')} className="hover:text-blue-600 transition-colors text-left cursor-pointer">
                     Portal Proveedores
                   </button>
                 </li>
                 <li>
-                  <button onClick={() => onNavigate('system-states')} className="hover:text-primary transition-colors text-left cursor-pointer">
+                  <button onClick={() => onNavigate('system-states')} className="hover:text-blue-600 transition-colors text-left cursor-pointer">
                     Inspección & Telemetría
                   </button>
                 </li>
@@ -334,20 +332,20 @@ export const AppLayout = ({ currentTab, onNavigate, children }) => {
             </div>
 
             {/* Columna 4: Contacto */}
-            <div className="lg:col-span-3 flex flex-col gap-space-sm">
-              <h3 className="font-caption text-caption text-on-surface dark:text-slate-200 uppercase tracking-wider font-bold">
+            <div className="lg:col-span-3 flex flex-col gap-3">
+              <h3 className="text-xs font-bold text-slate-900 dark:text-slate-200 uppercase tracking-wider">
                 Contacto & Soporte 24/7
               </h3>
-              <p className="font-body text-body text-on-surface-variant dark:text-slate-400">
+              <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
                 Línea Nacional: 01 8000 423 800<br />
                 Directo Operaciones: +57 (601) 745-9200<br />
                 soporte@opusrentals.co
               </p>
-              <div className="p-space-sm rounded-lg bg-surface-container-low dark:bg-slate-900 border border-outline-variant/40 dark:border-slate-800 mt-space-xs">
-                <span className="font-caption text-caption text-on-surface dark:text-slate-200 block uppercase font-bold">
+              <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 mt-1">
+                <span className="text-xs font-bold text-slate-900 dark:text-slate-200 block uppercase">
                   Facturación Electrónica DIAN
                 </span>
-                <p className="text-xs text-on-surface-variant dark:text-slate-400 mt-0.5">
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                   Emisión XML UBL 2.1 habilitada para Grandes Contribuyentes y Consorcios.
                 </p>
               </div>
@@ -355,12 +353,12 @@ export const AppLayout = ({ currentTab, onNavigate, children }) => {
           </div>
 
           {/* Legal Bar */}
-          <div className="pt-space-md flex flex-col sm:flex-row items-center justify-between gap-space-sm font-caption text-caption text-outline dark:text-slate-500">
+          <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500 dark:text-slate-400">
             <p>© 2026 OPUS RENTALS COLOMBIA S.A.S. • NIT 901.482.930-1. Todos los derechos reservados.</p>
-            <div className="flex items-center gap-space-md">
-              <button className="hover:text-on-surface dark:hover:text-slate-300 transition-colors">Términos de Servicio</button>
-              <button className="hover:text-on-surface dark:hover:text-slate-300 transition-colors">Política Habeas Data</button>
-              <button className="hover:text-on-surface dark:hover:text-slate-300 transition-colors">Cumplimiento SAGRILAFT</button>
+            <div className="flex items-center gap-4">
+              <button className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer">Términos de Servicio</button>
+              <button className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer">Política Habeas Data</button>
+              <button className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer">Cumplimiento SAGRILAFT</button>
             </div>
           </div>
         </div>
