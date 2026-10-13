@@ -10,6 +10,8 @@ import { ClientDashboard } from './pages/client/ClientDashboard';
 import { ProviderDashboard } from './pages/provider/ProviderDashboard';
 import { AdminDashboard } from './pages/admin/AdminDashboard';
 
+import { AppLayout } from './components/common/AppLayout';
+
 const MainApp = () => {
   const [currentTab, setCurrentTab] = useState('home');
   const { isAuthenticated, isAdmin, isProvider, isClient } = useAuth();
@@ -48,11 +50,9 @@ const MainApp = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 text-slate-800">
-      <Navbar currentTab={currentTab} setCurrentTab={setCurrentTab} />
-      <main className="flex-1">{renderContent()}</main>
-      <Footer />
-    </div>
+    <AppLayout currentTab={currentTab} onNavigate={(tab) => setCurrentTab(tab)}>
+      {renderContent()}
+    </AppLayout>
   );
 };
 
