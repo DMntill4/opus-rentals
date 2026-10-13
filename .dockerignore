@@ -1,0 +1,25 @@
+# Git
+.git
+.gitignore
+
+# Environment & IDE
+.env
+.idea
+.vscode
+*.iml
+
+# Node / Frontend build
+node_modules
+dist
+build
+.npm
+*.log
+
+# Java / Maven build
+target
+*.class
+.mvn/wrapper/maven-wrapper.jar
+
+# Docker
+mysql_data
+docker-compose.override.yml
