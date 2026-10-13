@@ -5,7 +5,7 @@ import { CartProvider } from './context/CartContext';
 import { HomePage } from './pages/public/HomePage';
 import { CatalogPage } from './pages/public/CatalogPage';
 import { ToolDetailPage } from './pages/public/ToolDetailPage';
-import { LoginPage } from './pages/public/LoginPage';
+import { StitchAuthPage } from './pages/public/StitchAuthPage';
 import { RegisterPage } from './pages/public/RegisterPage';
 import { CheckoutPage } from './pages/client/CheckoutPage';
 import { InvoicePage } from './pages/client/InvoicePage';
@@ -67,9 +67,9 @@ const MainApp = () => {
       case 'system-states':
         return <SystemStatesGalleryPage onNavigate={(tab) => setCurrentTab(tab)} />;
       case 'login':
-        return <LoginPage onNavigate={(tab) => setCurrentTab(tab)} />;
+        return <StitchAuthPage onNavigate={(tab) => setCurrentTab(tab)} />;
       case 'register':
-        return <RegisterPage onNavigate={(tab) => setCurrentTab(tab)} />;
+        return <StitchAuthPage onNavigate={(tab) => setCurrentTab(tab)} />;
       case 'client-dashboard':
         return isAuthenticated && (isClient || isAdmin) ? (
           <ClientDashboard
@@ -77,19 +77,19 @@ const MainApp = () => {
             onNavigate={(tab) => setCurrentTab(tab)}
           />
         ) : (
-          <LoginPage onNavigate={(tab) => setCurrentTab(tab)} />
+          <StitchAuthPage onNavigate={(tab) => setCurrentTab(tab)} />
         );
       case 'provider-dashboard':
         return isAuthenticated && (isProvider || isAdmin) ? (
           <ProviderDashboard />
         ) : (
-          <LoginPage onNavigate={(tab) => setCurrentTab(tab)} />
+          <StitchAuthPage onNavigate={(tab) => setCurrentTab(tab)} />
         );
       case 'admin-dashboard':
         return isAuthenticated && isAdmin ? (
           <AdminDashboard />
         ) : (
-          <LoginPage onNavigate={(tab) => setCurrentTab(tab)} />
+          <StitchAuthPage onNavigate={(tab) => setCurrentTab(tab)} />
         );
       default:
         return <HomePage onNavigate={(tab) => setCurrentTab(tab)} />;
