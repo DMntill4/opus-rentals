@@ -1,0 +1,1 @@
+-- Reference schema in database/init/01_schema.sql
