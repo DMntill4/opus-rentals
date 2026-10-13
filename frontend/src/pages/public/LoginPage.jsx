@@ -33,10 +33,10 @@ export const LoginPage = ({ onNavigate }) => {
 
   return (
     <div className="min-h-[80vh] flex items-center justify-center px-4 py-12">
-      <div className="w-full max-w-md bg-white rounded-3xl border border-slate-200/80 shadow-xl p-8 space-y-6">
+      <div className="w-full max-w-md bg-white rounded-xl border border-slate-200 shadow-sm p-8 space-y-6">
         <div className="text-center space-y-2">
-          <div className="w-12 h-12 bg-orange-600 text-white rounded-2xl flex items-center justify-center mx-auto shadow-md shadow-orange-500/20">
-            <HardHat className="w-7 h-7" />
+          <div className="w-12 h-12 bg-blue-600 text-white rounded-lg flex items-center justify-center mx-auto shadow-sm">
+            <HardHat className="w-6 h-6 text-white" />
           </div>
           <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">
             Iniciar Sesión
@@ -47,7 +47,7 @@ export const LoginPage = ({ onNavigate }) => {
         </div>
 
         {error && (
-          <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-xl text-xs flex items-center gap-2">
+          <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-xs flex items-center gap-2">
             <AlertCircle className="w-4 h-4 flex-shrink-0" />
             <span>{error}</span>
           </div>
@@ -64,7 +64,7 @@ export const LoginPage = ({ onNavigate }) => {
               placeholder="ejemplo@opusrentals.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full p-3 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all"
+              className="w-full p-2.5 text-sm bg-white border border-slate-300 rounded-md focus:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-600 transition-colors"
             />
           </div>
 
@@ -78,43 +78,43 @@ export const LoginPage = ({ onNavigate }) => {
               placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full p-3 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all"
+              className="w-full p-2.5 text-sm bg-white border border-slate-300 rounded-md focus:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-600 transition-colors"
             />
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3.5 px-4 rounded-xl text-sm font-bold text-white bg-orange-600 hover:bg-orange-700 shadow-md shadow-orange-500/20 transition-all hover:scale-[1.01]"
+            className="w-full py-2.5 px-4 rounded-md text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-sm transition-colors"
           >
             {loading ? 'Validando...' : 'Entrar a la Plataforma'}
           </button>
         </form>
 
         {/* Quick Test Credentials Helper Box */}
-        <div className="pt-4 border-t border-slate-100">
-          <span className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2 text-center">
+        <div className="pt-4 border-t border-slate-200">
+          <span className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2 text-center">
             Credenciales de Prueba Rápida (Demostración)
           </span>
-          <div className="grid grid-cols-3 gap-1.5 text-[11px]">
+          <div className="grid grid-cols-3 gap-2 text-xs">
             <button
               type="button"
               onClick={() => handleFillCredentials('admin@opusrentals.com')}
-              className="p-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold transition-colors text-center"
+              className="p-2 rounded-md bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 font-semibold transition-colors text-center"
             >
               Admin
             </button>
             <button
               type="button"
               onClick={() => handleFillCredentials('provider.caterpillar@opusrentals.com')}
-              className="p-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold transition-colors text-center"
+              className="p-2 rounded-md bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 font-semibold transition-colors text-center"
             >
               Proveedor
             </button>
             <button
               type="button"
               onClick={() => handleFillCredentials('client.carlos@gmail.com')}
-              className="p-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold transition-colors text-center"
+              className="p-2 rounded-md bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 font-semibold transition-colors text-center"
             >
               Cliente
             </button>
@@ -125,7 +125,7 @@ export const LoginPage = ({ onNavigate }) => {
           ¿No tienes una cuenta aún?{' '}
           <button
             onClick={() => onNavigate('register')}
-            className="font-bold text-orange-600 hover:underline"
+            className="font-bold text-blue-600 hover:underline"
           >
             Regístrate aquí
           </button>

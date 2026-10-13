@@ -9,14 +9,14 @@ export const Footer = () => {
           {/* Brand */}
           <div className="space-y-4">
             <div className="flex items-center gap-2 text-white">
-              <div className="w-8 h-8 rounded-lg bg-orange-600 flex items-center justify-center">
-                <HardHat className="w-5 h-5" />
+              <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center">
+                <HardHat className="w-5 h-5 text-white" />
               </div>
-              <span className="text-xl font-bold tracking-tight">
-                OPUS <span className="text-orange-500">RENTALS</span>
+              <span className="text-xl font-extrabold tracking-tight">
+                OPUS <span className="text-blue-500">RENTALS</span>
               </span>
             </div>
-            <p className="text-sm leading-relaxed">
+            <p className="text-sm leading-relaxed text-slate-400">
               Plataforma empresarial de alquiler de maquinaria pesada, herramientas de construcción y equipos industriales.
             </p>
           </div>
@@ -28,11 +28,11 @@ export const Footer = () => {
             </h4>
             <ul className="space-y-2 text-sm">
               <li className="flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4 text-orange-500" />
+                <ShieldCheck className="w-4 h-4 text-blue-400" />
                 Arquitectura Hexagonal + DDD
               </li>
               <li className="flex items-center gap-2">
-                <FileCheck className="w-4 h-4 text-orange-500" />
+                <FileCheck className="w-4 h-4 text-blue-400" />
                 Base de Datos 4FN Normalizada
               </li>
               <li>Spring Security 6 con JWT</li>
@@ -60,15 +60,15 @@ export const Footer = () => {
             </h4>
             <ul className="space-y-2 text-sm">
               <li className="flex items-center gap-2">
-                <Phone className="w-4 h-4 text-orange-500" />
+                <Phone className="w-4 h-4 text-blue-400" />
                 +57 (601) 745-8900
               </li>
               <li className="flex items-center gap-2">
-                <Mail className="w-4 h-4 text-orange-500" />
+                <Mail className="w-4 h-4 text-blue-400" />
                 soporte@opusrentals.com
               </li>
               <li className="flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-orange-500" />
+                <MapPin className="w-4 h-4 text-blue-400" />
                 Parque Industrial, Bogotá - Colombia
               </li>
             </ul>

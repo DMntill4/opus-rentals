@@ -125,9 +125,9 @@ export const ClientDashboard = () => {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
       {/* Welcome Banner */}
-      <div className="p-6 bg-gradient-to-r from-slate-900 to-slate-800 rounded-3xl text-white shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div className="p-6 bg-slate-900 rounded-xl text-white border border-slate-800 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <span className="text-xs uppercase tracking-wider text-orange-400 font-bold">Portal del Cliente</span>
+          <span className="text-xs uppercase tracking-wider text-blue-400 font-bold">Portal del Cliente</span>
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight mt-1">
             Hola, {user?.displayName}
           </h1>
@@ -136,20 +136,20 @@ export const ClientDashboard = () => {
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <div className="px-4 py-2 bg-white/10 backdrop-blur-sm rounded-2xl border border-white/15 text-center">
-            <span className="block text-2xl font-black text-orange-400">{rentals.length}</span>
+          <div className="px-4 py-2 bg-slate-800 rounded-lg border border-slate-700 text-center">
+            <span className="block text-2xl font-black text-blue-400">{rentals.length}</span>
             <span className="text-[10px] uppercase text-slate-300 font-medium">Alquileres Totales</span>
           </div>
         </div>
       </div>
 
       {/* Rentals Table Card */}
-      <div className="bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-xl border border-slate-200/80 shadow-sm overflow-hidden">
         <div className="px-6 py-5 border-b border-slate-100 flex justify-between items-center">
           <h2 className="text-lg font-bold text-slate-900">Historial y Estado de Alquileres</h2>
           <button
             onClick={fetchRentals}
-            className="text-xs font-semibold text-orange-600 hover:underline"
+            className="text-xs font-semibold text-blue-600 hover:underline"
           >
             Actualizar Lista
           </button>
@@ -193,7 +193,7 @@ export const ClientDashboard = () => {
                       <div className="text-xs text-slate-400">{r.totalDays} día(s) de obra</div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="font-bold text-orange-600">{formatMoney(r.estimatedTotal)}</div>
+                      <div className="font-bold text-blue-600">{formatMoney(r.estimatedTotal)}</div>
                       <div className="text-[10px] text-slate-400">Garantía: {formatMoney(r.depositAmount)}</div>
                     </td>
                     <td className="px-6 py-4">
@@ -213,7 +213,7 @@ export const ClientDashboard = () => {
                           </span>
                           <button
                             onClick={() => handleViewInvoice(r.invoiceId)}
-                            className="block text-xs text-orange-600 hover:underline font-medium"
+                            className="block text-xs text-blue-600 hover:underline font-medium"
                           >
                             {r.invoiceNumber}
                           </button>
@@ -226,7 +226,7 @@ export const ClientDashboard = () => {
                       {r.invoiceStatus !== 'PAID' && r.status !== 'CANCELLED' && r.invoiceId && (
                         <button
                           onClick={() => handleOpenPay(r)}
-                          className="px-3 py-1.5 bg-orange-600 hover:bg-orange-700 text-white rounded-lg text-xs font-bold shadow-sm transition-all"
+                          className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold shadow-sm transition-all"
                         >
                           Pagar Factura
                         </button>
@@ -262,7 +262,7 @@ export const ClientDashboard = () => {
                   <CheckCircle2 className="w-10 h-10" />
                 </div>
                 <h4 className="text-xl font-bold text-slate-900">¡Pago Exitoso Aprobado!</h4>
-                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 max-w-sm mx-auto text-xs space-y-1.5 text-left">
+                <div className="p-4 bg-slate-50 rounded-lg border border-slate-100 max-w-sm mx-auto text-xs space-y-1.5 text-left">
                   <div className="flex justify-between">
                     <span className="text-slate-500">Ref. Transacción:</span>
                     <span className="font-bold text-slate-800">{paymentReceipt.transactionReference}</span>
@@ -277,7 +277,7 @@ export const ClientDashboard = () => {
                   </div>
                   <div className="flex justify-between text-sm pt-2 border-t border-slate-200">
                     <span className="font-bold text-slate-900">Monto Cobrado:</span>
-                    <span className="font-extrabold text-orange-600">{formatMoney(paymentReceipt.amount)}</span>
+                    <span className="font-extrabold text-blue-600">{formatMoney(paymentReceipt.amount)}</span>
                   </div>
                 </div>
                 <button
@@ -296,7 +296,7 @@ export const ClientDashboard = () => {
                   </div>
                 )}
 
-                <div className="p-4 bg-orange-50/60 rounded-2xl border border-orange-100 space-y-1 text-xs">
+                <div className="p-4 bg-orange-50/60 rounded-lg border border-blue-100 space-y-1 text-xs">
                   <div className="flex justify-between">
                     <span className="text-slate-600">Alquiler:</span>
                     <span className="font-bold text-slate-900">#{payingRental.id} - {payingRental.toolName}</span>
@@ -305,7 +305,7 @@ export const ClientDashboard = () => {
                     <span className="text-slate-600">Factura Relacionada:</span>
                     <span className="font-bold text-slate-900">{payingRental.invoiceNumber}</span>
                   </div>
-                  <div className="flex justify-between text-base font-extrabold text-orange-600 pt-2 border-t border-orange-200/60">
+                  <div className="flex justify-between text-base font-extrabold text-blue-600 pt-2 border-t border-orange-200/60">
                     <span>Total a Pagar:</span>
                     <span>{formatMoney(payingRental.estimatedTotal)}</span>
                   </div>
@@ -321,7 +321,7 @@ export const ClientDashboard = () => {
                         key={pm.id}
                         className={`flex items-center gap-2.5 p-3 rounded-xl border text-xs cursor-pointer transition-all ${
                           selectedMethodId === pm.id.toString()
-                            ? 'border-orange-500 bg-orange-50/50 text-orange-950 font-bold'
+                            ? 'border-blue-600 bg-orange-50/50 text-orange-950 font-bold'
                             : 'border-slate-200 bg-white hover:bg-slate-50 text-slate-700'
                         }`}
                       >
@@ -331,9 +331,9 @@ export const ClientDashboard = () => {
                           value={pm.id}
                           checked={selectedMethodId === pm.id.toString()}
                           onChange={(e) => setSelectedMethodId(e.target.value)}
-                          className="text-orange-600 focus:ring-orange-500"
+                          className="text-blue-600 focus:ring-blue-600"
                         />
-                        <CreditCard className="w-4 h-4 text-orange-600" />
+                        <CreditCard className="w-4 h-4 text-blue-600" />
                         <span>{pm.name}</span>
                       </label>
                     ))}
@@ -351,7 +351,7 @@ export const ClientDashboard = () => {
                   <button
                     type="submit"
                     disabled={payLoading}
-                    className="px-6 py-2.5 bg-orange-600 hover:bg-orange-700 text-white rounded-xl text-sm font-bold shadow-md shadow-orange-500/20"
+                    className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-bold shadow-md shadow-blue-600/20"
                   >
                     {payLoading ? 'Procesando transacción...' : 'Simular Pago Exitoso'}
                   </button>
@@ -392,7 +392,7 @@ export const ClientDashboard = () => {
             </div>
 
             {/* Client & Tool Summary */}
-            <div className="grid grid-cols-2 gap-4 text-xs bg-slate-50 p-4 rounded-2xl">
+            <div className="grid grid-cols-2 gap-4 text-xs bg-slate-50 p-4 rounded-lg">
               <div>
                 <span className="font-bold text-slate-700 uppercase tracking-wider block mb-1">Cliente Receptor</span>
                 <p className="font-semibold text-slate-900">{viewInvoice.clientFullName}</p>
@@ -417,7 +417,7 @@ export const ClientDashboard = () => {
                 <span className="text-slate-500">IVA (19%):</span>
                 <span className="font-bold text-slate-800">{formatMoney(viewInvoice.taxAmount)}</span>
               </div>
-              <div className="flex justify-between text-base font-extrabold text-orange-600 pt-2 border-t border-slate-200">
+              <div className="flex justify-between text-base font-extrabold text-blue-600 pt-2 border-t border-slate-200">
                 <span>Total Facturado:</span>
                 <span>{formatMoney(viewInvoice.totalAmount)}</span>
               </div>

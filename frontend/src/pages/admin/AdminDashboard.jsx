@@ -52,7 +52,7 @@ export const AdminDashboard = () => {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
       {/* Title */}
       <div>
-        <span className="text-xs uppercase tracking-wider text-orange-600 font-bold">Consola Central de Administración</span>
+        <span className="text-xs uppercase tracking-wider text-blue-600 font-bold">Consola Central de Administración</span>
         <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight mt-1">
           Panel de Control & Supervisión de la Plataforma
         </h1>
@@ -64,8 +64,8 @@ export const AdminDashboard = () => {
       {/* KPI Stats Grid */}
       {summary && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          <div className="p-6 bg-white rounded-3xl border border-slate-200/80 shadow-sm flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center flex-shrink-0">
+          <div className="p-6 bg-white rounded-xl border border-slate-200/80 shadow-sm flex items-center gap-4">
+            <div className="w-12 h-12 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center flex-shrink-0">
               <DollarSign className="w-6 h-6" />
             </div>
             <div>
@@ -74,8 +74,8 @@ export const AdminDashboard = () => {
             </div>
           </div>
 
-          <div className="p-6 bg-white rounded-3xl border border-slate-200/80 shadow-sm flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center flex-shrink-0">
+          <div className="p-6 bg-white rounded-xl border border-slate-200/80 shadow-sm flex items-center gap-4">
+            <div className="w-12 h-12 rounded-lg bg-amber-100 text-amber-600 flex items-center justify-center flex-shrink-0">
               <TrendingUp className="w-6 h-6" />
             </div>
             <div>
@@ -84,8 +84,8 @@ export const AdminDashboard = () => {
             </div>
           </div>
 
-          <div className="p-6 bg-white rounded-3xl border border-slate-200/80 shadow-sm flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-blue-100 text-blue-600 flex items-center justify-center flex-shrink-0">
+          <div className="p-6 bg-white rounded-xl border border-slate-200/80 shadow-sm flex items-center gap-4">
+            <div className="w-12 h-12 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center flex-shrink-0">
               <Wrench className="w-6 h-6" />
             </div>
             <div>
@@ -94,8 +94,8 @@ export const AdminDashboard = () => {
             </div>
           </div>
 
-          <div className="p-6 bg-white rounded-3xl border border-slate-200/80 shadow-sm flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-purple-100 text-purple-600 flex items-center justify-center flex-shrink-0">
+          <div className="p-6 bg-white rounded-xl border border-slate-200/80 shadow-sm flex items-center gap-4">
+            <div className="w-12 h-12 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center flex-shrink-0">
               <Users className="w-6 h-6" />
             </div>
             <div>
@@ -112,7 +112,7 @@ export const AdminDashboard = () => {
           onClick={() => setActiveTab('metrics')}
           className={`px-4 py-2.5 rounded-xl text-sm font-bold transition-all ${
             activeTab === 'metrics'
-              ? 'bg-orange-600 text-white shadow-md shadow-orange-600/20'
+              ? 'bg-blue-600 text-white shadow-md shadow-blue-600/20'
               : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
           }`}
         >
@@ -122,7 +122,7 @@ export const AdminDashboard = () => {
           onClick={() => setActiveTab('users')}
           className={`px-4 py-2.5 rounded-xl text-sm font-bold transition-all ${
             activeTab === 'users'
-              ? 'bg-orange-600 text-white shadow-md shadow-orange-600/20'
+              ? 'bg-blue-600 text-white shadow-md shadow-blue-600/20'
               : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
           }`}
         >
@@ -132,7 +132,7 @@ export const AdminDashboard = () => {
           onClick={() => setActiveTab('rentals')}
           className={`px-4 py-2.5 rounded-xl text-sm font-bold transition-all ${
             activeTab === 'rentals'
-              ? 'bg-orange-600 text-white shadow-md shadow-orange-600/20'
+              ? 'bg-blue-600 text-white shadow-md shadow-blue-600/20'
               : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
           }`}
         >
@@ -144,13 +144,13 @@ export const AdminDashboard = () => {
       {activeTab === 'metrics' && summary && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Top Rented Tools */}
-          <div className="bg-white rounded-3xl border border-slate-200/80 p-6 shadow-sm">
+          <div className="bg-white rounded-xl border border-slate-200/80 p-6 shadow-sm">
             <h3 className="text-lg font-bold text-slate-900 mb-4">Herramientas con Mayor Demanda</h3>
             <div className="space-y-3">
               {summary.topRentedTools?.map((t, idx) => (
-                <div key={t.toolId} className="p-3 bg-slate-50 rounded-2xl flex items-center justify-between">
+                <div key={t.toolId} className="p-3 bg-slate-50 rounded-lg flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <span className="w-7 h-7 rounded-xl bg-orange-100 text-orange-700 font-black text-xs flex items-center justify-center">
+                    <span className="w-7 h-7 rounded-xl bg-blue-100 text-blue-700 font-black text-xs flex items-center justify-center">
                       #{idx + 1}
                     </span>
                     <div>
@@ -159,7 +159,7 @@ export const AdminDashboard = () => {
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="text-sm font-extrabold text-orange-600">{t.totalRentals} alquiler(es)</div>
+                    <div className="text-sm font-extrabold text-blue-600">{t.totalRentals} alquiler(es)</div>
                     <div className="text-xs text-slate-500">{formatMoney(t.generatedRevenue)}</div>
                   </div>
                 </div>
@@ -168,11 +168,11 @@ export const AdminDashboard = () => {
           </div>
 
           {/* Revenue by Month Breakdown */}
-          <div className="bg-white rounded-3xl border border-slate-200/80 p-6 shadow-sm">
+          <div className="bg-white rounded-xl border border-slate-200/80 p-6 shadow-sm">
             <h3 className="text-lg font-bold text-slate-900 mb-4">Ingresos Liquidados por Mes</h3>
             <div className="space-y-3">
               {summary.revenueHistory?.map((m) => (
-                <div key={m.month} className="p-3 bg-slate-50 rounded-2xl flex items-center justify-between">
+                <div key={m.month} className="p-3 bg-slate-50 rounded-lg flex items-center justify-between">
                   <div>
                     <div className="font-bold text-slate-900 text-sm">Mes: {m.month}</div>
                     <div className="text-xs text-slate-400">{m.rentalsCount} facturas cobradas</div>
@@ -192,7 +192,7 @@ export const AdminDashboard = () => {
 
       {/* TAB 2: USERS MANAGEMENT */}
       {activeTab === 'users' && (
-        <div className="bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-hidden">
+        <div className="bg-white rounded-xl border border-slate-200/80 shadow-sm overflow-hidden">
           <div className="px-6 py-5 border-b border-slate-100 flex justify-between items-center">
             <h2 className="text-lg font-bold text-slate-900">Listado de Usuarios Registrados</h2>
           </div>
@@ -257,7 +257,7 @@ export const AdminDashboard = () => {
 
       {/* TAB 3: AUDITORIA DE ALQUILERES */}
       {activeTab === 'rentals' && (
-        <div className="bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-hidden">
+        <div className="bg-white rounded-xl border border-slate-200/80 shadow-sm overflow-hidden">
           <div className="px-6 py-5 border-b border-slate-100 flex justify-between items-center">
             <h2 className="text-lg font-bold text-slate-900">Auditoría Global de Transacciones</h2>
           </div>
@@ -283,7 +283,7 @@ export const AdminDashboard = () => {
                     <td className="px-6 py-4 font-semibold text-slate-800">{r.clientFullName}</td>
                     <td className="px-6 py-4 font-medium text-slate-700">{r.providerCompanyName}</td>
                     <td className="px-6 py-4 text-xs">{r.startDate} al {r.endDate} ({r.totalDays}d)</td>
-                    <td className="px-6 py-4 font-bold text-orange-600">{formatMoney(r.estimatedTotal)}</td>
+                    <td className="px-6 py-4 font-bold text-blue-600">{formatMoney(r.estimatedTotal)}</td>
                     <td className="px-6 py-4">
                       <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-700">
                         {r.status}

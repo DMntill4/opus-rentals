@@ -60,9 +60,9 @@ export const RegisterPage = ({ onNavigate }) => {
 
   return (
     <div className="min-h-[85vh] flex items-center justify-center px-4 py-12">
-      <div className="w-full max-w-xl bg-white rounded-3xl border border-slate-200/80 shadow-xl p-8 space-y-6">
+      <div className="w-full max-w-xl bg-white rounded-md border border-slate-200/80 shadow-xl p-8 space-y-6">
         <div className="text-center space-y-2">
-          <div className="w-12 h-12 bg-orange-600 text-white rounded-2xl flex items-center justify-center mx-auto shadow-md shadow-orange-500/20">
+          <div className="w-12 h-12 bg-blue-600 text-white rounded-lg flex items-center justify-center mx-auto shadow-md shadow-blue-600/20">
             <HardHat className="w-7 h-7" />
           </div>
           <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">
@@ -74,13 +74,13 @@ export const RegisterPage = ({ onNavigate }) => {
         </div>
 
         {/* Role Type Selector Pills */}
-        <div className="grid grid-cols-2 gap-2 p-1.5 bg-slate-100 rounded-2xl">
+        <div className="grid grid-cols-2 gap-2 p-1.5 bg-slate-100 rounded-lg">
           <button
             type="button"
             onClick={() => setRoleType('CLIENT')}
-            className={`flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold transition-all ${
+            className={`flex items-center justify-center gap-2 py-2.5 rounded-md text-xs font-bold transition-all ${
               roleType === 'CLIENT'
-                ? 'bg-white text-orange-600 shadow-sm'
+                ? 'bg-white text-blue-600 shadow-sm'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
@@ -90,9 +90,9 @@ export const RegisterPage = ({ onNavigate }) => {
           <button
             type="button"
             onClick={() => setRoleType('PROVIDER')}
-            className={`flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold transition-all ${
+            className={`flex items-center justify-center gap-2 py-2.5 rounded-md text-xs font-bold transition-all ${
               roleType === 'PROVIDER'
-                ? 'bg-white text-orange-600 shadow-sm'
+                ? 'bg-white text-blue-600 shadow-sm'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
@@ -102,7 +102,7 @@ export const RegisterPage = ({ onNavigate }) => {
         </div>
 
         {error && (
-          <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-xl text-xs flex items-center gap-2">
+          <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-md text-xs flex items-center gap-2">
             <AlertCircle className="w-4 h-4 flex-shrink-0" />
             <span>{error}</span>
           </div>
@@ -120,7 +120,7 @@ export const RegisterPage = ({ onNavigate }) => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="correo@ejemplo.com"
-                className="w-full p-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                className="w-full p-2.5 text-sm bg-slate-50 border border-slate-200 rounded-md focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-600 focus:border-blue-600"
               />
             </div>
             <div>
@@ -134,7 +134,7 @@ export const RegisterPage = ({ onNavigate }) => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full p-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                className="w-full p-2.5 text-sm bg-slate-50 border border-slate-200 rounded-md focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-600 focus:border-blue-600"
               />
             </div>
           </div>
@@ -150,7 +150,7 @@ export const RegisterPage = ({ onNavigate }) => {
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
                     placeholder="Carlos"
-                    className="w-full p-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    className="w-full p-2.5 text-sm bg-slate-50 border border-slate-200 rounded-md focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-600 focus:border-blue-600"
                   />
                 </div>
                 <div>
@@ -161,7 +161,7 @@ export const RegisterPage = ({ onNavigate }) => {
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
                     placeholder="Gómez"
-                    className="w-full p-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    className="w-full p-2.5 text-sm bg-slate-50 border border-slate-200 rounded-md focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-600 focus:border-blue-600"
                   />
                 </div>
               </div>
@@ -172,7 +172,7 @@ export const RegisterPage = ({ onNavigate }) => {
                   <select
                     value={documentType}
                     onChange={(e) => setDocumentType(e.target.value)}
-                    className="w-full p-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    className="w-full p-2.5 text-sm bg-slate-50 border border-slate-200 rounded-md focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-600 focus:border-blue-600"
                   >
                     <option value="CC">Cédula (CC)</option>
                     <option value="CE">Cédula Extranjería (CE)</option>
@@ -187,7 +187,7 @@ export const RegisterPage = ({ onNavigate }) => {
                     value={documentNumber}
                     onChange={(e) => setDocumentNumber(e.target.value)}
                     placeholder="1018273645"
-                    className="w-full p-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    className="w-full p-2.5 text-sm bg-slate-50 border border-slate-200 rounded-md focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-600 focus:border-blue-600"
                   />
                 </div>
               </div>
@@ -201,7 +201,7 @@ export const RegisterPage = ({ onNavigate }) => {
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder="+57 310 1234567"
-                    className="w-full p-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    className="w-full p-2.5 text-sm bg-slate-50 border border-slate-200 rounded-md focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-600 focus:border-blue-600"
                   />
                 </div>
                 <div>
@@ -212,7 +212,7 @@ export const RegisterPage = ({ onNavigate }) => {
                     value={address}
                     onChange={(e) => setAddress(e.target.value)}
                     placeholder="Calle 100 #15-20, Bogotá"
-                    className="w-full p-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    className="w-full p-2.5 text-sm bg-slate-50 border border-slate-200 rounded-md focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-600 focus:border-blue-600"
                   />
                 </div>
               </div>
@@ -228,7 +228,7 @@ export const RegisterPage = ({ onNavigate }) => {
                     value={companyName}
                     onChange={(e) => setCompanyName(e.target.value)}
                     placeholder="Equipos del Norte SAS"
-                    className="w-full p-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    className="w-full p-2.5 text-sm bg-slate-50 border border-slate-200 rounded-md focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-600 focus:border-blue-600"
                   />
                 </div>
                 <div>
@@ -239,7 +239,7 @@ export const RegisterPage = ({ onNavigate }) => {
                     value={taxId}
                     onChange={(e) => setTaxId(e.target.value)}
                     placeholder="NIT-901234567-8"
-                    className="w-full p-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    className="w-full p-2.5 text-sm bg-slate-50 border border-slate-200 rounded-md focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-600 focus:border-blue-600"
                   />
                 </div>
               </div>
@@ -253,7 +253,7 @@ export const RegisterPage = ({ onNavigate }) => {
                     value={address}
                     onChange={(e) => setAddress(e.target.value)}
                     placeholder="Zona Industrial Calle 13 #68-20"
-                    className="w-full p-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    className="w-full p-2.5 text-sm bg-slate-50 border border-slate-200 rounded-md focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-600 focus:border-blue-600"
                   />
                 </div>
                 <div>
@@ -264,7 +264,7 @@ export const RegisterPage = ({ onNavigate }) => {
                     value={coverageCity}
                     onChange={(e) => setCoverageCity(e.target.value)}
                     placeholder="Bogotá"
-                    className="w-full p-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    className="w-full p-2.5 text-sm bg-slate-50 border border-slate-200 rounded-md focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-600 focus:border-blue-600"
                   />
                 </div>
               </div>
@@ -277,7 +277,7 @@ export const RegisterPage = ({ onNavigate }) => {
                   value={contactPhone}
                   onChange={(e) => setContactPhone(e.target.value)}
                   placeholder="+57 601 7458900"
-                  className="w-full p-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  className="w-full p-2.5 text-sm bg-slate-50 border border-slate-200 rounded-md focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-600 focus:border-blue-600"
                 />
               </div>
             </>
@@ -286,7 +286,7 @@ export const RegisterPage = ({ onNavigate }) => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3.5 px-4 rounded-xl text-sm font-bold text-white bg-orange-600 hover:bg-orange-700 shadow-md shadow-orange-500/20 transition-all hover:scale-[1.01]"
+            className="w-full py-3.5 px-4 rounded-md text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-md shadow-blue-600/20 transition-all hover:scale-[1.01]"
           >
             {loading ? 'Creando cuenta...' : 'Finalizar Registro'}
           </button>
@@ -296,7 +296,7 @@ export const RegisterPage = ({ onNavigate }) => {
           ¿Ya tienes cuenta registrada?{' '}
           <button
             onClick={() => onNavigate('login')}
-            className="font-bold text-orange-600 hover:underline"
+            className="font-bold text-blue-600 hover:underline"
           >
             Inicia sesión aquí
           </button>

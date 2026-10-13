@@ -168,9 +168,9 @@ export const ProviderDashboard = () => {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
       {/* Header Banner */}
-      <div className="p-6 bg-gradient-to-r from-slate-900 via-slate-850 to-slate-900 rounded-3xl text-white shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div className="p-6 bg-slate-900 rounded-xl text-white border border-slate-800 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <span className="text-xs uppercase tracking-wider text-orange-400 font-bold">Portal del Proveedor</span>
+          <span className="text-xs uppercase tracking-wider text-blue-400 font-bold">Portal del Proveedor</span>
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight mt-1">
             {user?.displayName || 'Mi Empresa de Maquinaria'}
           </h1>
@@ -180,7 +180,7 @@ export const ProviderDashboard = () => {
         </div>
         <button
           onClick={() => setIsAddModalOpen(true)}
-          className="flex items-center gap-2 px-5 py-3 bg-orange-600 hover:bg-orange-500 text-white rounded-xl text-sm font-bold shadow-lg shadow-orange-600/30 transition-all hover:scale-105"
+          className="flex items-center gap-2 px-5 py-3 bg-blue-600 hover:bg-blue-600 text-white rounded-xl text-sm font-bold shadow-lg shadow-blue-600/30 transition-all hover:scale-105"
         >
           <PlusCircle className="w-5 h-5" />
           Nueva Herramienta
@@ -193,7 +193,7 @@ export const ProviderDashboard = () => {
           onClick={() => setActiveTab('inventory')}
           className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition-all ${
             activeTab === 'inventory'
-              ? 'bg-orange-600 text-white shadow-md shadow-orange-600/20'
+              ? 'bg-blue-600 text-white shadow-md shadow-blue-600/20'
               : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
           }`}
         >
@@ -204,7 +204,7 @@ export const ProviderDashboard = () => {
           onClick={() => setActiveTab('rentals')}
           className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition-all ${
             activeTab === 'rentals'
-              ? 'bg-orange-600 text-white shadow-md shadow-orange-600/20'
+              ? 'bg-blue-600 text-white shadow-md shadow-blue-600/20'
               : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
           }`}
         >
@@ -215,7 +215,7 @@ export const ProviderDashboard = () => {
 
       {/* TAB 1: INVENTORY */}
       {activeTab === 'inventory' && (
-        <div className="bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-hidden">
+        <div className="bg-white rounded-xl border border-slate-200/80 shadow-sm overflow-hidden">
           <div className="px-6 py-5 border-b border-slate-100 flex justify-between items-center">
             <h2 className="text-lg font-bold text-slate-900">Catálogo de Equipos Registrados</h2>
           </div>
@@ -249,7 +249,7 @@ export const ProviderDashboard = () => {
                       <td className="px-6 py-4 text-xs font-semibold text-slate-700">
                         {t.categoryName}
                       </td>
-                      <td className="px-6 py-4 font-bold text-orange-600">
+                      <td className="px-6 py-4 font-bold text-blue-600">
                         {formatMoney(t.dailyPrice)}
                       </td>
                       <td className="px-6 py-4 font-semibold text-slate-800">
@@ -286,7 +286,7 @@ export const ProviderDashboard = () => {
 
       {/* TAB 2: RENTALS & REQUESTS */}
       {activeTab === 'rentals' && (
-        <div className="bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-hidden">
+        <div className="bg-white rounded-xl border border-slate-200/80 shadow-sm overflow-hidden">
           <div className="px-6 py-5 border-b border-slate-100 flex justify-between items-center">
             <h2 className="text-lg font-bold text-slate-900">Solicitudes de Alquiler Recibidas</h2>
           </div>
@@ -324,7 +324,7 @@ export const ProviderDashboard = () => {
                         <div className="text-xs font-semibold text-slate-800">{r.startDate} al {r.endDate}</div>
                         <div className="text-xs text-slate-400">{r.totalDays} día(s)</div>
                       </td>
-                      <td className="px-6 py-4 font-bold text-orange-600">
+                      <td className="px-6 py-4 font-bold text-blue-600">
                         {formatMoney(r.estimatedTotal)}
                       </td>
                       <td className="px-6 py-4">
@@ -375,7 +375,7 @@ export const ProviderDashboard = () => {
                               setReturnRental(r);
                               setDamagesList([]);
                             }}
-                            className="px-3 py-1.5 bg-orange-600 hover:bg-orange-700 text-white rounded-lg text-xs font-bold shadow-sm transition-all"
+                            className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold shadow-sm transition-all"
                           >
                             Recibir & Inspeccionar
                           </button>
@@ -407,7 +407,7 @@ export const ProviderDashboard = () => {
                 value={toolName}
                 onChange={(e) => setToolName(e.target.value)}
                 placeholder="Excavadora Oruga 303.5"
-                className="w-full p-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                className="w-full p-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600"
               />
             </div>
             <div>
@@ -415,7 +415,7 @@ export const ProviderDashboard = () => {
               <select
                 value={categoryId}
                 onChange={(e) => setCategoryId(e.target.value)}
-                className="w-full p-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                className="w-full p-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600"
               >
                 {categories.map((c) => (
                   <option key={c.id} value={c.id}>{c.name}</option>
@@ -433,7 +433,7 @@ export const ProviderDashboard = () => {
                 value={brand}
                 onChange={(e) => setBrand(e.target.value)}
                 placeholder="Caterpillar"
-                className="w-full p-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                className="w-full p-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600"
               />
             </div>
             <div>
@@ -444,7 +444,7 @@ export const ProviderDashboard = () => {
                 value={model}
                 onChange={(e) => setModel(e.target.value)}
                 placeholder="303.5 CR"
-                className="w-full p-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                className="w-full p-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600"
               />
             </div>
           </div>
@@ -459,7 +459,7 @@ export const ProviderDashboard = () => {
                 value={dailyPrice}
                 onChange={(e) => setDailyPrice(e.target.value)}
                 placeholder="250000"
-                className="w-full p-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                className="w-full p-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600"
               />
             </div>
             <div>
@@ -471,7 +471,7 @@ export const ProviderDashboard = () => {
                 value={depositAmount}
                 onChange={(e) => setDepositAmount(e.target.value)}
                 placeholder="1000000"
-                className="w-full p-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                className="w-full p-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600"
               />
             </div>
           </div>
@@ -483,7 +483,7 @@ export const ProviderDashboard = () => {
               value={imageUrl}
               onChange={(e) => setImageUrl(e.target.value)}
               placeholder="https://images.unsplash.com/photo-..."
-              className="w-full p-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+              className="w-full p-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600"
             />
           </div>
 
@@ -496,7 +496,7 @@ export const ProviderDashboard = () => {
               <button
                 type="button"
                 onClick={handleAddSpecRow}
-                className="text-xs font-bold text-orange-600 hover:underline"
+                className="text-xs font-bold text-blue-600 hover:underline"
               >
                 + Añadir Parámetro
               </button>
@@ -534,7 +534,7 @@ export const ProviderDashboard = () => {
             <button
               type="submit"
               disabled={addLoading}
-              className="px-6 py-2.5 bg-orange-600 hover:bg-orange-700 text-white rounded-xl text-sm font-bold shadow-md shadow-orange-500/20"
+              className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-bold shadow-md shadow-blue-600/20"
             >
               {addLoading ? 'Guardando...' : 'Guardar Herramienta'}
             </button>
@@ -564,7 +564,7 @@ export const ProviderDashboard = () => {
                   required
                   value={returnDate}
                   onChange={(e) => setReturnDate(e.target.value)}
-                  className="w-full p-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  className="w-full p-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600"
                 />
               </div>
               <div>
@@ -574,7 +574,7 @@ export const ProviderDashboard = () => {
                   value={generalNotes}
                   onChange={(e) => setGeneralNotes(e.target.value)}
                   placeholder="Equipo recibido en obra"
-                  className="w-full p-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  className="w-full p-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600"
                 />
               </div>
             </div>
@@ -586,7 +586,7 @@ export const ProviderDashboard = () => {
                 value={inspectorNotes}
                 onChange={(e) => setInspectorNotes(e.target.value)}
                 placeholder="Detalle de horómetro, fluidos, desgaste de piezas..."
-                className="w-full p-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                className="w-full p-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600"
               />
             </div>
 
@@ -663,7 +663,7 @@ export const ProviderDashboard = () => {
               <button
                 type="submit"
                 disabled={returnLoading}
-                className="px-6 py-2.5 bg-orange-600 hover:bg-orange-700 text-white rounded-xl text-sm font-bold shadow-md shadow-orange-500/20"
+                className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-bold shadow-md shadow-blue-600/20"
               >
                 {returnLoading ? 'Procesando devolución...' : 'Finalizar Devolución'}
               </button>

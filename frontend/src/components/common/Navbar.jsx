@@ -6,7 +6,7 @@ export const Navbar = ({ currentTab, setCurrentTab }) => {
   const { user, isAuthenticated, isAdmin, isProvider, isClient, logout } = useAuth();
 
   return (
-    <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-sm">
+    <header className="sticky top-0 z-40 bg-white border-b border-slate-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo & Brand */}
@@ -14,26 +14,26 @@ export const Navbar = ({ currentTab, setCurrentTab }) => {
             className="flex items-center gap-3 cursor-pointer group"
             onClick={() => setCurrentTab('home')}
           >
-            <div className="w-10 h-10 rounded-xl bg-orange-600 flex items-center justify-center text-white shadow-md shadow-orange-500/20 group-hover:scale-105 transition-transform">
-              <HardHat className="w-6 h-6" />
+            <div className="w-10 h-10 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold shadow-sm">
+              <HardHat className="w-5 h-5 text-white" />
             </div>
             <div>
-              <span className="text-xl font-bold tracking-tight text-slate-900 group-hover:text-orange-600 transition-colors">
-                OPUS <span className="text-orange-600">RENTALS</span>
+              <span className="text-xl font-extrabold tracking-tight text-slate-900 group-hover:text-blue-600 transition-colors">
+                OPUS <span className="text-blue-600">RENTALS</span>
               </span>
-              <span className="block text-[10px] uppercase tracking-wider text-slate-500 font-medium -mt-1">
-                Maquinaria & Equipos
+              <span className="block text-[10px] uppercase tracking-wider text-slate-500 font-semibold -mt-1">
+                Equipos & Maquinaria
               </span>
             </div>
           </div>
 
           {/* Navigation Links */}
-          <nav className="hidden md:flex items-center gap-1">
+          <nav className="hidden md:flex items-center gap-1.5">
             <button
               onClick={() => setCurrentTab('home')}
-              className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+              className={`px-3 py-2 rounded-md text-sm font-semibold transition-colors ${
                 currentTab === 'home'
-                  ? 'bg-orange-50 text-orange-600 font-semibold'
+                  ? 'bg-blue-50 text-blue-700'
                   : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
               }`}
             >
@@ -41,9 +41,9 @@ export const Navbar = ({ currentTab, setCurrentTab }) => {
             </button>
             <button
               onClick={() => setCurrentTab('catalog')}
-              className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+              className={`px-3 py-2 rounded-md text-sm font-semibold transition-colors ${
                 currentTab === 'catalog'
-                  ? 'bg-orange-50 text-orange-600 font-semibold'
+                  ? 'bg-blue-50 text-blue-700'
                   : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
               }`}
             >
@@ -53,13 +53,13 @@ export const Navbar = ({ currentTab, setCurrentTab }) => {
             {isAuthenticated && isClient && (
               <button
                 onClick={() => setCurrentTab('client-dashboard')}
-                className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-semibold transition-colors ${
                   currentTab === 'client-dashboard'
-                    ? 'bg-orange-50 text-orange-600 font-semibold'
+                    ? 'bg-blue-50 text-blue-700'
                     : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
                 }`}
               >
-                <Calendar className="w-4 h-4" />
+                <Calendar className="w-4 h-4 text-blue-600" />
                 Mis Alquileres
               </button>
             )}
@@ -67,13 +67,13 @@ export const Navbar = ({ currentTab, setCurrentTab }) => {
             {isAuthenticated && isProvider && (
               <button
                 onClick={() => setCurrentTab('provider-dashboard')}
-                className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-semibold transition-colors ${
                   currentTab === 'provider-dashboard'
-                    ? 'bg-orange-50 text-orange-600 font-semibold'
+                    ? 'bg-blue-50 text-blue-700'
                     : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
                 }`}
               >
-                <Wrench className="w-4 h-4" />
+                <Wrench className="w-4 h-4 text-blue-600" />
                 Panel Proveedor
               </button>
             )}
@@ -81,13 +81,13 @@ export const Navbar = ({ currentTab, setCurrentTab }) => {
             {isAuthenticated && isAdmin && (
               <button
                 onClick={() => setCurrentTab('admin-dashboard')}
-                className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-semibold transition-colors ${
                   currentTab === 'admin-dashboard'
-                    ? 'bg-orange-50 text-orange-600 font-semibold'
+                    ? 'bg-blue-50 text-blue-700'
                     : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
                 }`}
               >
-                <LayoutDashboard className="w-4 h-4" />
+                <LayoutDashboard className="w-4 h-4 text-blue-600" />
                 Administración
               </button>
             )}
@@ -98,10 +98,10 @@ export const Navbar = ({ currentTab, setCurrentTab }) => {
             {isAuthenticated ? (
               <div className="flex items-center gap-3">
                 <div className="text-right hidden sm:block">
-                  <div className="text-sm font-semibold text-slate-900 leading-tight">
+                  <div className="text-sm font-bold text-slate-900 leading-tight">
                     {user?.displayName}
                   </div>
-                  <div className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-700">
+                  <div className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-blue-100 text-blue-800">
                     {user?.role?.replace('ROLE_', '')}
                   </div>
                 </div>
@@ -109,7 +109,7 @@ export const Navbar = ({ currentTab, setCurrentTab }) => {
                 <button
                   onClick={logout}
                   title="Cerrar Sesión"
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 border border-red-200 transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium text-slate-700 hover:text-red-700 hover:bg-red-50 border border-slate-200 transition-colors"
                 >
                   <LogOut className="w-4 h-4" />
                   <span className="hidden sm:inline">Salir</span>
@@ -119,14 +119,14 @@ export const Navbar = ({ currentTab, setCurrentTab }) => {
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setCurrentTab('login')}
-                  className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-100 transition-colors"
+                  className="flex items-center gap-1 px-3.5 py-2 rounded-md text-sm font-semibold text-slate-700 hover:bg-slate-100 transition-colors"
                 >
                   <LogIn className="w-4 h-4" />
                   Ingresar
                 </button>
                 <button
                   onClick={() => setCurrentTab('register')}
-                  className="flex items-center gap-1 px-4 py-2 rounded-lg text-sm font-semibold text-white bg-orange-600 hover:bg-orange-700 shadow-sm shadow-orange-500/20 transition-all hover:scale-[1.02]"
+                  className="flex items-center gap-1 px-4 py-2 rounded-md text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-sm transition-colors"
                 >
                   <UserPlus className="w-4 h-4" />
                   Registrarse

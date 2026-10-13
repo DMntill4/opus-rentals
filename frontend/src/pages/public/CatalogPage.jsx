@@ -146,12 +146,12 @@ export const CatalogPage = ({ onNavigate }) => {
               placeholder="Buscar por nombre, marca o modelo..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 text-sm bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500"
+              className="w-full pl-10 pr-4 py-2 text-sm bg-white border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600"
             />
           </div>
           <button
             type="submit"
-            className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-sm font-semibold transition-colors"
+            className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-md text-sm font-semibold transition-colors"
           >
             Buscar
           </button>
@@ -162,9 +162,9 @@ export const CatalogPage = ({ onNavigate }) => {
       <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
         <button
           onClick={() => setSelectedCategory('')}
-          className={`px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
+          className={`px-4 py-2 rounded-md text-xs font-semibold whitespace-nowrap transition-all ${
             selectedCategory === ''
-              ? 'bg-orange-600 text-white shadow-md shadow-orange-600/20'
+              ? 'bg-blue-600 text-white shadow-md shadow-blue-600/20'
               : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
           }`}
         >
@@ -174,9 +174,9 @@ export const CatalogPage = ({ onNavigate }) => {
           <button
             key={c.id}
             onClick={() => setSelectedCategory(c.id.toString())}
-            className={`px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
+            className={`px-4 py-2 rounded-md text-xs font-semibold whitespace-nowrap transition-all ${
               selectedCategory === c.id.toString()
-                ? 'bg-orange-600 text-white shadow-md shadow-orange-600/20'
+                ? 'bg-blue-600 text-white shadow-md shadow-blue-600/20'
                 : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
             }`}
           >
@@ -191,7 +191,7 @@ export const CatalogPage = ({ onNavigate }) => {
           Cargando inventario de equipos...
         </div>
       ) : tools.length === 0 ? (
-        <div className="text-center py-20 bg-white rounded-2xl border border-slate-200">
+        <div className="text-center py-20 bg-white rounded-lg border border-slate-200">
           <p className="text-slate-500 text-base font-semibold">
             No se encontraron herramientas con los criterios de búsqueda.
           </p>
@@ -201,7 +201,7 @@ export const CatalogPage = ({ onNavigate }) => {
               setSearchTerm('');
               fetchTools();
             }}
-            className="mt-4 px-4 py-2 text-sm font-semibold text-orange-600 hover:underline"
+            className="mt-4 px-4 py-2 text-sm font-semibold text-blue-600 hover:underline"
           >
             Limpiar filtros
           </button>
@@ -235,10 +235,10 @@ export const CatalogPage = ({ onNavigate }) => {
                   'https://images.unsplash.com/photo-1581094288338-2314dddb7ece?auto=format&fit=crop&w=800&q=80'
                 }
                 alt={detailTool.name}
-                className="w-full h-64 object-cover rounded-xl border border-slate-200 shadow-sm"
+                className="w-full h-64 object-cover rounded-md border border-slate-200 shadow-sm"
               />
               <div className="space-y-3">
-                <span className="inline-block px-2.5 py-1 rounded-full text-xs font-bold uppercase bg-orange-100 text-orange-700">
+                <span className="inline-block px-2.5 py-1 rounded-full text-xs font-bold uppercase bg-blue-100 text-blue-700">
                   {detailTool.categoryName}
                 </span>
                 <h3 className="text-xl font-bold text-slate-900">{detailTool.name}</h3>
@@ -247,10 +247,10 @@ export const CatalogPage = ({ onNavigate }) => {
                   <span className="font-semibold text-slate-800">{detailTool.model}</span>
                 </p>
 
-                <div className="p-4 bg-slate-50 rounded-xl border border-slate-100 space-y-2">
+                <div className="p-4 bg-slate-50 rounded-md border border-slate-100 space-y-2">
                   <div className="flex justify-between text-sm">
                     <span className="text-slate-500">Tarifa Diaria:</span>
-                    <span className="font-bold text-orange-600 text-base">{formatMoney(detailTool.dailyPrice)}</span>
+                    <span className="font-bold text-blue-600 text-base">{formatMoney(detailTool.dailyPrice)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-slate-500">Depósito de Garantía:</span>
@@ -286,7 +286,7 @@ export const CatalogPage = ({ onNavigate }) => {
             <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
               <button
                 onClick={() => setDetailTool(null)}
-                className="px-4 py-2 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-100"
+                className="px-4 py-2 rounded-md text-sm font-semibold text-slate-600 hover:bg-slate-100"
               >
                 Cerrar
               </button>
@@ -297,7 +297,7 @@ export const CatalogPage = ({ onNavigate }) => {
                   handleOpenRent(t);
                 }}
                 disabled={detailTool.status !== 'AVAILABLE'}
-                className="px-5 py-2 rounded-xl text-sm font-bold text-white bg-orange-600 hover:bg-orange-700 shadow-sm"
+                className="px-5 py-2 rounded-md text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-sm"
               >
                 Continuar a Reserva
               </button>
@@ -329,7 +329,7 @@ export const CatalogPage = ({ onNavigate }) => {
                       setRentingTool(null);
                       onNavigate('client-dashboard');
                     }}
-                    className="px-5 py-2.5 bg-orange-600 hover:bg-orange-700 text-white rounded-xl text-sm font-bold shadow-sm"
+                    className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm font-bold shadow-sm"
                   >
                     Ir a Mis Alquileres & Pagar
                   </button>
@@ -338,7 +338,7 @@ export const CatalogPage = ({ onNavigate }) => {
             ) : (
               <form onSubmit={handleConfirmRental} className="space-y-5">
                 {bookingError && (
-                  <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-xl text-xs flex items-center gap-2">
+                  <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-md text-xs flex items-center gap-2">
                     <ShieldAlert className="w-4 h-4 flex-shrink-0" />
                     <span>{bookingError}</span>
                   </div>
@@ -355,7 +355,7 @@ export const CatalogPage = ({ onNavigate }) => {
                       value={startDate}
                       min={new Date().toISOString().split('T')[0]}
                       onChange={(e) => setStartDate(e.target.value)}
-                      className="w-full p-2.5 text-sm bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:outline-none"
+                      className="w-full p-2.5 text-sm bg-white border border-slate-200 rounded-md focus:ring-2 focus:ring-blue-600 focus:outline-none"
                     />
                   </div>
                   <div>
@@ -368,7 +368,7 @@ export const CatalogPage = ({ onNavigate }) => {
                       value={endDate}
                       min={startDate || new Date().toISOString().split('T')[0]}
                       onChange={(e) => setEndDate(e.target.value)}
-                      className="w-full p-2.5 text-sm bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:outline-none"
+                      className="w-full p-2.5 text-sm bg-white border border-slate-200 rounded-md focus:ring-2 focus:ring-blue-600 focus:outline-none"
                     />
                   </div>
                 </div>
@@ -382,12 +382,12 @@ export const CatalogPage = ({ onNavigate }) => {
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
                     placeholder="Lugar de entrega en obra, operario asignado, etc."
-                    className="w-full p-2.5 text-sm bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:outline-none"
+                    className="w-full p-2.5 text-sm bg-white border border-slate-200 rounded-md focus:ring-2 focus:ring-blue-600 focus:outline-none"
                   />
                 </div>
 
                 {/* Calculation Summary */}
-                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 space-y-2 text-xs">
+                <div className="p-4 bg-slate-50 rounded-lg border border-slate-100 space-y-2 text-xs">
                   <div className="flex justify-between">
                     <span className="text-slate-500">Duración estimada:</span>
                     <span className="font-bold text-slate-800">{days} día(s)</span>
@@ -406,7 +406,7 @@ export const CatalogPage = ({ onNavigate }) => {
                   </div>
                   <div className="border-t border-slate-200 pt-2 flex justify-between text-sm">
                     <span className="font-bold text-slate-900">Total Liquidado:</span>
-                    <span className="font-extrabold text-orange-600 text-base">{formatMoney(totalEstimated)}</span>
+                    <span className="font-extrabold text-blue-600 text-base">{formatMoney(totalEstimated)}</span>
                   </div>
                 </div>
 
@@ -414,14 +414,14 @@ export const CatalogPage = ({ onNavigate }) => {
                   <button
                     type="button"
                     onClick={() => setRentingTool(null)}
-                    className="px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100 rounded-xl"
+                    className="px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100 rounded-md"
                   >
                     Cancelar
                   </button>
                   <button
                     type="submit"
                     disabled={bookingLoading}
-                    className="px-6 py-2.5 text-sm font-bold text-white bg-orange-600 hover:bg-orange-700 shadow-md shadow-orange-600/20 rounded-xl transition-all"
+                    className="px-6 py-2.5 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-md shadow-blue-600/20 rounded-md transition-all"
                   >
                     {bookingLoading ? 'Validando disponibilidad...' : 'Confirmar Reserva'}
                   </button>
