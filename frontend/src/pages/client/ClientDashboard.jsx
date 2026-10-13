@@ -1,28 +1,32 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
-import { Modal } from '../../components/common/Modal';
-import { Calendar, DollarSign, CreditCard, FileText, CheckCircle2, Clock, AlertTriangle } from 'lucide-react';
+import { formatMoneyCOP, formatDateCO } from '../../context/i18n';
+import {
+  Calendar,
+  DollarSign,
+  FileText,
+  CheckCircle2,
+  Clock,
+  AlertTriangle,
+  ChevronDown,
+  ChevronUp,
+  XCircle,
+  Truck,
+  RotateCcw,
+  Search,
+  ExternalLink
+} from 'lucide-react';
 
-export const ClientDashboard = () => {
+export const ClientDashboard = ({ onOpenInvoice, onNavigate }) => {
   const { user } = useAuth();
   const [rentals, setRentals] = useState([]);
-  const [paymentMethods, setPaymentMethods] = useState([]);
   const [loading, setLoading] = useState(true);
-
-  // Payment checkout modal state
-  const [payingRental, setPayingRental] = useState(null);
-  const [selectedMethodId, setSelectedMethodId] = useState('');
-  const [payLoading, setPayLoading] = useState(false);
-  const [paymentReceipt, setPaymentReceipt] = useState(null);
-  const [paymentError, setPaymentError] = useState(null);
-
-  // View invoice modal state
-  const [viewInvoice, setViewInvoice] = useState(null);
+  const [activeTab, setActiveTab] = useState('ALL'); // ALL, ACTIVE, COMPLETED, CANCELLED
+  const [expandedRow, setExpandedRow] = useState(null);
 
   useEffect(() => {
     fetchRentals();
-    fetchPaymentMethods();
   }, []);
 
   const fetchRentals = async () => {
@@ -34,53 +38,6 @@ export const ClientDashboard = () => {
       console.error('Error fetching client rentals:', err);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const fetchPaymentMethods = async () => {
-    try {
-      const res = await api.get('/payment-methods');
-      setPaymentMethods(res.data || []);
-      if (res.data?.length > 0) {
-        setSelectedMethodId(res.data[0].id.toString());
-      }
-    } catch (err) {
-      console.error('Error fetching payment methods:', err);
-    }
-  };
-
-  const handleOpenPay = async (rental) => {
-    setPayingRental(rental);
-    setPaymentReceipt(null);
-    setPaymentError(null);
-  };
-
-  const handleProcessPayment = async (e) => {
-    e.preventDefault();
-    setPayLoading(true);
-    setPaymentError(null);
-    try {
-      const payload = {
-        invoiceId: payingRental.invoiceId,
-        paymentMethodId: parseInt(selectedMethodId),
-        amount: payingRental.estimatedTotal,
-      };
-      const res = await api.post('/payments', payload);
-      setPaymentReceipt(res.data);
-      fetchRentals(); // Refresh invoice & rental status
-    } catch (err) {
-      setPaymentError(err.message || 'Error al procesar el pago');
-    } finally {
-      setPayLoading(false);
-    }
-  };
-
-  const handleViewInvoice = async (invoiceId) => {
-    try {
-      const res = await api.get(`/invoices/${invoiceId}`);
-      setViewInvoice(res.data);
-    } catch (err) {
-      alert('Error cargando la factura: ' + err.message);
     }
   };
 
@@ -97,349 +54,205 @@ export const ClientDashboard = () => {
     }
   };
 
-  const formatMoney = (val) => {
-    return new Intl.NumberFormat('es-CO', {
-      style: 'currency',
-      currency: 'COP',
-      maximumFractionDigits: 0,
-    }).format(val || 0);
-  };
+  const filteredRentals = rentals.filter((r) => {
+    if (activeTab === 'ACTIVE') return r.status === 'IN_PROGRESS' || r.status === 'APPROVED' || r.status === 'PENDING';
+    if (activeTab === 'COMPLETED') return r.status === 'RETURNED';
+    if (activeTab === 'CANCELLED') return r.status === 'CANCELLED';
+    return true;
+  });
 
-  const getStatusBadge = (status) => {
+  const getStatusPill = (status) => {
     switch (status) {
       case 'PENDING':
-        return <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-700">Pendiente de Aprobación</span>;
+        return <span className="px-2.5 py-1 rounded-md text-[11px] font-bold bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300">Pendiente</span>;
       case 'APPROVED':
-        return <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-700">Aprobado / Listo</span>;
+        return <span className="px-2.5 py-1 rounded-md text-[11px] font-bold bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-400">Confirmada</span>;
       case 'IN_PROGRESS':
-        return <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-purple-100 text-purple-700">En Obra (En Curso)</span>;
+        return <span className="px-2.5 py-1 rounded-md text-[11px] font-bold bg-blue-600 text-white">En Curso / Obra</span>;
       case 'RETURNED':
-        return <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700">Devuelto & Finalizado</span>;
+        return <span className="px-2.5 py-1 rounded-md text-[11px] font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400">Completada</span>;
       case 'CANCELLED':
-        return <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-red-100 text-red-700">Cancelado</span>;
+        return <span className="px-2.5 py-1 rounded-md text-[11px] font-bold bg-rose-50 text-rose-700 dark:bg-rose-950 dark:text-rose-400">Cancelada</span>;
       default:
-        return <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-700">{status}</span>;
+        return <span className="px-2.5 py-1 rounded-md text-[11px] font-bold bg-slate-100 text-slate-600">{status}</span>;
     }
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
-      {/* Welcome Banner */}
-      <div className="p-6 bg-slate-900 rounded-xl text-white border border-slate-800 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+    <div className="max-w-[1240px] mx-auto px-4 sm:px-6 py-8 space-y-8">
+      {/* Title Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <span className="text-xs uppercase tracking-wider text-blue-400 font-bold">Portal del Cliente</span>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight mt-1">
-            Hola, {user?.displayName}
+          <span className="text-xs uppercase font-bold text-blue-600 tracking-wider">Portal del Cliente</span>
+          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight mt-1">
+            Mis Alquileres & Órdenes en Obra
           </h1>
-          <p className="text-slate-300 text-sm mt-1">
-            Administra tus reservas de maquinaria, descarga facturas legales y realiza pagos seguros en línea.
+          <p className="text-xs text-slate-500 mt-1">
+            Revisa el estado de entrega, descarga facturas legales y gestiona tus reservas de maquinaria pesada.
           </p>
         </div>
-        <div className="flex items-center gap-3">
-          <div className="px-4 py-2 bg-slate-800 rounded-lg border border-slate-700 text-center">
-            <span className="block text-2xl font-black text-blue-400">{rentals.length}</span>
-            <span className="text-[10px] uppercase text-slate-300 font-medium">Alquileres Totales</span>
-          </div>
-        </div>
+        <button
+          onClick={() => onNavigate('catalog')}
+          className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-sm transition-colors self-start sm:self-auto"
+        >
+          + Nueva Reserva
+        </button>
       </div>
 
-      {/* Rentals Table Card */}
-      <div className="bg-white rounded-xl border border-slate-200/80 shadow-sm overflow-hidden">
-        <div className="px-6 py-5 border-b border-slate-100 flex justify-between items-center">
-          <h2 className="text-lg font-bold text-slate-900">Historial y Estado de Alquileres</h2>
+      {/* Tabs Filter Bar */}
+      <div className="flex gap-2 border-b border-slate-200 dark:border-slate-800 pb-2 text-xs font-bold">
+        {[
+          { id: 'ALL', label: `Todos (${rentals.length})` },
+          { id: 'ACTIVE', label: 'En Curso & Activos' },
+          { id: 'COMPLETED', label: 'Completados' },
+          { id: 'CANCELLED', label: 'Cancelados' },
+        ].map((t) => (
           <button
-            onClick={fetchRentals}
-            className="text-xs font-semibold text-blue-600 hover:underline"
+            key={t.id}
+            onClick={() => setActiveTab(t.id)}
+            className={`px-3.5 py-2 rounded-lg transition-colors ${
+              activeTab === t.id
+                ? 'bg-blue-600 text-white shadow-sm'
+                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+            }`}
           >
-            Actualizar Lista
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Expandable Rows Table */}
+      {loading ? (
+        <div className="space-y-3">
+          {[1, 2, 3].map((n) => (
+            <div key={n} className="h-20 bg-slate-100 dark:bg-slate-900 rounded-2xl animate-pulse" />
+          ))}
+        </div>
+      ) : filteredRentals.length === 0 ? (
+        <div className="p-16 text-center bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-3">
+          <Clock className="w-10 h-10 text-slate-300 mx-auto" />
+          <h3 className="text-base font-bold text-slate-900 dark:text-white">Sin alquileres en este estado</h3>
+          <p className="text-xs text-slate-500 max-w-sm mx-auto">
+            No tienes órdenes de alquiler registradas en esta categoría. Puedes explorar el catálogo de maquinaria disponible.
+          </p>
+          <button
+            onClick={() => onNavigate('catalog')}
+            className="px-4 py-2 bg-blue-600 text-white text-xs font-bold rounded-xl"
+          >
+            Explorar Catálogo
           </button>
         </div>
-
-        {loading ? (
-          <div className="p-12 text-center text-slate-500 font-medium">
-            Cargando tus alquileres...
-          </div>
-        ) : rentals.length === 0 ? (
-          <div className="p-12 text-center space-y-3">
-            <p className="text-slate-500 font-medium">Aún no has solicitado el alquiler de ninguna herramienta.</p>
-            <p className="text-xs text-slate-400">Dirígete al catálogo para explorar la maquinaria disponible.</p>
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm text-slate-600">
-              <thead className="bg-slate-50 text-[11px] uppercase tracking-wider text-slate-500 border-b border-slate-100">
-                <tr>
-                  <th className="px-6 py-4">ID & Herramienta</th>
-                  <th className="px-6 py-4">Proveedor</th>
-                  <th className="px-6 py-4">Periodo & Días</th>
-                  <th className="px-6 py-4">Total Liquidado</th>
-                  <th className="px-6 py-4">Estado Alquiler</th>
-                  <th className="px-6 py-4">Factura & Pago</th>
-                  <th className="px-6 py-4 text-right">Acciones</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {rentals.map((r) => (
-                  <tr key={r.id} className="hover:bg-slate-50/60 transition-colors">
-                    <td className="px-6 py-4">
-                      <div className="font-bold text-slate-900">#{r.id} - {r.toolName}</div>
-                      <div className="text-xs text-slate-400">{r.toolBrand} {r.toolModel}</div>
-                    </td>
-                    <td className="px-6 py-4 font-medium text-slate-700">
-                      {r.providerCompanyName}
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="text-xs font-semibold text-slate-800">{r.startDate} al {r.endDate}</div>
-                      <div className="text-xs text-slate-400">{r.totalDays} día(s) de obra</div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="font-bold text-blue-600">{formatMoney(r.estimatedTotal)}</div>
-                      <div className="text-[10px] text-slate-400">Garantía: {formatMoney(r.depositAmount)}</div>
-                    </td>
-                    <td className="px-6 py-4">
-                      {getStatusBadge(r.status)}
-                    </td>
-                    <td className="px-6 py-4">
-                      {r.invoiceId ? (
-                        <div className="space-y-1">
-                          <span
-                            className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold ${
-                              r.invoiceStatus === 'PAID'
-                                ? 'bg-emerald-100 text-emerald-800'
-                                : 'bg-amber-100 text-amber-800'
-                            }`}
-                          >
-                            {r.invoiceStatus === 'PAID' ? 'PAGADA' : 'PENDIENTE PAGO'}
-                          </span>
-                          <button
-                            onClick={() => handleViewInvoice(r.invoiceId)}
-                            className="block text-xs text-blue-600 hover:underline font-medium"
-                          >
-                            {r.invoiceNumber}
-                          </button>
-                        </div>
-                      ) : (
-                        <span className="text-xs text-slate-400">Sin Factura</span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 text-right space-x-2">
-                      {r.invoiceStatus !== 'PAID' && r.status !== 'CANCELLED' && r.invoiceId && (
-                        <button
-                          onClick={() => handleOpenPay(r)}
-                          className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold shadow-sm transition-all"
-                        >
-                          Pagar Factura
-                        </button>
-                      )}
-                      {r.status === 'PENDING' && (
-                        <button
-                          onClick={() => handleCancelRental(r.id)}
-                          className="px-2.5 py-1 text-xs text-red-600 hover:bg-red-50 rounded-lg border border-red-200 font-medium"
-                        >
-                          Cancelar
-                        </button>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
-
-      {/* PAYMENT CHECKOUT MODAL */}
-      <Modal
-        isOpen={!!payingRental}
-        onClose={() => setPayingRental(null)}
-        title="Pasarela de Pago en Línea (Simulación Segura)"
-      >
-        {payingRental && (
-          <div>
-            {paymentReceipt ? (
-              <div className="text-center py-6 space-y-4">
-                <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto">
-                  <CheckCircle2 className="w-10 h-10" />
-                </div>
-                <h4 className="text-xl font-bold text-slate-900">¡Pago Exitoso Aprobado!</h4>
-                <div className="p-4 bg-slate-50 rounded-lg border border-slate-100 max-w-sm mx-auto text-xs space-y-1.5 text-left">
-                  <div className="flex justify-between">
-                    <span className="text-slate-500">Ref. Transacción:</span>
-                    <span className="font-bold text-slate-800">{paymentReceipt.transactionReference}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-500">Factura:</span>
-                    <span className="font-bold text-slate-800">{paymentReceipt.invoiceNumber}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-500">Método:</span>
-                    <span className="font-bold text-slate-800">{paymentReceipt.paymentMethodName}</span>
-                  </div>
-                  <div className="flex justify-between text-sm pt-2 border-t border-slate-200">
-                    <span className="font-bold text-slate-900">Monto Cobrado:</span>
-                    <span className="font-extrabold text-blue-600">{formatMoney(paymentReceipt.amount)}</span>
-                  </div>
-                </div>
-                <button
-                  onClick={() => setPayingRental(null)}
-                  className="px-6 py-2.5 bg-slate-900 text-white rounded-xl text-sm font-bold"
+      ) : (
+        <div className="space-y-4">
+          {filteredRentals.map((r) => {
+            const isExpanded = expandedRow === r.id;
+            return (
+              <div
+                key={r.id}
+                className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm transition-all"
+              >
+                {/* Header Row */}
+                <div
+                  onClick={() => setExpandedRow(isExpanded ? null : r.id)}
+                  className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 cursor-pointer hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors"
                 >
-                  Cerrar Comprobante
-                </button>
-              </div>
-            ) : (
-              <form onSubmit={handleProcessPayment} className="space-y-5">
-                {paymentError && (
-                  <div className="p-3 bg-red-50 text-red-700 rounded-xl text-xs flex items-center gap-2">
-                    <AlertTriangle className="w-4 h-4 flex-shrink-0" />
-                    <span>{paymentError}</span>
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-bold text-xs text-blue-600">
+                      #{r.id}
+                    </div>
+                    <div>
+                      <div className="text-sm font-bold text-slate-900 dark:text-white">
+                        {r.toolName}
+                      </div>
+                      <div className="text-xs text-slate-500">
+                        {formatDateCO(r.startDate)} al {formatDateCO(r.endDate)} ({r.totalDays}d) • Proveedor: <span className="font-semibold text-slate-700 dark:text-slate-300">{r.providerCompanyName}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-6 justify-between md:justify-end">
+                    <div className="text-right">
+                      <span className="text-[10px] text-slate-400 block font-medium">Total liquidado</span>
+                      <span className="text-sm font-extrabold text-slate-900 dark:text-white">
+                        {formatMoneyCOP(r.estimatedTotal)}
+                      </span>
+                    </div>
+
+                    <div>{getStatusPill(r.status)}</div>
+
+                    <div className="p-1 rounded-lg text-slate-400">
+                      {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Expanded Card Details (Prompt 6 Spec) */}
+                {isExpanded && (
+                  <div className="px-6 pb-6 pt-2 border-t border-slate-100 dark:border-slate-800 bg-slate-50/40 dark:bg-slate-900/40 space-y-5">
+                    {/* Horizontal Stepper: Pendiente -> Confirmada -> En curso -> Completada */}
+                    <div className="py-3">
+                      <span className="text-[10px] font-bold uppercase text-slate-400 tracking-wider block mb-2">
+                        Línea de Vida del Alquiler en Obra
+                      </span>
+                      <div className="grid grid-cols-4 gap-2 text-center text-xs">
+                        {[
+                          { key: 'PENDING', label: '1. Pendiente' },
+                          { key: 'APPROVED', label: '2. Confirmada' },
+                          { key: 'IN_PROGRESS', label: '3. En Obra' },
+                          { key: 'RETURNED', label: '4. Completada' },
+                        ].map((st, sIdx) => {
+                          const isDone = ['APPROVED', 'IN_PROGRESS', 'RETURNED'].includes(r.status) && sIdx <= (r.status === 'RETURNED' ? 3 : r.status === 'IN_PROGRESS' ? 2 : 1);
+                          return (
+                            <div
+                              key={st.key}
+                              className={`p-2 rounded-lg font-bold text-[11px] border ${
+                                isDone
+                                  ? 'bg-blue-50 dark:bg-blue-950/40 border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300'
+                                  : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-400'
+                              }`}
+                            >
+                              {st.label}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Breakdown & Actions */}
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-2">
+                      <div className="text-xs text-slate-500 space-y-0.5">
+                        <div>Factura Electrónica: <strong>{r.invoiceNumber || 'Emitida en pasarela'}</strong></div>
+                        <div>Depósito Reembolsable: <strong>{formatMoneyCOP(r.depositAmount || 0)}</strong></div>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        {r.invoiceNumber && (
+                          <button
+                            onClick={() => onOpenInvoice(r)}
+                            className="px-3.5 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 flex items-center gap-1.5 shadow-sm"
+                          >
+                            <FileText className="w-4 h-4 text-blue-600" />
+                            Ver Factura Imprimible
+                          </button>
+                        )}
+
+                        {r.status === 'PENDING' && (
+                          <button
+                            onClick={() => handleCancelRental(r.id)}
+                            className="px-3.5 py-2 text-xs font-bold text-red-600 hover:bg-red-50 rounded-xl border border-red-200"
+                          >
+                            Cancelar Reserva
+                          </button>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 )}
-
-                <div className="p-4 bg-orange-50/60 rounded-lg border border-blue-100 space-y-1 text-xs">
-                  <div className="flex justify-between">
-                    <span className="text-slate-600">Alquiler:</span>
-                    <span className="font-bold text-slate-900">#{payingRental.id} - {payingRental.toolName}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-600">Factura Relacionada:</span>
-                    <span className="font-bold text-slate-900">{payingRental.invoiceNumber}</span>
-                  </div>
-                  <div className="flex justify-between text-base font-extrabold text-blue-600 pt-2 border-t border-orange-200/60">
-                    <span>Total a Pagar:</span>
-                    <span>{formatMoney(payingRental.estimatedTotal)}</span>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-2 uppercase tracking-wider">
-                    Seleccionar Método de Pago
-                  </label>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    {paymentMethods.map((pm) => (
-                      <label
-                        key={pm.id}
-                        className={`flex items-center gap-2.5 p-3 rounded-xl border text-xs cursor-pointer transition-all ${
-                          selectedMethodId === pm.id.toString()
-                            ? 'border-blue-600 bg-orange-50/50 text-orange-950 font-bold'
-                            : 'border-slate-200 bg-white hover:bg-slate-50 text-slate-700'
-                        }`}
-                      >
-                        <input
-                          type="radio"
-                          name="paymentMethod"
-                          value={pm.id}
-                          checked={selectedMethodId === pm.id.toString()}
-                          onChange={(e) => setSelectedMethodId(e.target.value)}
-                          className="text-blue-600 focus:ring-blue-600"
-                        />
-                        <CreditCard className="w-4 h-4 text-blue-600" />
-                        <span>{pm.name}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
-                  <button
-                    type="button"
-                    onClick={() => setPayingRental(null)}
-                    className="px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100 rounded-xl"
-                  >
-                    Cancelar
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={payLoading}
-                    className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-bold shadow-md shadow-blue-600/20"
-                  >
-                    {payLoading ? 'Procesando transacción...' : 'Simular Pago Exitoso'}
-                  </button>
-                </div>
-              </form>
-            )}
-          </div>
-        )}
-      </Modal>
-
-      {/* VIEW INVOICE MODAL */}
-      <Modal
-        isOpen={!!viewInvoice}
-        onClose={() => setViewInvoice(null)}
-        title={viewInvoice ? `Factura Electrónica: ${viewInvoice.invoiceNumber}` : ''}
-      >
-        {viewInvoice && (
-          <div className="space-y-6 text-sm">
-            {/* Header info */}
-            <div className="flex justify-between items-start border-b border-slate-100 pb-4">
-              <div>
-                <span className="text-xl font-black text-slate-900 tracking-tight">OPUS RENTALS</span>
-                <p className="text-xs text-slate-500">NIT: 900.888.777-1 | Régimen Común</p>
-                <p className="text-xs text-slate-500">Parque Industrial Cota, Colombia</p>
               </div>
-              <div className="text-right">
-                <span
-                  className={`inline-block px-3 py-1 rounded-full text-xs font-bold ${
-                    viewInvoice.status === 'PAID'
-                      ? 'bg-emerald-100 text-emerald-800'
-                      : 'bg-amber-100 text-amber-800'
-                  }`}
-                >
-                  {viewInvoice.status === 'PAID' ? 'PAGADA' : 'PENDIENTE'}
-                </span>
-                <p className="text-xs text-slate-500 mt-1">Fecha Emisión: {viewInvoice.issueDate}</p>
-              </div>
-            </div>
-
-            {/* Client & Tool Summary */}
-            <div className="grid grid-cols-2 gap-4 text-xs bg-slate-50 p-4 rounded-lg">
-              <div>
-                <span className="font-bold text-slate-700 uppercase tracking-wider block mb-1">Cliente Receptor</span>
-                <p className="font-semibold text-slate-900">{viewInvoice.clientFullName}</p>
-                <p className="text-slate-500">{viewInvoice.clientDocument}</p>
-                <p className="text-slate-500">{viewInvoice.clientEmail}</p>
-              </div>
-              <div>
-                <span className="font-bold text-slate-700 uppercase tracking-wider block mb-1">Equipo Alquilado</span>
-                <p className="font-semibold text-slate-900">{viewInvoice.toolName}</p>
-                <p className="text-slate-500">Proveedor: {viewInvoice.providerCompanyName}</p>
-                <p className="text-slate-500">Duración: {viewInvoice.totalDays} día(s)</p>
-              </div>
-            </div>
-
-            {/* Calculations Breakdown */}
-            <div className="space-y-2 border-t border-slate-100 pt-4 text-xs">
-              <div className="flex justify-between">
-                <span className="text-slate-500">Subtotal Neto:</span>
-                <span className="font-bold text-slate-800">{formatMoney(viewInvoice.subtotal)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-500">IVA (19%):</span>
-                <span className="font-bold text-slate-800">{formatMoney(viewInvoice.taxAmount)}</span>
-              </div>
-              <div className="flex justify-between text-base font-extrabold text-blue-600 pt-2 border-t border-slate-200">
-                <span>Total Facturado:</span>
-                <span>{formatMoney(viewInvoice.totalAmount)}</span>
-              </div>
-            </div>
-
-            <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
-              <button
-                onClick={() => window.print()}
-                className="px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700"
-              >
-                Imprimir Factura
-              </button>
-              <button
-                onClick={() => setViewInvoice(null)}
-                className="px-4 py-2 rounded-xl text-xs font-bold bg-slate-900 hover:bg-slate-800 text-white"
-              >
-                Cerrar
-              </button>
-            </div>
-          </div>
-        )}
-      </Modal>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 };

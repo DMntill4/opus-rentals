@@ -1,29 +1,35 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
+import { useCart } from '../../context/CartContext';
+import { useTheme } from '../../context/ThemeContext';
 import { ToolCard } from '../../components/cards/ToolCard';
-import { Modal } from '../../components/common/Modal';
-import { Search, Filter, Calendar, ShieldAlert, CheckCircle2, DollarSign, Building2, Tag } from 'lucide-react';
+import { formatMoneyCOP, translations } from '../../context/i18n';
+import {
+  Search,
+  Filter,
+  SlidersHorizontal,
+  RotateCcw,
+  AlertCircle,
+  FolderOpen,
+  ArrowRight,
+  ShieldCheck,
+  CheckCircle2
+} from 'lucide-react';
 
-export const CatalogPage = ({ onNavigate }) => {
-  const { isAuthenticated, isClient } = useAuth();
+export const CatalogPage = ({ onNavigate, onSelectTool }) => {
+  const { addToCart } = useCart();
+  const { lang } = useTheme();
+  const t = translations[lang] || translations.es;
+
   const [tools, setTools] = useState([]);
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('');
+  const [statusFilter, setStatusFilter] = useState('ALL'); // 'ALL' or 'AVAILABLE'
+  const [maxPrice, setMaxPrice] = useState(2500000);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
-
-  // Modals state
-  const [detailTool, setDetailTool] = useState(null);
-  const [rentingTool, setRentingTool] = useState(null);
-
-  // Rental form
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
-  const [notes, setNotes] = useState('');
-  const [bookingLoading, setBookingLoading] = useState(false);
-  const [bookingSuccess, setBookingSuccess] = useState(null);
-  const [bookingError, setBookingError] = useState(null);
+  const [toastMessage, setToastMessage] = useState(null);
 
   useEffect(() => {
     fetchCategories();
@@ -59,378 +65,249 @@ export const CatalogPage = ({ onNavigate }) => {
     fetchTools();
   };
 
-  const handleOpenRent = (tool) => {
-    if (!isAuthenticated) {
-      onNavigate('login');
-      return;
-    }
-    if (!isClient) {
-      alert('Debe tener una cuenta de Cliente para realizar solicitudes de alquiler.');
-      return;
-    }
-    setRentingTool(tool);
-    setBookingSuccess(null);
-    setBookingError(null);
-    // Default dates: tomorrow to +3 days
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const end = new Date();
-    end.setDate(end.getDate() + 4);
-
-    setStartDate(tomorrow.toISOString().split('T')[0]);
-    setEndDate(end.toISOString().split('T')[0]);
+  const handleResetFilters = () => {
+    setSelectedCategory('');
+    setStatusFilter('ALL');
+    setMaxPrice(2500000);
+    setSearchTerm('');
+    fetchTools();
   };
 
-  const calculateDays = () => {
-    if (!startDate || !endDate) return 1;
-    const s = new Date(startDate);
-    const e = new Date(endDate);
-    const diff = Math.ceil((e - s) / (1000 * 60 * 60 * 24)) + 1;
-    return diff > 0 ? diff : 1;
+  const handleRentTool = (tool) => {
+    addToCart(tool);
+    setToastMessage(`"${tool.name}" agregado a tu reserva.`);
+    setTimeout(() => setToastMessage(null), 3000);
   };
 
-  const days = calculateDays();
-  const subtotal = rentingTool ? rentingTool.dailyPrice * days : 0;
-  const tax = subtotal * 0.19;
-  const deposit = rentingTool ? rentingTool.depositAmount : 0;
-  const totalEstimated = subtotal + tax + deposit;
-
-  const handleConfirmRental = async (e) => {
-    e.preventDefault();
-    setBookingLoading(true);
-    setBookingError(null);
-    try {
-      const payload = {
-        toolId: rentingTool.id,
-        startDate,
-        endDate,
-        notes,
-      };
-      const res = await api.post('/rentals', payload);
-      setBookingSuccess(res.data);
-      fetchTools(); // Refresh tool availability
-    } catch (err) {
-      setBookingError(err.message);
-    } finally {
-      setBookingLoading(false);
-    }
-  };
-
-  const formatMoney = (val) => {
-    return new Intl.NumberFormat('es-CO', {
-      style: 'currency',
-      currency: 'COP',
-      maximumFractionDigits: 0,
-    }).format(val || 0);
-  };
+  const filteredTools = tools.filter((tool) => {
+    if (statusFilter === 'AVAILABLE' && tool.status !== 'AVAILABLE') return false;
+    if (tool.dailyPrice && tool.dailyPrice > maxPrice) return false;
+    return true;
+  });
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
-      {/* Title & Filter Header */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">
-            Catálogo de Maquinaria y Equipos
-          </h1>
-          <p className="text-slate-600 text-sm mt-1">
-            Explora maquinaria pesada, herramientas de demolición y equipos certificados para tu obra.
-          </p>
-        </div>
-
-        {/* Search Bar */}
-        <form onSubmit={handleSearch} className="flex gap-2 max-w-md w-full">
-          <div className="relative flex-1">
-            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input
-              type="text"
-              placeholder="Buscar por nombre, marca o modelo..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 text-sm bg-white border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600"
-            />
-          </div>
+    <div className="max-w-[1240px] mx-auto px-4 sm:px-6 py-8">
+      {/* Toast popup */}
+      {toastMessage && (
+        <div className="fixed bottom-6 right-6 z-50 p-4 bg-slate-900 text-white rounded-xl shadow-2xl border border-slate-700 flex items-center gap-3">
+          <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+          <span className="text-xs font-bold">{toastMessage}</span>
           <button
-            type="submit"
-            className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-md text-sm font-semibold transition-colors"
+            onClick={() => onNavigate('checkout')}
+            className="ml-2 px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg"
           >
-            Buscar
+            Ir a Reserva
           </button>
-        </form>
-      </div>
-
-      {/* Category Filter Pills */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
-        <button
-          onClick={() => setSelectedCategory('')}
-          className={`px-4 py-2 rounded-md text-xs font-semibold whitespace-nowrap transition-all ${
-            selectedCategory === ''
-              ? 'bg-blue-600 text-white shadow-md shadow-blue-600/20'
-              : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
-          }`}
-        >
-          Todas las Categorías
-        </button>
-        {categories.map((c) => (
-          <button
-            key={c.id}
-            onClick={() => setSelectedCategory(c.id.toString())}
-            className={`px-4 py-2 rounded-md text-xs font-semibold whitespace-nowrap transition-all ${
-              selectedCategory === c.id.toString()
-                ? 'bg-blue-600 text-white shadow-md shadow-blue-600/20'
-                : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
-            }`}
-          >
-            {c.name}
-          </button>
-        ))}
-      </div>
-
-      {/* Tools Grid */}
-      {loading ? (
-        <div className="text-center py-20 text-slate-500 font-medium">
-          Cargando inventario de equipos...
-        </div>
-      ) : tools.length === 0 ? (
-        <div className="text-center py-20 bg-white rounded-lg border border-slate-200">
-          <p className="text-slate-500 text-base font-semibold">
-            No se encontraron herramientas con los criterios de búsqueda.
-          </p>
-          <button
-            onClick={() => {
-              setSelectedCategory('');
-              setSearchTerm('');
-              fetchTools();
-            }}
-            className="mt-4 px-4 py-2 text-sm font-semibold text-blue-600 hover:underline"
-          >
-            Limpiar filtros
-          </button>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {tools.map((tool) => (
-            <ToolCard
-              key={tool.id}
-              tool={tool}
-              onSelect={(t) => setDetailTool(t)}
-              onRent={(t) => handleOpenRent(t)}
-            />
-          ))}
         </div>
       )}
 
-      {/* DETAIL MODAL */}
-      <Modal
-        isOpen={!!detailTool}
-        onClose={() => setDetailTool(null)}
-        title={detailTool ? `${detailTool.name} - Ficha Técnica` : ''}
-        maxWidth="max-w-3xl"
-      >
-        {detailTool && (
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
-              <img
-                src={
-                  detailTool.coverImageUrl ||
-                  'https://images.unsplash.com/photo-1581094288338-2314dddb7ece?auto=format&fit=crop&w=800&q=80'
-                }
-                alt={detailTool.name}
-                className="w-full h-64 object-cover rounded-md border border-slate-200 shadow-sm"
-              />
-              <div className="space-y-3">
-                <span className="inline-block px-2.5 py-1 rounded-full text-xs font-bold uppercase bg-blue-100 text-blue-700">
-                  {detailTool.categoryName}
-                </span>
-                <h3 className="text-xl font-bold text-slate-900">{detailTool.name}</h3>
-                <p className="text-sm text-slate-500">
-                  Marca: <span className="font-semibold text-slate-800">{detailTool.brand}</span> | Modelo:{' '}
-                  <span className="font-semibold text-slate-800">{detailTool.model}</span>
-                </p>
+      {/* Hero header */}
+      <div className="mb-8 border-b border-slate-200 dark:border-slate-800 pb-6">
+        <span className="text-xs font-bold uppercase tracking-wider text-blue-600">Catálogo de Maquinaria y Equipos</span>
+        <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight mt-1">
+          Alquila el equipo que necesitas. Sin comprarlo.
+        </h1>
+        <p className="text-xs text-slate-500 mt-1">
+          Inventario certificado para constructoras, contratistas y particulares en Colombia con validación de fechas en tiempo real.
+        </p>
 
-                <div className="p-4 bg-slate-50 rounded-md border border-slate-100 space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-slate-500">Tarifa Diaria:</span>
-                    <span className="font-bold text-blue-600 text-base">{formatMoney(detailTool.dailyPrice)}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-slate-500">Depósito de Garantía:</span>
-                    <span className="font-semibold text-slate-800">{formatMoney(detailTool.depositAmount)}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-slate-500">Proveedor:</span>
-                    <span className="font-semibold text-slate-800">{detailTool.providerCompanyName}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
+        {/* Quick Category Chips */}
+        <div className="flex items-center gap-2 overflow-x-auto pt-4 pb-1 scrollbar-none">
+          <button
+            onClick={() => setSelectedCategory('')}
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-colors ${
+              selectedCategory === ''
+                ? 'bg-blue-600 text-white shadow-sm'
+                : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-800'
+            }`}
+          >
+            Todas ({tools.length})
+          </button>
+          {categories.map((c) => (
+            <button
+              key={c.id}
+              onClick={() => setSelectedCategory(c.id.toString())}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-colors ${
+                selectedCategory === c.id.toString()
+                  ? 'bg-blue-600 text-white shadow-sm'
+                  : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-800'
+              }`}
+            >
+              {c.name}
+            </button>
+          ))}
+        </div>
+      </div>
 
-            {/* Specifications List (4FN) */}
-            <div>
-              <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-3">
-                Especificaciones Técnicas Certificadas (4FN)
-              </h4>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {detailTool.specifications?.length > 0 ? (
-                  detailTool.specifications.map((s) => (
-                    <div key={s.id} className="p-2.5 bg-slate-50 rounded-lg border border-slate-100 flex justify-between text-xs">
-                      <span className="text-slate-500 font-medium">{s.specKey}:</span>
-                      <span className="font-bold text-slate-800">{s.specValue}</span>
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-xs text-slate-400">Sin especificaciones técnicas adicionales registradas.</p>
-                )}
-              </div>
+      {/* Main 12-Column Layout with 260px Filter Sidebar (Prompt 2 Spec) */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        {/* Left Filter Panel (260px width equivalent ~ lg:col-span-3) */}
+        <aside className="lg:col-span-3 bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-6 shadow-sm">
+          <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white">
+              <Filter className="w-4 h-4 text-blue-600" />
+              Filtros Avanzados
             </div>
-
-            <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
-              <button
-                onClick={() => setDetailTool(null)}
-                className="px-4 py-2 rounded-md text-sm font-semibold text-slate-600 hover:bg-slate-100"
-              >
-                Cerrar
-              </button>
-              <button
-                onClick={() => {
-                  const t = detailTool;
-                  setDetailTool(null);
-                  handleOpenRent(t);
-                }}
-                disabled={detailTool.status !== 'AVAILABLE'}
-                className="px-5 py-2 rounded-md text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-sm"
-              >
-                Continuar a Reserva
-              </button>
-            </div>
+            <button
+              onClick={handleResetFilters}
+              title="Restablecer"
+              className="text-[11px] text-slate-400 hover:text-blue-600 flex items-center gap-1 font-semibold"
+            >
+              <RotateCcw className="w-3 h-3" /> Limpiar
+            </button>
           </div>
-        )}
-      </Modal>
 
-      {/* RENT BOOKING MODAL */}
-      <Modal
-        isOpen={!!rentingTool}
-        onClose={() => setRentingTool(null)}
-        title={rentingTool ? `Solicitud de Alquiler: ${rentingTool.name}` : ''}
-      >
-        {rentingTool && (
+          {/* Search field inside filter panel */}
           <div>
-            {bookingSuccess ? (
-              <div className="text-center py-6 space-y-4">
-                <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto">
-                  <CheckCircle2 className="w-10 h-10" />
-                </div>
-                <h4 className="text-xl font-bold text-slate-900">¡Reserva Registrada Exitosamente!</h4>
-                <p className="text-sm text-slate-600 max-w-md mx-auto">
-                  Tu reserva para <span className="font-bold">{rentingTool.name}</span> fue creada con código #{bookingSuccess.id}. Se generó la factura automática #{bookingSuccess.invoiceNumber || 'INV-PENDIENTE'} para realizar el pago.
-                </p>
-                <div className="pt-4 flex justify-center gap-3">
-                  <button
-                    onClick={() => {
-                      setRentingTool(null);
-                      onNavigate('client-dashboard');
-                    }}
-                    className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm font-bold shadow-sm"
-                  >
-                    Ir a Mis Alquileres & Pagar
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <form onSubmit={handleConfirmRental} className="space-y-5">
-                {bookingError && (
-                  <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-md text-xs flex items-center gap-2">
-                    <ShieldAlert className="w-4 h-4 flex-shrink-0" />
-                    <span>{bookingError}</span>
-                  </div>
-                )}
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">
-                      Fecha de Inicio del Alquiler
-                    </label>
-                    <input
-                      type="date"
-                      required
-                      value={startDate}
-                      min={new Date().toISOString().split('T')[0]}
-                      onChange={(e) => setStartDate(e.target.value)}
-                      className="w-full p-2.5 text-sm bg-white border border-slate-200 rounded-md focus:ring-2 focus:ring-blue-600 focus:outline-none"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">
-                      Fecha de Devolución
-                    </label>
-                    <input
-                      type="date"
-                      required
-                      value={endDate}
-                      min={startDate || new Date().toISOString().split('T')[0]}
-                      onChange={(e) => setEndDate(e.target.value)}
-                      className="w-full p-2.5 text-sm bg-white border border-slate-200 rounded-md focus:ring-2 focus:ring-blue-600 focus:outline-none"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">
-                    Instrucciones o Notas de la Obra (Opcional)
-                  </label>
-                  <textarea
-                    rows={2}
-                    value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
-                    placeholder="Lugar de entrega en obra, operario asignado, etc."
-                    className="w-full p-2.5 text-sm bg-white border border-slate-200 rounded-md focus:ring-2 focus:ring-blue-600 focus:outline-none"
-                  />
-                </div>
-
-                {/* Calculation Summary */}
-                <div className="p-4 bg-slate-50 rounded-lg border border-slate-100 space-y-2 text-xs">
-                  <div className="flex justify-between">
-                    <span className="text-slate-500">Duración estimada:</span>
-                    <span className="font-bold text-slate-800">{days} día(s)</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-500">Subtotal de renta ({days} x {formatMoney(rentingTool.dailyPrice)}):</span>
-                    <span className="font-bold text-slate-800">{formatMoney(subtotal)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-500">IVA (19%):</span>
-                    <span className="font-bold text-slate-800">{formatMoney(tax)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-500">Depósito de Garantía (Reembolsable):</span>
-                    <span className="font-bold text-slate-800">{formatMoney(deposit)}</span>
-                  </div>
-                  <div className="border-t border-slate-200 pt-2 flex justify-between text-sm">
-                    <span className="font-bold text-slate-900">Total Liquidado:</span>
-                    <span className="font-extrabold text-blue-600 text-base">{formatMoney(totalEstimated)}</span>
-                  </div>
-                </div>
-
-                <div className="flex justify-end gap-3 pt-2">
-                  <button
-                    type="button"
-                    onClick={() => setRentingTool(null)}
-                    className="px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100 rounded-md"
-                  >
-                    Cancelar
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={bookingLoading}
-                    className="px-6 py-2.5 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-md shadow-blue-600/20 rounded-md transition-all"
-                  >
-                    {bookingLoading ? 'Validando disponibilidad...' : 'Confirmar Reserva'}
-                  </button>
-                </div>
-              </form>
-            )}
+            <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">
+              Buscar por palabra clave
+            </label>
+            <form onSubmit={handleSearch} className="relative">
+              <input
+                type="text"
+                placeholder="Excavadora, CAT, Bobcat..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-8 pr-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 focus:outline-none focus:border-blue-600"
+              />
+              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
+            </form>
           </div>
-        )}
-      </Modal>
+
+          {/* Disponibilidad Radio/Pills */}
+          <div>
+            <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">
+              Estado de Disponibilidad
+            </label>
+            <div className="space-y-1.5 text-xs">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="statusF"
+                  checked={statusFilter === 'ALL'}
+                  onChange={() => setStatusFilter('ALL')}
+                  className="text-blue-600 focus:ring-0"
+                />
+                <span className="text-slate-700 dark:text-slate-300 font-medium">Todas las herramientas</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="statusF"
+                  checked={statusFilter === 'AVAILABLE'}
+                  onChange={() => setStatusFilter('AVAILABLE')}
+                  className="text-blue-600 focus:ring-0"
+                />
+                <span className="text-slate-700 dark:text-slate-300 font-medium">Solo Disponibles hoy</span>
+              </label>
+            </div>
+          </div>
+
+          {/* Category List */}
+          <div>
+            <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">
+              Categorías
+            </label>
+            <div className="space-y-1 max-h-48 overflow-y-auto pr-1 text-xs">
+              <div
+                onClick={() => setSelectedCategory('')}
+                className={`px-2 py-1.5 rounded-lg cursor-pointer transition-colors ${
+                  selectedCategory === '' ? 'bg-blue-50 dark:bg-blue-950/40 text-blue-600 font-bold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50'
+                }`}
+              >
+                Todas las categorías
+              </div>
+              {categories.map((c) => (
+                <div
+                  key={c.id}
+                  onClick={() => setSelectedCategory(c.id.toString())}
+                  className={`px-2 py-1.5 rounded-lg cursor-pointer transition-colors truncate ${
+                    selectedCategory === c.id.toString()
+                      ? 'bg-blue-50 dark:bg-blue-950/40 text-blue-600 font-bold'
+                      : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50'
+                  }`}
+                >
+                  {c.name}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Price Range Slider */}
+          <div>
+            <div className="flex justify-between items-center mb-1.5">
+              <label className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                Tarifa Diaria Máxima
+              </label>
+              <span className="text-xs font-bold text-blue-600">{formatMoneyCOP(maxPrice)}</span>
+            </div>
+            <input
+              type="range"
+              min={100000}
+              max={2500000}
+              step={50000}
+              value={maxPrice}
+              onChange={(e) => setMaxPrice(Number(e.target.value))}
+              className="w-full accent-blue-600"
+            />
+            <div className="flex justify-between text-[10px] text-slate-400 mt-1">
+              <span>$ 100.000</span>
+              <span>$ 2.500.000 /día</span>
+            </div>
+          </div>
+        </aside>
+
+        {/* Main 3-Column Tool Cards Grid (lg:col-span-9) */}
+        <div className="lg:col-span-9">
+          {/* Header count */}
+          <div className="flex items-center justify-between mb-4">
+            <span className="text-xs font-bold text-slate-500">
+              Mostrando <strong className="text-slate-900 dark:text-white">{filteredTools.length}</strong> equipos encontrados
+            </span>
+          </div>
+
+          {/* Skeletons loader or Empty State or 3-Column Grid */}
+          {loading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[1, 2, 3, 4, 5, 6].map((n) => (
+                <div key={n} className="p-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-3 animate-pulse">
+                  <div className="h-44 bg-slate-200 dark:bg-slate-800 rounded-xl" />
+                  <div className="h-3 w-1/3 bg-slate-200 dark:bg-slate-800 rounded" />
+                  <div className="h-4 w-4/5 bg-slate-200 dark:bg-slate-800 rounded" />
+                  <div className="h-3 w-1/2 bg-slate-200 dark:bg-slate-800 rounded" />
+                </div>
+              ))}
+            </div>
+          ) : filteredTools.length === 0 ? (
+            <div className="p-16 text-center bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-3">
+              <FolderOpen className="w-12 h-12 text-slate-300 mx-auto" />
+              <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                No encontramos herramientas con esos filtros
+              </h3>
+              <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                Intenta ampliar el rango de precio o cambiar la categoría seleccionada.
+              </p>
+              <button
+                onClick={handleResetFilters}
+                className="px-4 py-2 bg-blue-600 text-white text-xs font-bold rounded-xl shadow-sm"
+              >
+                Restablecer Filtros
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredTools.map((tool) => (
+                <ToolCard
+                  key={tool.id}
+                  tool={tool}
+                  onSelect={(t) => onSelectTool(t)}
+                  onRent={(t) => handleRentTool(t)}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 };

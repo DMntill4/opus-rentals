@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
+import { useCart } from '../../context/CartContext';
 import { Footer } from './Footer';
 import {
   HardHat,
@@ -21,12 +22,14 @@ import {
   ExternalLink,
   Sun,
   Moon,
-  Globe
+  Globe,
+  ShoppingBag
 } from 'lucide-react';
 
 export const AppLayout = ({ currentTab, onNavigate, children }) => {
   const { user, isAuthenticated, isAdmin, isProvider, isClient, logout } = useAuth();
   const { isDark, toggleTheme, lang, toggleLang } = useTheme();
+  const { items } = useCart();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // If public browsing (Home, Catalog, Login, Register) and not explicitly in dashboard
@@ -79,6 +82,17 @@ export const AppLayout = ({ currentTab, onNavigate, children }) => {
                 >
                   Catálogo de Equipos
                 </button>
+                <button
+                  onClick={() => onNavigate('system-states')}
+                  className={`px-3 py-1.5 rounded-md text-xs font-bold transition-colors ${
+                    currentTab === 'system-states'
+                      ? 'text-blue-700 bg-blue-50 dark:bg-blue-950/40'
+                      : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
+                  }`}
+                >
+                  Estados del Sistema
+                </button>
+
                 {isAuthenticated && (
                   <button
                     onClick={() => {
@@ -86,10 +100,10 @@ export const AppLayout = ({ currentTab, onNavigate, children }) => {
                       else if (isProvider) onNavigate('provider-dashboard');
                       else onNavigate('client-dashboard');
                     }}
-                    className="flex items-center gap-1.5 px-3.5 py-2 rounded-md text-sm font-bold text-blue-700 bg-blue-100 hover:bg-blue-200 transition-colors ml-2"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-bold text-blue-700 bg-blue-100 dark:bg-blue-950/60 hover:bg-blue-200 transition-colors ml-2"
                   >
-                    <LayoutDashboard className="w-4 h-4" />
-                    Ir a Mi Portal
+                    <LayoutDashboard className="w-3.5 h-3.5" />
+                    Mi Portal
                   </button>
                 )}
               </nav>
@@ -114,6 +128,21 @@ export const AppLayout = ({ currentTab, onNavigate, children }) => {
                     {isDark ? <Sun className="w-3.5 h-3.5 text-amber-400" /> : <Moon className="w-3.5 h-3.5 text-blue-600" />}
                   </button>
                 </div>
+
+                {/* Reservation Summary Chip (Prompt 3 Spec) */}
+                <button
+                  onClick={() => onNavigate('checkout')}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 hover:bg-blue-100 transition-colors mr-1"
+                  title="Ver reserva"
+                >
+                  <ShoppingBag className="w-3.5 h-3.5 text-blue-600" />
+                  <span>Reserva</span>
+                  {items.length > 0 && (
+                    <span className="w-4 h-4 rounded-full bg-blue-600 text-white text-[10px] font-black flex items-center justify-center">
+                      {items.length}
+                    </span>
+                  )}
+                </button>
 
                 {isAuthenticated ? (
                   <div className="flex items-center gap-3">
@@ -243,6 +272,17 @@ export const AppLayout = ({ currentTab, onNavigate, children }) => {
           >
             <LayoutDashboard className="w-4 h-4 text-white" />
             <span>Panel Principal</span>
+          </button>
+
+          <button
+            onClick={() => {
+              onNavigate('system-states');
+              setMobileMenuOpen(false);
+            }}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-semibold text-slate-300 hover:bg-slate-800 hover:text-white transition-colors"
+          >
+            <ShieldCheck className="w-4 h-4 text-emerald-400" />
+            <span>Estados del Sistema</span>
           </button>
 
           <button
