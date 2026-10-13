@@ -2,373 +2,369 @@ import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import { useCart } from '../../context/CartContext';
-import { Footer } from './Footer';
-import {
-  HardHat,
-  LayoutDashboard,
-  Wrench,
-  Calendar,
-  CreditCard,
-  Users,
-  TrendingUp,
-  LogOut,
-  FolderOpen,
-  PlusCircle,
-  ShieldCheck,
-  ChevronRight,
-  Menu,
-  X,
-  User,
-  ExternalLink,
-  Sun,
-  Moon,
-  Globe,
-  ShoppingBag
-} from 'lucide-react';
 
 export const AppLayout = ({ currentTab, onNavigate, children }) => {
   const { user, isAuthenticated, isAdmin, isProvider, isClient, logout } = useAuth();
   const { isDark, toggleTheme, lang, toggleLang } = useTheme();
   const { items } = useCart();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
-  // If public browsing (Home, Catalog, Login, Register) and not explicitly in dashboard
-  const isDashboardView = ['client-dashboard', 'provider-dashboard', 'admin-dashboard'].includes(currentTab);
-
-  if (!isDashboardView) {
-    return (
-      <div className="min-h-screen flex flex-col bg-[#f8fafc]">
-        {/* Modern Top Header for Public & Marketplace */}
-        <header className="sticky top-0 z-40 bg-white border-b border-slate-200">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-between h-16">
-              {/* Brand */}
-              <div
-                className="flex items-center gap-3 cursor-pointer select-none"
-                onClick={() => onNavigate('home')}
-              >
-                <div className="w-9 h-9 rounded-lg bg-blue-600 flex items-center justify-center text-white shadow-sm font-black">
-                  <HardHat className="w-5 h-5 text-white" />
-                </div>
-                <div>
-                  <div className="text-lg font-black tracking-tight text-slate-900 leading-none">
-                    OPUS<span className="text-blue-600">RENTALS</span>
-                  </div>
-                  <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">
-                    Plataforma de Maquinaria
-                  </span>
-                </div>
-              </div>
-
-              {/* Center Nav */}
-              <nav className="hidden md:flex items-center gap-1">
-                <button
-                  onClick={() => onNavigate('home')}
-                  className={`px-3.5 py-2 rounded-md text-sm font-semibold transition-colors ${
-                    currentTab === 'home'
-                      ? 'text-blue-700 bg-blue-50'
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
-                  }`}
-                >
-                  Inicio
-                </button>
-                <button
-                  onClick={() => onNavigate('catalog')}
-                  className={`px-3.5 py-2 rounded-md text-sm font-semibold transition-colors ${
-                    currentTab === 'catalog'
-                      ? 'text-blue-700 bg-blue-50'
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
-                  }`}
-                >
-                  Catálogo de Equipos
-                </button>
-                <button
-                  onClick={() => onNavigate('system-states')}
-                  className={`px-3 py-1.5 rounded-md text-xs font-bold transition-colors ${
-                    currentTab === 'system-states'
-                      ? 'text-blue-700 bg-blue-50 dark:bg-blue-950/40'
-                      : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
-                  }`}
-                >
-                  Estados del Sistema
-                </button>
-
-                {isAuthenticated && (
-                  <button
-                    onClick={() => {
-                      if (isAdmin) onNavigate('admin-dashboard');
-                      else if (isProvider) onNavigate('provider-dashboard');
-                      else onNavigate('client-dashboard');
-                    }}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-bold text-blue-700 bg-blue-100 dark:bg-blue-950/60 hover:bg-blue-200 transition-colors ml-2"
-                  >
-                    <LayoutDashboard className="w-3.5 h-3.5" />
-                    Mi Portal
-                  </button>
-                )}
-              </nav>
-
-              {/* Right Auth and Settings controls */}
-              <div className="flex items-center gap-2">
-                {/* Theme & Lang quick toggles */}
-                <div className="flex items-center bg-slate-100 dark:bg-slate-800 p-1 rounded-lg border border-slate-200 dark:border-slate-700 mr-1">
-                  <button
-                    onClick={toggleLang}
-                    title="Idioma / Language"
-                    className="px-2 py-1 text-xs font-black text-slate-700 dark:text-slate-200 hover:text-blue-600 transition-colors uppercase"
-                  >
-                    {lang}
-                  </button>
-                  <div className="h-3.5 w-px bg-slate-300 dark:bg-slate-700" />
-                  <button
-                    onClick={toggleTheme}
-                    title="Modo Oscuro / Claro"
-                    className="p-1 text-slate-600 dark:text-slate-300 hover:text-blue-600 transition-colors"
-                  >
-                    {isDark ? <Sun className="w-3.5 h-3.5 text-amber-400" /> : <Moon className="w-3.5 h-3.5 text-blue-600" />}
-                  </button>
-                </div>
-
-                {/* Reservation Summary Chip (Prompt 3 Spec) */}
-                <button
-                  onClick={() => onNavigate('checkout')}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 hover:bg-blue-100 transition-colors mr-1"
-                  title="Ver reserva"
-                >
-                  <ShoppingBag className="w-3.5 h-3.5 text-blue-600" />
-                  <span>Reserva</span>
-                  {items.length > 0 && (
-                    <span className="w-4 h-4 rounded-full bg-blue-600 text-white text-[10px] font-black flex items-center justify-center">
-                      {items.length}
-                    </span>
-                  )}
-                </button>
-
-                {isAuthenticated ? (
-                  <div className="flex items-center gap-3">
-                    <div className="text-right hidden sm:block">
-                      <div className="text-xs font-bold text-slate-900 dark:text-white">{user?.displayName}</div>
-                      <div className="text-[10px] font-semibold text-blue-600 dark:text-blue-400 uppercase">
-                        {user?.role?.replace('ROLE_', '')}
-                      </div>
-                    </div>
-                    <button
-                      onClick={logout}
-                      title="Cerrar sesión"
-                      className="p-2 rounded-md text-slate-500 hover:text-red-700 hover:bg-red-50 border border-slate-200 dark:border-slate-800 transition-colors"
-                    >
-                      <LogOut className="w-4 h-4" />
-                    </button>
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => onNavigate('login')}
-                      className="px-3.5 py-2 rounded-md text-sm font-bold text-slate-700 dark:text-slate-200 hover:text-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-                    >
-                      {lang === 'es' ? 'Iniciar Sesión' : 'Sign In'}
-                    </button>
-                    <button
-                      onClick={() => onNavigate('register')}
-                      className="px-4 py-2 rounded-md text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-sm transition-colors"
-                    >
-                      {lang === 'es' ? 'Crear Cuenta' : 'Register'}
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </header>
-
-        {/* Public Content Body */}
-        <main className="flex-1">{children}</main>
-        <Footer />
-      </div>
-    );
+  // If in pure auth screen, let StitchAuthPage take full canvas
+  if (['login', 'register'].includes(currentTab)) {
+    return <>{children}</>;
   }
 
-  // DASHBOARD SAAS PORTAL WITH LATERAL SIDEBAR
-  const getRoleLabel = () => {
-    if (isAdmin) return 'Administrador Global';
-    if (isProvider) return 'Empresa Proveedora';
-    return 'Cliente / Contratista';
-  };
-
-  const getDashboardHomeTab = () => {
-    if (isAdmin) return 'admin-dashboard';
-    if (isProvider) return 'provider-dashboard';
-    return 'client-dashboard';
-  };
-
   return (
-    <div className="min-h-screen flex bg-[#f8fafc]">
-      {/* Mobile Backdrop */}
-      {mobileMenuOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-slate-900/60 lg:hidden"
-          onClick={() => setMobileMenuOpen(false)}
-        />
-      )}
+    <div className={`min-h-screen flex flex-col font-body ${isDark ? 'dark bg-[#0b1120] text-slate-100' : 'bg-background text-on-surface'} antialiased`}>
+      {/* Stitch 1:1 Precision Header */}
+      <header className="fixed top-0 left-0 right-0 z-50 bg-surface-container-lowest/90 dark:bg-[#0f172a]/95 backdrop-blur-md border-b border-outline-variant/40 dark:border-slate-800">
+        <div className="max-w-[1240px] mx-auto h-20 px-gutter-desktop flex items-center justify-between gap-space-md">
+          {/* Logo & Quick Search */}
+          <div className="flex items-center gap-space-lg">
+            <button
+              onClick={() => onNavigate('catalog')}
+              className="flex items-center gap-space-sm group text-left cursor-pointer"
+            >
+              <div className="w-10 h-10 rounded-lg bg-primary-container text-on-primary flex items-center justify-center transition-transform group-hover:scale-105 shadow-sm">
+                <span className="material-symbols-outlined text-[22px]">precision_manufacturing</span>
+              </div>
+              <div className="flex flex-col">
+                <span className="font-section text-section tracking-tight text-on-surface dark:text-white font-bold leading-tight">
+                  OPUS RENTALS
+                </span>
+                <span className="font-caption text-caption text-outline dark:text-slate-400 uppercase tracking-wider">
+                  COLOMBIA • INDUSTRIAL
+                </span>
+              </div>
+            </button>
 
-      {/* LATERAL SIDEBAR */}
-      <aside
-        className={`fixed inset-y-0 left-0 z-50 w-64 bg-slate-900 text-white flex flex-col transition-transform duration-200 ease-in-out lg:static lg:translate-x-0 ${
-          mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}
-      >
-        {/* Brand Header in Sidebar */}
-        <div className="h-16 px-6 flex items-center justify-between border-b border-slate-800">
-          <div
-            className="flex items-center gap-2.5 cursor-pointer"
-            onClick={() => onNavigate('home')}
-          >
-            <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center font-bold text-white shadow-sm">
-              <HardHat className="w-4 h-4" />
+            {/* Global Search Bar */}
+            <div className="relative hidden xl:block w-72">
+              <span className="material-symbols-outlined absolute left-space-sm top-1/2 -translate-y-1/2 text-outline text-[18px]">
+                search
+              </span>
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Buscar equipo o código..."
+                className="w-full h-10 pl-9 pr-14 rounded-lg bg-surface-container-low dark:bg-slate-900 border border-outline-variant/60 dark:border-slate-700 font-body text-body text-on-surface dark:text-slate-100 placeholder:text-outline focus:outline-none focus:border-primary-container focus:ring-2 focus:ring-primary-container/20 transition-all"
+              />
+              <kbd className="absolute right-space-xs top-1/2 -translate-y-1/2 px-1.5 py-0.5 rounded bg-surface-container-high dark:bg-slate-800 border border-outline-variant dark:border-slate-700 text-[10px] font-caption text-on-surface-variant dark:text-slate-400 font-mono">
+                ⌘K
+              </kbd>
             </div>
-            <span className="text-base font-black tracking-tight text-white">
-              OPUS<span className="text-blue-400">RENTALS</span>
-            </span>
           </div>
-          <button
-            onClick={() => setMobileMenuOpen(false)}
-            className="lg:hidden p-1 text-slate-400 hover:text-white"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
 
-        {/* Current User Pill */}
-        <div className="p-4 mx-3 my-3 bg-slate-800/80 rounded-xl border border-slate-700/60">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-blue-600/30 text-blue-400 flex items-center justify-center font-bold text-sm border border-blue-500/30">
-              <User className="w-4 h-4" />
+          {/* Navigation Links */}
+          <nav className="hidden lg:flex items-center gap-space-lg text-body font-body-medium">
+            <button
+              onClick={() => onNavigate('catalog')}
+              className={`transition-colors cursor-pointer ${
+                currentTab === 'catalog'
+                  ? 'text-primary-container font-semibold'
+                  : 'text-on-surface-variant dark:text-slate-300 hover:text-on-surface dark:hover:text-white'
+              }`}
+            >
+              Catálogo de Maquinaria
+            </button>
+            <button
+              onClick={() => onNavigate('checkout')}
+              className={`transition-colors cursor-pointer flex items-center gap-1.5 ${
+                currentTab === 'checkout'
+                  ? 'text-primary-container font-semibold'
+                  : 'text-on-surface-variant dark:text-slate-300 hover:text-on-surface dark:hover:text-white'
+              }`}
+            >
+              <span>Reserva & Alquiler</span>
+              {items && items.length > 0 && (
+                <span className="px-1.5 py-0.2 rounded-full bg-primary-container text-white text-[11px] font-mono">
+                  {items.length}
+                </span>
+              )}
+            </button>
+            <button
+              onClick={() => onNavigate('system-states')}
+              className={`transition-colors cursor-pointer ${
+                currentTab === 'system-states'
+                  ? 'text-primary-container font-semibold'
+                  : 'text-on-surface-variant dark:text-slate-300 hover:text-on-surface dark:hover:text-white'
+              }`}
+            >
+              Estados del Sistema
+            </button>
+
+            {isAuthenticated && (
+              <>
+                {(isClient || isAdmin) && (
+                  <button
+                    onClick={() => onNavigate('client-dashboard')}
+                    className={`transition-colors cursor-pointer ${
+                      currentTab === 'client-dashboard'
+                        ? 'text-primary-container font-semibold'
+                        : 'text-on-surface-variant dark:text-slate-300 hover:text-on-surface dark:hover:text-white'
+                    }`}
+                  >
+                    Mis Alquileres
+                  </button>
+                )}
+                {(isProvider || isAdmin) && (
+                  <button
+                    onClick={() => onNavigate('provider-dashboard')}
+                    className={`transition-colors cursor-pointer ${
+                      currentTab === 'provider-dashboard'
+                        ? 'text-primary-container font-semibold'
+                        : 'text-on-surface-variant dark:text-slate-300 hover:text-on-surface dark:hover:text-white'
+                    }`}
+                  >
+                    Portal Proveedor
+                  </button>
+                )}
+                {isAdmin && (
+                  <button
+                    onClick={() => onNavigate('admin-dashboard')}
+                    className={`transition-colors cursor-pointer ${
+                      currentTab === 'admin-dashboard'
+                        ? 'text-primary-container font-semibold'
+                        : 'text-on-surface-variant dark:text-slate-300 hover:text-on-surface dark:hover:text-white'
+                    }`}
+                  >
+                    Portal Admin
+                  </button>
+                )}
+              </>
+            )}
+          </nav>
+
+          {/* Right Action Controls: Lang, Theme, Auth */}
+          <div className="flex items-center gap-space-sm">
+            {/* Lang Switch */}
+            <div className="flex items-center p-0.5 rounded-full bg-surface-container-high dark:bg-slate-800 border border-outline-variant/50 dark:border-slate-700 text-caption font-caption">
+              <button
+                type="button"
+                onClick={toggleLang}
+                className={`px-2 py-0.5 rounded-full transition-colors ${
+                  lang === 'ES'
+                    ? 'bg-surface-container-lowest dark:bg-slate-900 text-on-surface dark:text-white shadow-sm font-bold'
+                    : 'text-on-surface-variant dark:text-slate-400 hover:text-on-surface'
+                }`}
+              >
+                ES
+              </button>
+              <button
+                type="button"
+                onClick={toggleLang}
+                className={`px-2 py-0.5 rounded-full transition-colors ${
+                  lang === 'EN'
+                    ? 'bg-surface-container-lowest dark:bg-slate-900 text-on-surface dark:text-white shadow-sm font-bold'
+                    : 'text-on-surface-variant dark:text-slate-400 hover:text-on-surface'
+                }`}
+              >
+                EN
+              </button>
             </div>
-            <div className="overflow-hidden">
-              <div className="text-xs font-bold text-white truncate">{user?.displayName}</div>
-              <div className="text-[10px] text-blue-400 font-semibold tracking-wide uppercase truncate">
-                {getRoleLabel()}
+
+            {/* Theme Switch */}
+            <div className="flex items-center p-0.5 rounded-full bg-surface-container-high dark:bg-slate-800 border border-outline-variant/50 dark:border-slate-700">
+              <button
+                type="button"
+                onClick={toggleTheme}
+                title="Modo Claro"
+                className={`w-7 h-7 rounded-full flex items-center justify-center transition-colors ${
+                  !isDark
+                    ? 'bg-surface-container-lowest text-on-surface shadow-sm'
+                    : 'text-on-surface-variant hover:text-on-surface'
+                }`}
+              >
+                <span className="material-symbols-outlined text-[16px]">light_mode</span>
+              </button>
+              <button
+                type="button"
+                onClick={toggleTheme}
+                title="Modo Oscuro"
+                className={`w-7 h-7 rounded-full flex items-center justify-center transition-colors ${
+                  isDark
+                    ? 'bg-slate-900 text-white shadow-sm'
+                    : 'text-on-surface-variant hover:text-on-surface'
+                }`}
+              >
+                <span className="material-symbols-outlined text-[16px]">dark_mode</span>
+              </button>
+            </div>
+
+            {/* User Buttons */}
+            {isAuthenticated ? (
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => onNavigate(isAdmin ? 'admin-dashboard' : isProvider ? 'provider-dashboard' : 'client-dashboard')}
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-container-low dark:bg-slate-800 border border-outline-variant/60 dark:border-slate-700 text-on-surface dark:text-white text-body-medium font-medium hover:border-primary-container transition-all"
+                >
+                  <div className="w-6 h-6 rounded-full bg-primary-container text-white flex items-center justify-center font-bold text-xs">
+                    {user?.name?.charAt(0) || 'U'}
+                  </div>
+                  <span className="hidden md:inline text-sm font-medium">{user?.name || 'Usuario'}</span>
+                </button>
+                <button
+                  onClick={logout}
+                  title="Cerrar sesión"
+                  className="p-2 rounded-lg text-outline hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
+                >
+                  <span className="material-symbols-outlined text-[18px]">logout</span>
+                </button>
+              </div>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  onClick={() => onNavigate('login')}
+                  className="hidden sm:inline-flex items-center justify-center h-10 px-space-md rounded-lg border border-outline-variant/80 dark:border-slate-700 font-body-medium text-body-medium text-on-surface dark:text-slate-200 hover:bg-surface-container-high dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                >
+                  Iniciar Sesión
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onNavigate('register')}
+                  className="inline-flex items-center justify-center h-10 px-space-md rounded-lg bg-primary-container text-on-primary font-body-medium text-body-medium hover:bg-secondary active:scale-[0.98] transition-all shadow-sm cursor-pointer"
+                >
+                  Publicar Equipo
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      </header>
+
+      {/* Main Container */}
+      <main className="w-full pt-20 flex-1 flex flex-col">
+        {children}
+      </main>
+
+      {/* Stitch 1:1 Precision Footer */}
+      <footer className="w-full bg-surface-container-lowest dark:bg-[#0f172a] border-t border-outline-variant/40 dark:border-slate-800 mt-auto">
+        <div className="max-w-[1240px] mx-auto px-gutter-desktop py-space-xl">
+          <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-12 gap-gutter-desktop pb-space-xl border-b border-outline-variant/30 dark:border-slate-800">
+            {/* Columna 1: Info Empresa */}
+            <div className="lg:col-span-4 flex flex-col gap-space-sm">
+              <div className="flex items-center gap-space-sm">
+                <div className="w-8 h-8 rounded-lg bg-primary-container text-on-primary flex items-center justify-center">
+                  <span className="material-symbols-outlined text-[18px]">precision_manufacturing</span>
+                </div>
+                <span className="font-section text-section tracking-tight text-on-surface dark:text-white font-bold">
+                  OPUS RENTALS
+                </span>
+              </div>
+              <p className="font-body text-body text-on-surface-variant dark:text-slate-400 max-w-sm">
+                Plataforma líder en Colombia para el despliegue, gestión telemática y arrendamiento corporativo de maquinaria pesada y equipos para infraestructura vial, minería y obras civiles.
+              </p>
+              <div className="flex items-center gap-space-xs mt-space-xs">
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-surface-container-high dark:bg-slate-800 text-caption font-caption text-on-surface-variant dark:text-slate-300">
+                  <span className="w-1.5 h-1.5 rounded-full bg-primary-container mr-1.5"></span>
+                  SLA OPERATIVO 99.8%
+                </span>
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-surface-container-high dark:bg-slate-800 text-caption font-caption text-on-surface-variant dark:text-slate-300">
+                  ISO 9001:2015
+                </span>
+              </div>
+            </div>
+
+            {/* Columna 2: Hubs Logísticos */}
+            <div className="lg:col-span-3 flex flex-col gap-space-sm">
+              <h3 className="font-caption text-caption text-on-surface dark:text-slate-200 uppercase tracking-wider font-bold">
+                Centros Logísticos Activos
+              </h3>
+              <ul className="space-y-space-xs font-body text-body text-on-surface-variant dark:text-slate-400">
+                <li className="flex items-center justify-between">
+                  <span className="flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-primary-container"></span>
+                    Bogotá D.C. (Cota Hub)
+                  </span>
+                  <span className="font-caption text-caption text-outline dark:text-slate-500">Disp. Alta</span>
+                </li>
+                <li className="flex items-center justify-between">
+                  <span className="flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-primary-container"></span>
+                    Medellín (Guarne Hub)
+                  </span>
+                  <span className="font-caption text-caption text-outline dark:text-slate-500">Disp. Alta</span>
+                </li>
+                <li className="flex items-center justify-between">
+                  <span className="flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-primary-container"></span>
+                    Cali (Yumbo Patio)
+                  </span>
+                  <span className="font-caption text-caption text-outline dark:text-slate-500">Normal</span>
+                </li>
+                <li className="flex items-center justify-between">
+                  <span className="flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-primary-container"></span>
+                    Barranquilla (Zona Portuaria)
+                  </span>
+                  <span className="font-caption text-caption text-outline dark:text-slate-500">Normal</span>
+                </li>
+              </ul>
+            </div>
+
+            {/* Columna 3: Navegación */}
+            <div className="lg:col-span-2 flex flex-col gap-space-sm">
+              <h3 className="font-caption text-caption text-on-surface dark:text-slate-200 uppercase tracking-wider font-bold">
+                Navegación
+              </h3>
+              <ul className="space-y-space-xs font-body text-body text-on-surface-variant dark:text-slate-400">
+                <li>
+                  <button onClick={() => onNavigate('catalog')} className="hover:text-primary transition-colors text-left cursor-pointer">
+                    Catálogo General
+                  </button>
+                </li>
+                <li>
+                  <button onClick={() => onNavigate('checkout')} className="hover:text-primary transition-colors text-left cursor-pointer">
+                    Tarifas & Seguros
+                  </button>
+                </li>
+                <li>
+                  <button onClick={() => onNavigate('provider-dashboard')} className="hover:text-primary transition-colors text-left cursor-pointer">
+                    Portal Proveedores
+                  </button>
+                </li>
+                <li>
+                  <button onClick={() => onNavigate('system-states')} className="hover:text-primary transition-colors text-left cursor-pointer">
+                    Inspección & Telemetría
+                  </button>
+                </li>
+              </ul>
+            </div>
+
+            {/* Columna 4: Contacto */}
+            <div className="lg:col-span-3 flex flex-col gap-space-sm">
+              <h3 className="font-caption text-caption text-on-surface dark:text-slate-200 uppercase tracking-wider font-bold">
+                Contacto & Soporte 24/7
+              </h3>
+              <p className="font-body text-body text-on-surface-variant dark:text-slate-400">
+                Línea Nacional: 01 8000 423 800<br />
+                Directo Operaciones: +57 (601) 745-9200<br />
+                soporte@opusrentals.co
+              </p>
+              <div className="p-space-sm rounded-lg bg-surface-container-low dark:bg-slate-900 border border-outline-variant/40 dark:border-slate-800 mt-space-xs">
+                <span className="font-caption text-caption text-on-surface dark:text-slate-200 block uppercase font-bold">
+                  Facturación Electrónica DIAN
+                </span>
+                <p className="text-xs text-on-surface-variant dark:text-slate-400 mt-0.5">
+                  Emisión XML UBL 2.1 habilitada para Grandes Contribuyentes y Consorcios.
+                </p>
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Navigation Section */}
-        <div className="flex-1 px-3 py-2 space-y-1 overflow-y-auto">
-          <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 px-3 py-1">
-            Plataforma
-          </div>
-
-          <button
-            onClick={() => {
-              onNavigate(getDashboardHomeTab());
-              setMobileMenuOpen(false);
-            }}
-            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-bold transition-colors ${
-              isDashboardView
-                ? 'bg-blue-600 text-white shadow-sm'
-                : 'text-slate-300 hover:bg-slate-800 hover:text-white'
-            }`}
-          >
-            <LayoutDashboard className="w-4 h-4 text-white" />
-            <span>Panel Principal</span>
-          </button>
-
-          <button
-            onClick={() => {
-              onNavigate('system-states');
-              setMobileMenuOpen(false);
-            }}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-semibold text-slate-300 hover:bg-slate-800 hover:text-white transition-colors"
-          >
-            <ShieldCheck className="w-4 h-4 text-emerald-400" />
-            <span>Estados del Sistema</span>
-          </button>
-
-          <button
-            onClick={() => {
-              onNavigate('catalog');
-              setMobileMenuOpen(false);
-            }}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-semibold text-slate-300 hover:bg-slate-800 hover:text-white transition-colors"
-          >
-            <FolderOpen className="w-4 h-4 text-blue-400" />
-            <span>Catálogo de Equipos</span>
-          </button>
-
-          <button
-            onClick={() => {
-              onNavigate('home');
-              setMobileMenuOpen(false);
-            }}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-semibold text-slate-300 hover:bg-slate-800 hover:text-white transition-colors"
-          >
-            <ExternalLink className="w-4 h-4 text-slate-400" />
-            <span>Página de Inicio</span>
-          </button>
-
-          {/* Role specific quick indicators */}
-          <div className="pt-4 text-[10px] font-bold uppercase tracking-wider text-slate-400 px-3 py-1">
-            Garantías del Sistema
-          </div>
-          <div className="px-3 py-2 space-y-2 text-[11px] text-slate-400">
-            <div className="flex items-center gap-2">
-              <ShieldCheck className="w-3.5 h-3.5 text-blue-400" />
-              <span>Base 4FN Anti-Colisión</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <ShieldCheck className="w-3.5 h-3.5 text-blue-400" />
-              <span>Token JWT Autenticado</span>
+          {/* Legal Bar */}
+          <div className="pt-space-md flex flex-col sm:flex-row items-center justify-between gap-space-sm font-caption text-caption text-outline dark:text-slate-500">
+            <p>© 2026 OPUS RENTALS COLOMBIA S.A.S. • NIT 901.482.930-1. Todos los derechos reservados.</p>
+            <div className="flex items-center gap-space-md">
+              <button className="hover:text-on-surface dark:hover:text-slate-300 transition-colors">Términos de Servicio</button>
+              <button className="hover:text-on-surface dark:hover:text-slate-300 transition-colors">Política Habeas Data</button>
+              <button className="hover:text-on-surface dark:hover:text-slate-300 transition-colors">Cumplimiento SAGRILAFT</button>
             </div>
           </div>
         </div>
-
-        {/* Footer actions in sidebar */}
-        <div className="p-4 border-t border-slate-800">
-          <button
-            onClick={logout}
-            className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs font-bold text-red-400 hover:text-red-300 hover:bg-red-500/10 border border-red-500/20 transition-colors"
-          >
-            <LogOut className="w-4 h-4" />
-            <span>Cerrar Sesión</span>
-          </button>
-        </div>
-      </aside>
-
-      {/* RIGHT SIDE MAIN CONTAINER */}
-      <div className="flex-1 flex flex-col min-w-0">
-        {/* Top Navbar for Dashboard View */}
-        <header className="h-16 bg-white border-b border-slate-200 px-4 sm:px-6 lg:px-8 flex items-center justify-between sticky top-0 z-30">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setMobileMenuOpen(true)}
-              className="lg:hidden p-2 rounded-lg text-slate-600 hover:bg-slate-100"
-            >
-              <Menu className="w-5 h-5" />
-            </button>
-            <div className="hidden sm:block text-xs text-slate-500 font-medium">
-              Opus Rentals &gt; <span className="text-slate-900 font-bold">{getRoleLabel()}</span>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => onNavigate('catalog')}
-              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 transition-colors"
-            >
-              Explorar Catálogo Público
-            </button>
-            <div className="h-6 w-px bg-slate-200" />
-            <div className="flex items-center gap-2 text-xs">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="font-semibold text-slate-700">En línea</span>
-            </div>
-          </div>
-        </header>
-
-        {/* Main Content Area */}
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto">{children}</main>
-      </div>
+      </footer>
     </div>
   );
 };

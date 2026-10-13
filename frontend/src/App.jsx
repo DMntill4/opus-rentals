@@ -16,7 +16,7 @@ import { SystemStatesGalleryPage } from './pages/public/SystemStatesGalleryPage'
 import { AppLayout } from './components/common/AppLayout';
 
 const MainApp = () => {
-  const [currentTab, setCurrentTab] = useState('home');
+  const [currentTab, setCurrentTab] = useState('catalog');
   const [selectedTool, setSelectedTool] = useState(null);
   const [selectedInvoiceRental, setSelectedInvoiceRental] = useState(null);
   const { isAuthenticated, isAdmin, isProvider, isClient } = useAuth();
