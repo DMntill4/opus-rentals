@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { ThemeProvider } from './context/ThemeContext';
 import { Navbar } from './components/common/Navbar';
 import { Footer } from './components/common/Footer';
 import { HomePage } from './pages/public/HomePage';
@@ -9,7 +10,6 @@ import { RegisterPage } from './pages/public/RegisterPage';
 import { ClientDashboard } from './pages/client/ClientDashboard';
 import { ProviderDashboard } from './pages/provider/ProviderDashboard';
 import { AdminDashboard } from './pages/admin/AdminDashboard';
-
 import { AppLayout } from './components/common/AppLayout';
 
 const MainApp = () => {
@@ -58,9 +58,11 @@ const MainApp = () => {
 
 export function App() {
   return (
-    <AuthProvider>
-      <MainApp />
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <MainApp />
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
 

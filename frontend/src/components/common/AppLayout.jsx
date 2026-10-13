@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { useTheme } from '../../context/ThemeContext';
+import { Footer } from './Footer';
 import {
   HardHat,
   LayoutDashboard,
@@ -16,11 +18,15 @@ import {
   Menu,
   X,
   User,
-  ExternalLink
+  ExternalLink,
+  Sun,
+  Moon,
+  Globe
 } from 'lucide-react';
 
 export const AppLayout = ({ currentTab, onNavigate, children }) => {
   const { user, isAuthenticated, isAdmin, isProvider, isClient, logout } = useAuth();
+  const { isDark, toggleTheme, lang, toggleLang } = useTheme();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // If public browsing (Home, Catalog, Login, Register) and not explicitly in dashboard
@@ -88,20 +94,39 @@ export const AppLayout = ({ currentTab, onNavigate, children }) => {
                 )}
               </nav>
 
-              {/* Right Auth controls */}
+              {/* Right Auth and Settings controls */}
               <div className="flex items-center gap-2">
+                {/* Theme & Lang quick toggles */}
+                <div className="flex items-center bg-slate-100 dark:bg-slate-800 p-1 rounded-lg border border-slate-200 dark:border-slate-700 mr-1">
+                  <button
+                    onClick={toggleLang}
+                    title="Idioma / Language"
+                    className="px-2 py-1 text-xs font-black text-slate-700 dark:text-slate-200 hover:text-blue-600 transition-colors uppercase"
+                  >
+                    {lang}
+                  </button>
+                  <div className="h-3.5 w-px bg-slate-300 dark:bg-slate-700" />
+                  <button
+                    onClick={toggleTheme}
+                    title="Modo Oscuro / Claro"
+                    className="p-1 text-slate-600 dark:text-slate-300 hover:text-blue-600 transition-colors"
+                  >
+                    {isDark ? <Sun className="w-3.5 h-3.5 text-amber-400" /> : <Moon className="w-3.5 h-3.5 text-blue-600" />}
+                  </button>
+                </div>
+
                 {isAuthenticated ? (
                   <div className="flex items-center gap-3">
                     <div className="text-right hidden sm:block">
-                      <div className="text-xs font-bold text-slate-900">{user?.displayName}</div>
-                      <div className="text-[10px] font-semibold text-blue-700 uppercase">
+                      <div className="text-xs font-bold text-slate-900 dark:text-white">{user?.displayName}</div>
+                      <div className="text-[10px] font-semibold text-blue-600 dark:text-blue-400 uppercase">
                         {user?.role?.replace('ROLE_', '')}
                       </div>
                     </div>
                     <button
                       onClick={logout}
                       title="Cerrar sesión"
-                      className="p-2 rounded-md text-slate-500 hover:text-red-700 hover:bg-red-50 border border-slate-200 transition-colors"
+                      className="p-2 rounded-md text-slate-500 hover:text-red-700 hover:bg-red-50 border border-slate-200 dark:border-slate-800 transition-colors"
                     >
                       <LogOut className="w-4 h-4" />
                     </button>
@@ -110,15 +135,15 @@ export const AppLayout = ({ currentTab, onNavigate, children }) => {
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => onNavigate('login')}
-                      className="px-3.5 py-2 rounded-md text-sm font-bold text-slate-700 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+                      className="px-3.5 py-2 rounded-md text-sm font-bold text-slate-700 dark:text-slate-200 hover:text-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                     >
-                      Iniciar Sesión
+                      {lang === 'es' ? 'Iniciar Sesión' : 'Sign In'}
                     </button>
                     <button
                       onClick={() => onNavigate('register')}
                       className="px-4 py-2 rounded-md text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-sm transition-colors"
                     >
-                      Crear Cuenta
+                      {lang === 'es' ? 'Crear Cuenta' : 'Register'}
                     </button>
                   </div>
                 )}
@@ -129,6 +154,7 @@ export const AppLayout = ({ currentTab, onNavigate, children }) => {
 
         {/* Public Content Body */}
         <main className="flex-1">{children}</main>
+        <Footer />
       </div>
     );
   }
