@@ -15,7 +15,6 @@ import lombok.NoArgsConstructor;
 public class RegisterClientRequest {
 
     @NotBlank(message = "El email es obligatorio")
-    @Email(message = "Email con formato inválido")
     private String email;
 
     @NotBlank(message = "La contraseña es obligatoria")
@@ -25,18 +24,13 @@ public class RegisterClientRequest {
     @NotBlank(message = "El nombre es obligatorio")
     private String firstName;
 
-    @NotBlank(message = "El apellido es obligatorio")
     private String lastName;
 
-    @NotBlank(message = "El tipo de documento es obligatorio")
     private String documentType;
 
-    @NotBlank(message = "El número de documento es obligatorio")
     private String documentNumber;
 
-    @NotBlank(message = "El teléfono es obligatorio")
     private String phone;
 
-    @NotBlank(message = "La dirección es obligatoria")
     private String address;
 }

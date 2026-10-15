@@ -70,9 +70,9 @@ export function openAuthModal(initialTab = 'login') {
               ${currentTab === 'register' ? `
                 <div class="space-y-2">
                   <label class="block text-xs font-black uppercase tracking-wider text-slate-800 font-mono">
-                    Tipo de Cuenta
+                    ¿Cómo usarás Opus Rentals?
                   </label>
-                  <div class="grid grid-cols-2 gap-3">
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <button 
                       type="button" 
                       id="role-btn-cliente" 
@@ -83,10 +83,10 @@ export function openAuthModal(initialTab = 'login') {
                       }"
                     >
                       <div class="flex items-center gap-2 font-black text-sm text-slate-950">
-                        ${renderIcon('Building2', 'w-5 h-5 text-amber-600')}
-                        <span>Constructora</span>
+                        ${renderIcon('UserCheck', 'w-5 h-5 text-amber-600')}
+                        <span>Cliente / Constructora</span>
                       </div>
-                      <p class="text-xs text-slate-600 mt-1 leading-snug">Alquila maquinaria para proyectos civiles</p>
+                      <p class="text-xs text-slate-600 mt-1 leading-snug">Alquila maquinaria para tus obras y proyectos civiles</p>
                     </button>
 
                     <button 
@@ -100,22 +100,22 @@ export function openAuthModal(initialTab = 'login') {
                     >
                       <div class="flex items-center gap-2 font-black text-sm text-slate-950">
                         ${renderIcon('Truck', 'w-5 h-5 text-amber-600')}
-                        <span>Proveedor</span>
+                        <span>Proveedor de Maquinaria</span>
                       </div>
-                      <p class="text-xs text-slate-600 mt-1 leading-snug">Publica y rentabiliza flota en patio</p>
+                      <p class="text-xs text-slate-600 mt-1 leading-snug">Publica y rentabiliza tu flota pesada en patio</p>
                     </button>
                   </div>
                 </div>
 
                 <div>
                   <label class="block text-xs font-black text-slate-800 font-mono uppercase tracking-wider mb-1.5">
-                    Razón Social o Nombre Completo
+                    ${selectedRole === 'ROLE_CLIENTE' ? 'Nombre Completo o Empresa' : 'Razón Social de la Empresa'}
                   </label>
                   <input 
                     type="text" 
                     id="reg-name" 
                     required 
-                    placeholder="Ej. Consorcio Infraestructura Andina SAS" 
+                    placeholder="${selectedRole === 'ROLE_CLIENTE' ? 'Ej. Juan Rodríguez o Constructora Bolívar' : 'Ej. Maquinarias Andinas SAS'}" 
                     class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl text-sm font-semibold text-slate-950 placeholder-slate-400 focus:outline-none focus:border-[#FFB800] focus:ring-2 focus:ring-[#FFB800]/30 transition-all" 
                   />
                 </div>
@@ -293,19 +293,19 @@ export function openAuthModal(initialTab = 'login') {
     content.querySelector('#fill-demo-client')?.addEventListener('click', () => {
       const u = content.querySelector('#auth-username');
       const p = content.querySelector('#auth-password');
-      if (u && p) { u.value = 'carlos.mendoza'; p.value = 'password123'; }
+      if (u && p) { u.value = 'client.carlos@gmail.com'; p.value = 'password123'; }
     });
 
     content.querySelector('#fill-demo-provider')?.addEventListener('click', () => {
       const u = content.querySelector('#auth-username');
       const p = content.querySelector('#auth-password');
-      if (u && p) { u.value = 'caterpillar.equipos'; p.value = 'password123'; }
+      if (u && p) { u.value = 'provider.caterpillar@opusrentals.com'; p.value = 'password123'; }
     });
 
     content.querySelector('#fill-demo-admin')?.addEventListener('click', () => {
       const u = content.querySelector('#auth-username');
       const p = content.querySelector('#auth-password');
-      if (u && p) { u.value = 'admin'; p.value = 'admin123'; }
+      if (u && p) { u.value = 'admin@opusrentals.com'; p.value = 'password123'; }
     });
 
     // Form Submission

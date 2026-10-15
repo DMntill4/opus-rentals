@@ -17,7 +17,6 @@ import java.util.List;
 public class RegisterProviderRequest {
 
     @NotBlank(message = "El email es obligatorio")
-    @Email(message = "Email con formato inválido")
     private String email;
 
     @NotBlank(message = "La contraseña es obligatoria")
@@ -27,10 +26,8 @@ public class RegisterProviderRequest {
     @NotBlank(message = "La razón social o nombre de empresa es obligatorio")
     private String companyName;
 
-    @NotBlank(message = "El NIT o identificación tributaria es obligatorio")
     private String taxId;
 
-    @NotBlank(message = "La dirección fiscal es obligatoria")
     private String address;
 
     private List<ContactItem> contacts;

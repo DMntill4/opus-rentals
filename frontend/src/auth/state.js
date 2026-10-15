@@ -144,56 +144,42 @@ class AuthState {
   }
 
   async register({ username, email, password, roles, role, fullName, phone, companyName, taxId }) {
-    const finalRoles = roles || (role ? [role] : ['ROLE_CLIENTE']);
-    // 1. Register base user
-    const res = await api.post('/auth/register', {
-      username,
-      email,
-      password,
-      roles: finalRoles,
-    });
+    const finalRole = role || (roles && roles[0]) || 'ROLE_CLIENTE';
+    const isClientRole = finalRole === 'ROLE_CLIENTE' || finalRole === 'ROLE_CLIENT';
+    const cleanEmail = email || (username?.includes('@') ? username : `${username}@${isClientRole ? 'cliente.com' : 'proveedor.com'}`);
 
-    // 2. Automatically log in to get token
-    await this.login(username, password);
-
-    // 3. Create commercial profile if client or provider
-    if (this.isClient() && (fullName || phone)) {
-      try {
-        await api.post('/clients', {
-          userId: this.user.id,
-          fullName: fullName || username,
-          phone: phone || '',
-          address: '',
-          city: '',
-          identificationNumber: taxId || ''
-        });
-      } catch (e) {
-        console.warn('Could not auto-create client profile', e);
+    if (isClientRole) {
+      const parts = (fullName || username || 'Cliente').split(' ');
+      const firstName = parts[0] || 'Cliente';
+      const lastName = parts.slice(1).join(' ') || 'General';
+      const res = await api.post('/auth/register/client', {
+        email: cleanEmail,
+        password,
+        firstName,
+        lastName,
+        documentType: 'CC',
+        documentNumber: taxId || String(Date.now()).slice(-8),
+        phone: phone || '3001234567',
+        address: 'Bogota, Colombia'
+      });
+      if (res && res.token) {
+        return this.setSession({ token: res.token, user: res });
       }
-    } else if (this.isProvider() && (companyName || taxId)) {
-      try {
-        await api.post('/providers', {
-          userId: this.user.id,
-          companyName: companyName || username,
-          taxId: taxId || '',
-          contactPhone: phone || '',
-          address: '',
-          city: ''
-        });
-      } catch (e) {
-        console.warn('Could not auto-create provider profile', e);
+    } else {
+      const res = await api.post('/auth/register/provider', {
+        email: cleanEmail,
+        password,
+        companyName: companyName || fullName || username || 'Empresa Maquinaria SAS',
+        taxId: taxId || `NIT-900${Date.now().toString().slice(-6)}-1`,
+        address: 'Zona Industrial, Colombia'
+      });
+      if (res && res.token) {
+        return this.setSession({ token: res.token, user: res });
       }
     }
 
-    // Refresh user state
-    try {
-      const me = await api.get('/users/me');
-      this.user = { ...this.user, ...me };
-      localStorage.setItem('user', JSON.stringify(this.user));
-    } catch {}
-
-    this.notifyChange();
-    return this.user;
+    // Fallback: log in explicitly if no token directly returned
+    return await this.login(cleanEmail, password);
   }
 
   logout() {

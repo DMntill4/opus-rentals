@@ -47,6 +47,11 @@ public class RentalService {
             throw new BadRequestException("La fecha de finalización no puede ser anterior a la fecha de inicio");
         }
 
+        long rentalDays = ChronoUnit.DAYS.between(request.getStartDate(), request.getEndDate()) + 1;
+        if (rentalDays > 30) {
+            throw new BadRequestException("El período máximo de alquiler permitido por contrato es de 30 días (1 mes)");
+        }
+
         User user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
         Client client = clientRepository.findByUser(user)

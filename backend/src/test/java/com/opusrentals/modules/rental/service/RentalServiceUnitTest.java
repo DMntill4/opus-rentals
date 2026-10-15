@@ -63,7 +63,6 @@ class RentalServiceUnitTest {
         user = User.builder()
                 .id(1L)
                 .email("cliente@test.com")
-                .username("client_user")
                 .build();
 
         client = Client.builder()
