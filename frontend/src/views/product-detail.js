@@ -5,6 +5,8 @@ import { formatCurrency } from '../utils/formatters.js';
 import { renderIcon } from '../utils/icons.js';
 import { openRentalModal } from './rental-modal.js';
 import { openAuthModal } from '../components/auth-modal.js';
+import { openProviderContactModal } from '../components/provider-modal.js';
+import { resolveToolImageUrl } from '../utils/tool-images.js';
 import { i18n } from '../utils/i18n.js';
 
 export async function renderProductPageView(toolId) {
@@ -89,9 +91,10 @@ export async function renderProductPageView(toolId) {
 
   // Active image gallery index
   let activeImageIndex = 0;
+  const primaryResolved = resolveToolImageUrl(tool);
   const images = tool.images && tool.images.length > 0 ? tool.images : [
-    { imageUrl: 'https://images.unsplash.com/photo-1503708928676-1cb796a0891e?w=1000&auto=format&fit=crop&q=80' },
-    { imageUrl: 'https://images.unsplash.com/photo-1652303518314-e1196ef221f6?w=1000&auto=format&fit=crop&q=80' },
+    { imageUrl: primaryResolved },
+    { imageUrl: 'https://images.unsplash.com/photo-1541888946425-d0fbb186156f?w=1200&auto=format&fit=crop&q=85' },
   ];
 
   // Dates state
@@ -122,7 +125,7 @@ export async function renderProductPageView(toolId) {
 
     container.innerHTML = `
       <div class="min-h-screen bg-[#f8fafc] text-slate-800 transition-colors duration-200 pb-16 animate-pop-in">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+        <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
           
           <!-- Breadcrumb navigation -->
           <nav class="flex items-center gap-2 text-xs text-slate-400 font-mono">
@@ -263,10 +266,17 @@ export async function renderProductPageView(toolId) {
                           </div>
                         </div>
 
-                        <a href="#/catalog?provider=${encodeURIComponent(tool.providerId || tool.provider?.id || tool.provider?.name || tool.providerCompanyName || '')}" class="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 py-2 rounded-xl text-xs font-semibold flex items-center justify-between px-3 transition-all hover:scale-[1.01] hover:shadow-xs shadow-2xs">
-                          <span>${isEn ? 'View entire fleet from this provider' : 'Ver toda la maquinaria de este proveedor'}</span>
-                          ${renderIcon('ChevronRight', 'w-4 h-4 text-slate-400 group-hover:translate-x-0.5 transition-transform')}
-                        </a>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                          <button id="btn-contact-provider" class="w-full bg-[#132e4f] hover:bg-[#1a3c66] text-white py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 px-3 transition-all hover:scale-[1.01] cursor-pointer shadow-xs">
+                            ${renderIcon('Phone', 'w-3.5 h-3.5 text-amber-400')}
+                            <span>${isEn ? 'Contact Provider' : 'Contactar Proveedor'}</span>
+                          </button>
+
+                          <a href="#/catalog?provider=${encodeURIComponent(tool.providerId || tool.provider?.id || tool.provider?.name || tool.providerCompanyName || '')}" class="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 py-2 rounded-xl text-xs font-semibold flex items-center justify-between px-3 transition-all hover:scale-[1.01] hover:shadow-xs shadow-2xs">
+                            <span>${isEn ? 'View Fleet' : 'Ver Toda su Flota'}</span>
+                            ${renderIcon('ChevronRight', 'w-4 h-4 text-slate-400 group-hover:translate-x-0.5 transition-transform')}
+                          </a>
+                        </div>
                       </div>
                     </div>
 
@@ -400,6 +410,10 @@ export async function renderProductPageView(toolId) {
 
     container.querySelector('#btn-open-dates-picker')?.addEventListener('click', () => {
       openRentalModal(tool);
+    });
+
+    container.querySelector('#btn-contact-provider')?.addEventListener('click', () => {
+      openProviderContactModal(tool);
     });
   }
 

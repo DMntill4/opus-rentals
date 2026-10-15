@@ -3,6 +3,7 @@ import bannerOpusImg from '../assets/bannerOpus.png';
 import { formatCurrency } from '../utils/formatters.js';
 import { renderIcon } from '../utils/icons.js';
 import { renderCardGridSkeleton } from '../components/system-states.js';
+import { resolveToolImageUrl } from '../utils/tool-images.js';
 import { i18n } from '../utils/i18n.js';
 
 export async function renderCatalogView() {
@@ -86,7 +87,7 @@ export async function renderCatalogView() {
   // Initial full shell render: Clean, Elegant, Industrial
   container.innerHTML = `
     <div class="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 pb-16 transition-colors duration-200">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-6">
+      <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-6">
         
         <!-- Opus Rentals Hero Banner: Azul Oscuro + Gris Acero + Blanco -->
         <div class="relative rounded-2xl overflow-hidden min-h-[260px] sm:min-h-[290px] md:min-h-[300px] flex items-center shadow-lg bg-gradient-to-br from-[#0c1e33] via-[#132e4f] to-[#1c3f68] select-none border border-slate-700/60">
@@ -397,7 +398,7 @@ export async function renderCatalogView() {
         ${filtered.map(tool => {
           const isAvailable = tool.status === 'AVAILABLE';
           const isRented = tool.status === 'RENTED';
-          const primaryImg = tool.images?.[0]?.imageUrl || 'https://images.unsplash.com/photo-1503708928676-1cb796a0891e?w=800';
+          const primaryImg = resolveToolImageUrl(tool);
 
           const statusBadge = isAvailable
             ? `<span class="badge-disponible">${i18n.t('filterAvailable')}</span>`
