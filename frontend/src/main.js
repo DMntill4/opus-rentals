@@ -63,27 +63,31 @@ export function render404View() {
   });
 }
 
+import { renderHomeView } from './views/home.js';
 import { openAuthModal } from './components/auth-modal.js';
 
 // Router mapping
 const routes = {
+  '#/home': renderHomeView,
+  '#/': renderHomeView,
+  '': renderHomeView,
   '#/catalog': renderCatalogView,
   '#/client': renderClientDashboard,
   '#/provider': renderProviderDashboard,
   '#/admin': renderAdminDashboard,
   '#/register': () => {
-    renderNavbar('catalog');
-    renderCatalogView();
+    renderNavbar('home');
+    renderHomeView();
     openAuthModal('register');
   },
   '#/registro': () => {
-    renderNavbar('catalog');
-    renderCatalogView();
+    renderNavbar('home');
+    renderHomeView();
     openAuthModal('register');
   },
   '#/login': () => {
-    renderNavbar('catalog');
-    renderCatalogView();
+    renderNavbar('home');
+    renderHomeView();
     openAuthModal('login');
   },
   '#/404': render404View,
@@ -92,7 +96,7 @@ const routes = {
 };
 
 function router() {
-  const hash = window.location.hash || '#/catalog';
+  const hash = window.location.hash || '#/home';
   const cleanRoute = hash.split('?')[0];
   
   // Handle dynamic product detail route: #/product/:id
@@ -108,12 +112,12 @@ function router() {
   }
 
   // 404 Handler for unknown routes
-  if (hash && !(cleanRoute in routes) && !cleanRoute.startsWith('#/product/')) {
+  if (hash && hash !== '#/' && hash !== '#' && !(cleanRoute in routes) && !cleanRoute.startsWith('#/product/')) {
     render404View();
     return;
   }
 
-  const routeKey = cleanRoute in routes ? cleanRoute : '#/catalog';
+  const routeKey = cleanRoute in routes ? cleanRoute : '#/home';
   
   // Role & Permission Route Guards
   if (routeKey === '#/admin') {

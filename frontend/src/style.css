@@ -172,3 +172,41 @@
 .animate-pop-in {
   animation: trPopIn 0.32s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
+
+/* Premium Industrial Hover Effects */
+.hover-lift {
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.hover-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 32px -8px rgba(19, 46, 79, 0.12), 0 8px 16px -4px rgba(0, 0, 0, 0.04);
+}
+
+.card-glow {
+  position: relative;
+  overflow: hidden;
+}
+.card-glow::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
+  transform: skewX(-20deg);
+  transition: 0.6s;
+  pointer-events: none;
+}
+.card-glow:hover::after {
+  left: 200%;
+}
+
+@keyframes floatSlow {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+.animate-float {
+  animation: floatSlow 4s ease-in-out infinite;
+}

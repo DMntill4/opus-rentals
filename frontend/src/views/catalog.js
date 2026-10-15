@@ -15,10 +15,12 @@ export async function renderCatalogView() {
   const hash = window.location.hash || '';
   const searchParams = new URLSearchParams(hash.includes('?') ? hash.split('?')[1] : '');
   const initialSearchParam = searchParams.get('q') || '';
+  const initialProviderParam = searchParams.get('provider') || '';
 
   // Local state
   let selectedCategory = 'cat-all';
   let selectedStatus = 'ALL'; // ALL, AVAILABLE, RENTED, MAINTENANCE
+  let selectedProvider = initialProviderParam;
   let searchQuery = initialSearchParam;
   let minPrice = 0;
   let maxPrice = 10000000;
@@ -41,6 +43,15 @@ export async function renderCatalogView() {
   // Filter computation
   function getFilteredTools() {
     let filtered = [...allTools];
+
+    if (selectedProvider) {
+      filtered = filtered.filter(t => 
+        String(t.providerId) === String(selectedProvider) || 
+        String(t.provider?.id) === String(selectedProvider) ||
+        (t.providerCompanyName && t.providerCompanyName.toLowerCase().includes(selectedProvider.toLowerCase())) ||
+        (t.provider?.name && t.provider.name.toLowerCase().includes(selectedProvider.toLowerCase()))
+      );
+    }
 
     if (selectedCategory && selectedCategory !== 'cat-all') {
       filtered = filtered.filter(t => String(t.categoryId) === String(selectedCategory));
@@ -347,7 +358,13 @@ export async function renderCatalogView() {
   function renderProductsGrid() {
     const filtered = getFilteredTools();
     if (resultsCounter) {
-      resultsCounter.textContent = `${filtered.length} ${filtered.length === 1 ? i18n.t('unitFound') : i18n.t('unitsFound')}`;
+      const providerLabel = selectedProvider ? ` · Proveedor: <span class="text-[#132e4f] font-bold underline cursor-pointer" id="btn-clear-prov-filter">${selectedProvider} ✕</span>` : '';
+      resultsCounter.innerHTML = `${filtered.length} ${filtered.length === 1 ? i18n.t('unitFound') : i18n.t('unitsFound')}${providerLabel}`;
+      resultsCounter.querySelector('#btn-clear-prov-filter')?.addEventListener('click', () => {
+        selectedProvider = '';
+        window.history.replaceState(null, '', '#/catalog');
+        renderProductsGrid();
+      });
     }
 
     if (filtered.length === 0) {
@@ -389,7 +406,7 @@ export async function renderCatalogView() {
             : `<span class="badge-mantenimiento">${i18n.t('filterMaintenance')}</span>`;
 
           return `
-            <div class="tr-card flex flex-col justify-between overflow-hidden group hover:shadow-md hover:border-slate-300 transition-all duration-200">
+            <div class="tr-card flex flex-col justify-between overflow-hidden group hover-lift card-glow border border-slate-200/90 hover:border-[#132e4f]/30 transition-all duration-300">
               
               <div>
                 <!-- Image Container with Aspect Ratio -->
@@ -460,9 +477,11 @@ export async function renderCatalogView() {
   function resetAllFilters() {
     selectedCategory = 'cat-all';
     selectedStatus = 'ALL';
+    selectedProvider = '';
     searchQuery = '';
     if (searchInput) searchInput.value = '';
     if (heroSearchInput) heroSearchInput.value = '';
+    window.history.replaceState(null, '', '#/catalog');
     updateCategoryButtonsUI();
     updateStatusButtonsUI();
     renderProductsGrid();

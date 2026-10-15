@@ -25,7 +25,7 @@ export function renderNavbar(activeRoute = 'catalog') {
         <div class="flex items-center justify-between h-20 py-3 gap-3 lg:gap-6">
           
           <!-- 1. Logo & Brand Mark Opus Rentals -->
-          <a href="#/catalog" class="flex items-center gap-2.5 group select-none flex-shrink-0" title="Opus Rentals - Inicio">
+          <a href="#/home" class="flex items-center gap-2.5 group select-none flex-shrink-0" title="Opus Rentals - Inicio">
             <img src="/iconWebPageNoBg.png" alt="Opus Rentals" class="w-10 h-10 object-contain transition-transform duration-200 group-hover:scale-105" />
             <span class="text-xl sm:text-2xl font-black font-display tracking-tight text-[#132e4f] leading-none">
               Opus Rentals
@@ -34,6 +34,15 @@ export function renderNavbar(activeRoute = 'catalog') {
 
           <!-- 2. Functional Navigation Titles (Filtered strictly by user role) -->
           <nav class="hidden md:flex items-center gap-1 lg:gap-2">
+            <!-- Home Link -->
+            <a href="#/home" class="relative px-3.5 py-2 text-sm font-semibold transition-all ${
+              activeRoute === 'home' || activeRoute === ''
+                ? 'text-[#132e4f] font-bold after:absolute after:bottom-0 after:left-3.5 after:right-3.5 after:h-0.5 after:bg-[#132e4f] after:rounded-full'
+                : 'text-slate-600 hover:text-[#132e4f] hover:bg-slate-100 rounded-xl'
+            }">
+              Inicio
+            </a>
+
             <!-- Catalog is public for everyone -->
             <a href="#/catalog" class="relative px-3.5 py-2 text-sm font-semibold transition-all ${
               activeRoute === 'catalog'
@@ -183,6 +192,9 @@ export function renderNavbar(activeRoute = 'catalog') {
           />
         </div>
 
+        <a href="#/home" class="block px-3 py-2 rounded-lg text-sm font-semibold ${activeRoute === 'home' || activeRoute === '' ? 'text-[#132e4f] font-bold bg-slate-100' : 'text-slate-700 hover:bg-slate-50'}">
+          Inicio
+        </a>
         <a href="#/catalog" class="block px-3 py-2 rounded-lg text-sm font-semibold ${activeRoute === 'catalog' ? 'text-[#132e4f] font-bold bg-slate-100' : 'text-slate-700 hover:bg-slate-50'}">
           ${i18n.t('navCatalog')}
         </a>

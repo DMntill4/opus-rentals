@@ -263,9 +263,9 @@ export async function renderProductPageView(toolId) {
                           </div>
                         </div>
 
-                        <a href="#/catalog" class="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 py-2 rounded-xl text-xs font-semibold flex items-center justify-between px-3 transition-colors shadow-2xs">
+                        <a href="#/catalog?provider=${encodeURIComponent(tool.providerId || tool.provider?.id || tool.provider?.name || tool.providerCompanyName || '')}" class="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 py-2 rounded-xl text-xs font-semibold flex items-center justify-between px-3 transition-all hover:scale-[1.01] hover:shadow-xs shadow-2xs">
                           <span>${isEn ? 'View entire fleet from this provider' : 'Ver toda la maquinaria de este proveedor'}</span>
-                          ${renderIcon('ChevronRight', 'w-4 h-4 text-slate-400')}
+                          ${renderIcon('ChevronRight', 'w-4 h-4 text-slate-400 group-hover:translate-x-0.5 transition-transform')}
                         </a>
                       </div>
                     </div>
