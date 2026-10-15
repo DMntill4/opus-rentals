@@ -1,5 +1,4 @@
 import api from '../api/client.js';
-import bannerOpusImg from '../assets/bannerOpus.png';
 import { formatCurrency } from '../utils/formatters.js';
 import { renderIcon } from '../utils/icons.js';
 import { renderCardGridSkeleton } from '../components/system-states.js';
@@ -12,20 +11,22 @@ export async function renderCatalogView() {
 
   const isEn = i18n.getLang() === 'EN';
 
-  // Read search query parameter from URL hash if present
+  // Read search & filter parameters from URL
   const hash = window.location.hash || '';
   const searchParams = new URLSearchParams(hash.includes('?') ? hash.split('?')[1] : '');
   const initialSearchParam = searchParams.get('q') || '';
+  const initialCategoryParam = searchParams.get('category') || 'cat-all';
   const initialProviderParam = searchParams.get('provider') || '';
 
   // Local state
-  let selectedCategory = 'cat-all';
-  let selectedStatus = 'ALL'; // ALL, AVAILABLE, RENTED, MAINTENANCE
+  let selectedCategory = initialCategoryParam;
+  let selectedStatus = 'ALL'; // ALL, AVAILABLE, RENTED
   let selectedProvider = initialProviderParam;
   let searchQuery = initialSearchParam;
   let minPrice = 0;
   let maxPrice = 10000000;
   let sortBy = 'relevant';
+  let selectedBrand = 'ALL';
 
   let allTools = [];
   let categories = [];
@@ -40,6 +41,9 @@ export async function renderCatalogView() {
   } catch (e) {
     console.error('Error loading catalog data', e);
   }
+
+  // Extract unique brands for filter
+  const brands = Array.from(new Set(allTools.map(t => t.brand).filter(Boolean)));
 
   // Filter computation
   function getFilteredTools() {
@@ -62,8 +66,10 @@ export async function renderCatalogView() {
       filtered = filtered.filter(t => t.status === 'AVAILABLE');
     } else if (selectedStatus === 'RENTED') {
       filtered = filtered.filter(t => t.status === 'RENTED');
-    } else if (selectedStatus === 'MAINTENANCE') {
-      filtered = filtered.filter(t => t.status === 'MAINTENANCE');
+    }
+
+    if (selectedBrand !== 'ALL') {
+      filtered = filtered.filter(t => t.brand === selectedBrand);
     }
 
     if (searchQuery.trim()) {
@@ -84,386 +90,284 @@ export async function renderCatalogView() {
     return filtered;
   }
 
-  // Initial full shell render: Clean, Elegant, Industrial
+  // Render E-Commerce 2-Column Layout (Mercado Libre / Amazon standard)
   container.innerHTML = `
-    <div class="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 pb-16 transition-colors duration-200">
-      <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-6">
-        
-        <!-- Opus Rentals Hero Banner: Construction Site Real Photography + Deep Navy #071322 -->
-        <div class="relative rounded-3xl overflow-hidden min-h-[280px] sm:min-h-[320px] flex items-center shadow-2xl bg-[#071322] select-none border border-slate-700/60">
-          
-          <!-- Real Construction Site Background Photo -->
-          <div 
-            class="absolute inset-0 bg-cover bg-center opacity-30 pointer-events-none"
-            style="background-image: url('https://images.unsplash.com/photo-1541888946425-d0fbb186156f?auto=format&fit=crop&w=2000&q=80');"
-          ></div>
-
-          <!-- Deep Navy Overlay -->
-          <div class="absolute inset-0 bg-gradient-to-r from-[#071322] via-[#0b1c31]/95 to-[#132e4f]/85"></div>
-
-          <!-- Subtle Architectural Blueprint Grid Overlay -->
-          <div class="absolute inset-0 opacity-15 pointer-events-none" style="background-image: linear-gradient(to right, #ffffff 1px, transparent 1px), linear-gradient(to bottom, #ffffff 1px, transparent 1px); background-size: 32px 32px;"></div>
-          
-          <div class="relative z-10 w-full p-6 sm:p-8 md:p-10 flex flex-col lg:flex-row items-center justify-between gap-6">
-            
-            <!-- Left: Hero Text & Quick Search -->
-            <div class="max-w-2xl space-y-3.5 flex-1">
-              <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#0e2238] border border-blue-900/60 text-slate-100 text-xs font-semibold">
-                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                <span class="tracking-wide uppercase text-[10px] font-mono font-bold">${isEn ? 'Certified Fleet in Colombia' : 'Flota Certificada · B2B Colombia'}</span>
-              </div>
-
-              <h1 class="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight font-display leading-[1.15] text-white">
-                <span>${isEn ? 'Heavy Machinery & Equipment Rental.' : 'Alquila la maquinaria pesada que necesitas.'}</span><br />
-                <span class="text-blue-200 font-black">${isEn ? 'Zero friction. Enterprise grade.' : 'Sin comprarla. Para grandes obras en Colombia.'}</span>
-              </h1>
-              
-              <p class="text-xs sm:text-sm text-slate-200 font-normal leading-relaxed max-w-lg">
-                ${isEn 
-                  ? 'Excavators, compactors, telehandlers and generators with guaranteed maintenance, insurance and verified telematics.'
-                  : 'Excavadoras, rodillos, minicargadores y plantas eléctricas con póliza todo riesgo SURA, mantenimiento preventivo al día y acta de entrega digital.'}
-              </p>
-
-              <!-- Quick Search Input inside Banner -->
-              <div class="pt-1 flex flex-col sm:flex-row items-center gap-2 max-w-md">
-                <div class="relative flex-1 w-full">
-                  <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                    ${renderIcon('Search', 'w-4 h-4')}
-                  </span>
-                  <input 
-                    type="text" 
-                    id="hero-quick-search"
-                    value="${searchQuery}"
-                    placeholder="${isEn ? 'Search CAT 320, Bobcat, 150 kVA...' : 'Buscar excavadora, rodillo, Bobcat, generador...'}" 
-                    class="w-full pl-10 pr-4 py-2.5 bg-white text-slate-900 border border-slate-200 focus:border-[#132e4f] rounded-xl text-xs placeholder-slate-400 focus:outline-none shadow-md font-medium" 
-                  />
-                </div>
-                <button id="btn-hero-search" class="w-full sm:w-auto py-2.5 px-5 text-xs font-bold rounded-xl text-white bg-[#0a1c33] hover:bg-black border border-white/20 transition-all cursor-pointer whitespace-nowrap shadow-sm">
-                  ${isEn ? 'Search' : 'Buscar'}
-                </button>
-              </div>
-
-              <!-- Trust Metrics Micro-Pills -->
-              <div class="flex flex-wrap items-center gap-2 pt-1 text-[10px] text-slate-300 font-medium">
-                <span class="inline-flex items-center gap-1 bg-[#0a1c33] border border-blue-900/60 px-2.5 py-1 rounded-lg">
-                  <span class="text-emerald-400">✓</span> Póliza Todo Riesgo SURA
-                </span>
-                <span class="inline-flex items-center gap-1 bg-[#0a1c33] border border-blue-900/60 px-2.5 py-1 rounded-lg">
-                  <span class="text-blue-300">✓</span> Telemetría GPS en Vivo
-                </span>
-                <span class="inline-flex items-center gap-1 bg-[#0a1c33] border border-blue-900/60 px-2.5 py-1 rounded-lg">
-                  <span class="text-slate-300">✓</span> Despacho Inmediato en Patio
-                </span>
-              </div>
-            </div>
-
-            <!-- Right: Official Opus Rentals Banner Showcase Card -->
-            <div class="hidden lg:flex flex-col items-center justify-center flex-shrink-0 w-80">
-              <div class="w-full bg-white rounded-2xl shadow-2xl p-4 border border-slate-200/80 hover:scale-[1.02] transition-transform duration-300">
-                <img 
-                  src="${bannerOpusImg}" 
-                  alt="Opus Rentals" 
-                  class="w-full h-auto object-contain select-none" 
-                />
-                <div class="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-500 font-mono">
-                  <span class="flex items-center gap-1 font-semibold text-[#132e4f]">
-                    <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span> Despacho Certificado
-                  </span>
-                  <span>NIT 901.884.219-5</span>
-                </div>
-              </div>
-            </div>
-
-          </div>
-        </div>
-
-        <!-- Horizontal Category Pills Bar with Smooth Navigation Arrows -->
-        <div class="relative flex items-center group/pills mb-2">
-          <!-- Left Arrow Button -->
-          <button 
-            id="cat-scroll-left" 
-            class="flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:text-[#132e4f] dark:hover:text-white hover:border-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 shadow-xs transition-all z-10 flex-shrink-0 mr-1.5 sm:mr-2 cursor-pointer disabled:opacity-25 disabled:cursor-not-allowed active:scale-90"
-            aria-label="Desplazar categorías hacia la izquierda"
-            title="Anterior"
-          >
-            ${renderIcon('ChevronLeft', 'w-4 h-4')}
-          </button>
-
-          <!-- Scrollable Track with no scrollbar -->
-          <div 
-            class="flex-1 flex items-center gap-2 overflow-x-auto scroll-smooth py-1 no-scrollbar select-none" 
-            id="category-pills-row"
-          >
-            ${categories.map(cat => {
-              const isActive = selectedCategory === cat.id;
-              return `
-                <button 
-                  class="cat-pill-btn flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all border flex-shrink-0 cursor-pointer ${
-                    isActive 
-                      ? 'bg-[#132e4f] dark:bg-blue-600 border-[#132e4f] dark:border-blue-500 text-white shadow-xs' 
-                      : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800'
-                  }"
-                  data-cat-id="${cat.id}"
-                >
-                  ${renderIcon(cat.icon || 'Truck', `w-3.5 h-3.5 ${isActive ? 'text-white' : 'text-slate-500 dark:text-slate-400'}`)}
-                  <span>${cat.name}</span>
-                </button>
-              `;
-            }).join('')}
-          </div>
-
-          <!-- Right Arrow Button -->
-          <button 
-            id="cat-scroll-right" 
-            class="flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:text-[#132e4f] dark:hover:text-white hover:border-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 shadow-xs transition-all z-10 flex-shrink-0 ml-1.5 sm:ml-2 cursor-pointer disabled:opacity-25 disabled:cursor-not-allowed active:scale-90"
-            aria-label="Desplazar categorías hacia la derecha"
-            title="Siguiente"
-          >
-            ${renderIcon('ChevronRight', 'w-4 h-4')}
-          </button>
-        </div>
-
-        <!-- Filter Bar & Sort Controls -->
-        <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200/90 dark:border-slate-800 shadow-xs flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 transition-colors duration-200">
-          
-          <!-- Status Pills -->
-          <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
-            <span class="text-xs font-bold text-slate-500 mr-1.5 hidden sm:inline">${i18n.t('filterStatusLabel')}</span>
-            <button 
-              type="button" 
-              class="status-quick-btn px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                selectedStatus === 'ALL' 
-                  ? 'bg-[#132e4f] text-white shadow-xs' 
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-              }"
-              data-status="ALL"
-            >
-              ${i18n.t('filterAll')}
-            </button>
-            <button 
-              type="button" 
-              class="status-quick-btn px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                selectedStatus === 'AVAILABLE' 
-                  ? 'bg-emerald-600 text-white shadow-xs' 
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-              }"
-              data-status="AVAILABLE"
-            >
-              ${i18n.t('filterAvailable')}
-            </button>
-            <button 
-              type="button" 
-              class="status-quick-btn px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                selectedStatus === 'RENTED' 
-                  ? 'bg-slate-600 text-white shadow-xs' 
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-              }"
-              data-status="RENTED"
-            >
-              ${i18n.t('filterRented')}
-            </button>
-            <button 
-              type="button" 
-              class="status-quick-btn px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                selectedStatus === 'MAINTENANCE' 
-                  ? 'bg-amber-600 text-white shadow-xs' 
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-              }"
-              data-status="MAINTENANCE"
-            >
-              ${i18n.t('filterMaintenance')}
-            </button>
-          </div>
-
-          <!-- Right: Search in Catalog & Sort -->
-          <div class="flex items-center gap-3">
-            <div class="relative flex-1 sm:w-56">
-              <input 
-                type="text" 
-                id="search-in-results" 
-                value="${searchQuery}" 
-                placeholder="${i18n.t('searchInCatalogPlaceholder')}" 
-                class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-3 py-1.5 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#132e4f] transition-all font-medium" 
-              />
-              <div class="absolute left-3 top-2 text-slate-400 pointer-events-none">
-                ${renderIcon('Search', 'w-3.5 h-3.5')}
-              </div>
-            </div>
-
-            <!-- Sort dropdown -->
-            <div class="relative">
-              <select id="sort-select" class="bg-slate-50 border border-slate-200 rounded-xl pl-3 pr-8 py-1.5 text-xs text-slate-700 font-semibold focus:outline-none focus:border-[#132e4f] transition-colors appearance-none cursor-pointer">
-                <option value="relevant" ${sortBy === 'relevant' ? 'selected' : ''}>${i18n.t('sortRelevant')}</option>
-                <option value="price-asc" ${sortBy === 'price-asc' ? 'selected' : ''}>${i18n.t('sortPriceAsc')}</option>
-                <option value="price-desc" ${sortBy === 'price-desc' ? 'selected' : ''}>${i18n.t('sortPriceDesc')}</option>
-              </select>
-              <div class="absolute right-2.5 top-2 pointer-events-none text-slate-400">
-                ${renderIcon('ChevronDown', 'w-3.5 h-3.5')}
-              </div>
-            </div>
-          </div>
-
-        </div>
-
-        <!-- Counter & Results Status -->
-        <div class="flex items-center justify-between text-xs text-slate-500 px-1">
-          <span id="results-counter" class="font-bold text-slate-800">
-            ${isEn ? 'Loading fleet...' : 'Cargando unidades...'}
+    <div class="bg-[#f5f5f5] dark:bg-slate-950 min-h-screen pb-16 text-slate-800 dark:text-slate-100 font-sans">
+      
+      <!-- Top Breadcrumb & Active Filter Bar -->
+      <div class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 py-3 shadow-2xs">
+        <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between text-xs">
+          <nav class="flex items-center gap-2 text-slate-500">
+            <a href="#/home" class="hover:text-blue-600 transition-colors">Inicio</a>
+            <span>/</span>
+            <span class="text-slate-900 dark:text-white font-bold">Catálogo de Maquinaria</span>
+            ${selectedProvider ? `<span>/</span><span class="text-blue-600 font-bold">${selectedProvider}</span>` : ''}
+          </nav>
+          <span id="top-results-counter" class="text-slate-500 font-mono">
+            ${allTools.length} equipos en total
           </span>
-          <button id="btn-reset-filters" class="text-[#132e4f] hover:underline font-semibold cursor-pointer">
-            ${i18n.t('btnResetFilters')}
-          </button>
         </div>
-
-        <!-- Product Cards Grid Container -->
-        <div id="catalog-products-container" class="min-h-[450px]">
-          ${renderCardGridSkeleton(6)}
-        </div>
-
       </div>
+
+      <!-- Main Layout: 2 Columns (Left: Filters | Right: Results) -->
+      <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          
+          <!-- ========================================================================= -->
+          <!-- LEFT SIDEBAR: FILTERS (Mercado Libre style) -->
+          <!-- ========================================================================= -->
+          <aside class="lg:col-span-3 space-y-6">
+            
+            <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-5 shadow-xs space-y-6">
+              
+              <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+                <h3 class="text-sm font-black text-slate-900 dark:text-white uppercase tracking-wider font-mono">
+                  Filtros de Búsqueda
+                </h3>
+                <button id="btn-reset-filters" class="text-xs text-blue-600 dark:text-blue-400 hover:underline font-semibold cursor-pointer">
+                  Limpiar
+                </button>
+              </div>
+
+              <!-- Filter 1: Categories -->
+              <div class="space-y-2.5">
+                <h4 class="text-xs font-bold text-slate-900 dark:text-white">Categoría</h4>
+                <div class="space-y-1 max-h-56 overflow-y-auto no-scrollbar pr-1 text-xs">
+                  <button 
+                    class="filter-cat-btn w-full text-left px-2.5 py-1.5 rounded-lg flex items-center justify-between transition-colors cursor-pointer ${selectedCategory === 'cat-all' ? 'bg-blue-50 text-blue-600 font-bold' : 'text-slate-600 hover:bg-slate-50'}"
+                    data-cat-id="cat-all"
+                  >
+                    <span>Todas las categorías</span>
+                    <span class="text-slate-400 font-mono">${allTools.length}</span>
+                  </button>
+                  ${categories.map(cat => {
+                    const count = allTools.filter(t => t.categoryId === cat.id).length;
+                    const isSelected = String(selectedCategory) === String(cat.id);
+                    return `
+                      <button 
+                        class="filter-cat-btn w-full text-left px-2.5 py-1.5 rounded-lg flex items-center justify-between transition-colors cursor-pointer ${isSelected ? 'bg-blue-50 text-blue-600 font-bold' : 'text-slate-600 hover:bg-slate-50'}"
+                        data-cat-id="${cat.id}"
+                      >
+                        <span class="truncate">${cat.name}</span>
+                        <span class="text-slate-400 font-mono text-[11px]">${count}</span>
+                      </button>
+                    `;
+                  }).join('')}
+                </div>
+              </div>
+
+              <!-- Filter 2: Availability (Disponible / En Obra) -->
+              <div class="space-y-2.5 pt-3 border-t border-slate-100 dark:border-slate-800">
+                <h4 class="text-xs font-bold text-slate-900 dark:text-white">Disponibilidad en Patio</h4>
+                <div class="space-y-1.5 text-xs">
+                  <label class="flex items-center gap-2 text-slate-600 cursor-pointer">
+                    <input type="radio" name="filter-status" value="ALL" ${selectedStatus === 'ALL' ? 'checked' : ''} class="status-radio text-blue-600" />
+                    <span>Todos los equipos</span>
+                  </label>
+                  <label class="flex items-center gap-2 text-slate-600 cursor-pointer">
+                    <input type="radio" name="filter-status" value="AVAILABLE" ${selectedStatus === 'AVAILABLE' ? 'checked' : ''} class="status-radio text-blue-600" />
+                    <span class="flex items-center gap-1.5">
+                      <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                      <span>Disponibles hoy</span>
+                    </span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Filter 3: Marcas -->
+              ${brands.length > 0 ? `
+                <div class="space-y-2.5 pt-3 border-t border-slate-100 dark:border-slate-800">
+                  <h4 class="text-xs font-bold text-slate-900 dark:text-white">Marca de Fabricante</h4>
+                  <div class="space-y-1 max-h-40 overflow-y-auto no-scrollbar text-xs">
+                    <button 
+                      class="filter-brand-btn w-full text-left px-2 py-1 rounded flex items-center justify-between ${selectedBrand === 'ALL' ? 'text-blue-600 font-bold' : 'text-slate-600 hover:bg-slate-50'}"
+                      data-brand="ALL"
+                    >
+                      <span>Todas las marcas</span>
+                    </button>
+                    ${brands.map(b => `
+                      <button 
+                        class="filter-brand-btn w-full text-left px-2 py-1 rounded flex items-center justify-between ${selectedBrand === b ? 'text-blue-600 font-bold' : 'text-slate-600 hover:bg-slate-50'}"
+                        data-brand="${b}"
+                      >
+                        <span>${b}</span>
+                        <span class="text-slate-400 font-mono text-[10px]">${allTools.filter(t => t.brand === b).length}</span>
+                      </button>
+                    `).join('')}
+                  </div>
+                </div>
+              ` : ''}
+
+              <!-- Filter 4: Price Range -->
+              <div class="space-y-2.5 pt-3 border-t border-slate-100 dark:border-slate-800">
+                <h4 class="text-xs font-bold text-slate-900 dark:text-white">Precio por Día (COP)</h4>
+                <div class="flex items-center gap-2">
+                  <input 
+                    type="number" 
+                    id="filter-min-price" 
+                    placeholder="Mín" 
+                    value="${minPrice > 0 ? minPrice : ''}"
+                    class="w-full px-2.5 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:border-blue-600 font-mono"
+                  />
+                  <span class="text-slate-400">-</span>
+                  <input 
+                    type="number" 
+                    id="filter-max-price" 
+                    placeholder="Máx" 
+                    value="${maxPrice < 10000000 ? maxPrice : ''}"
+                    class="w-full px-2.5 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:border-blue-600 font-mono"
+                  />
+                  <button id="btn-apply-price" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold cursor-pointer">
+                    ${renderIcon('ChevronRight', 'w-3.5 h-3.5')}
+                  </button>
+                </div>
+              </div>
+
+            </div>
+
+          </aside>
+
+          <!-- ========================================================================= -->
+          <!-- RIGHT COLUMN: RESULTS & SORTING (Mercado Libre / Amazon standard) -->
+          <!-- ========================================================================= -->
+          <main class="lg:col-span-9 space-y-4">
+            
+            <!-- Controls Bar: Title, Count & Sort -->
+            <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-4 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div>
+                <h1 class="text-base sm:text-lg font-black text-slate-900 dark:text-white">
+                  ${selectedCategory !== 'cat-all' 
+                    ? (categories.find(c => String(c.id) === String(selectedCategory))?.name || 'Maquinaria')
+                    : 'Catálogo de Maquinaria y Equipos'}
+                </h1>
+                <p id="results-count-label" class="text-xs text-slate-500 font-mono mt-0.5">
+                  Cargando resultados...
+                </p>
+              </div>
+
+              <!-- Sort Dropdown -->
+              <div class="flex items-center gap-2 text-xs">
+                <span class="text-slate-500 font-medium whitespace-nowrap">Ordenar por:</span>
+                <div class="relative">
+                  <select id="sort-select" class="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg pl-3 pr-8 py-2 text-xs font-bold text-slate-800 dark:text-slate-200 focus:outline-none focus:border-blue-600 appearance-none cursor-pointer">
+                    <option value="relevant" ${sortBy === 'relevant' ? 'selected' : ''}>Más Relevantes</option>
+                    <option value="price-asc" ${sortBy === 'price-asc' ? 'selected' : ''}>Menor Precio</option>
+                    <option value="price-desc" ${sortBy === 'price-desc' ? 'selected' : ''}>Mayor Precio</option>
+                  </select>
+                  <div class="absolute right-2.5 top-2.5 pointer-events-none text-slate-400">
+                    ${renderIcon('ChevronDown', 'w-3.5 h-3.5')}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Product Cards Grid -->
+            <div id="catalog-products-container" class="min-h-[450px]">
+              ${renderCardGridSkeleton(6)}
+            </div>
+
+          </main>
+
+        </div>
+      </div>
+
     </div>
   `;
 
   const productsContainer = container.querySelector('#catalog-products-container');
-  const resultsCounter = container.querySelector('#results-counter');
-  const catRow = container.querySelector('#category-pills-row');
-  const btnLeft = container.querySelector('#cat-scroll-left');
-  const btnRight = container.querySelector('#cat-scroll-right');
-  const searchInput = container.querySelector('#search-in-results');
-  const heroSearchInput = container.querySelector('#hero-quick-search');
-  const btnHeroSearch = container.querySelector('#btn-hero-search');
+  const resultsCountLabel = container.querySelector('#results-count-label');
+  const topResultsCounter = container.querySelector('#top-results-counter');
   const sortSelect = container.querySelector('#sort-select');
-  const btnReset = container.querySelector('#btn-reset-filters');
 
-  // Carousel navigation
-  const updateArrowStates = () => {
-    if (!catRow || !btnLeft || !btnRight) return;
-    btnLeft.disabled = catRow.scrollLeft <= 5;
-    btnRight.disabled = Math.ceil(catRow.scrollLeft + catRow.clientWidth) >= catRow.scrollWidth - 5;
-  };
-
-  if (btnLeft && catRow) {
-    btnLeft.addEventListener('click', () => {
-      catRow.scrollBy({ left: -260, behavior: 'smooth' });
-      setTimeout(updateArrowStates, 300);
-    });
-  }
-
-  if (btnRight && catRow) {
-    btnRight.addEventListener('click', () => {
-      catRow.scrollBy({ left: 260, behavior: 'smooth' });
-      setTimeout(updateArrowStates, 300);
-    });
-  }
-
-  if (catRow) {
-    catRow.addEventListener('scroll', updateArrowStates, { passive: true });
-    setTimeout(updateArrowStates, 50);
-  }
-
-  // Reactive Card Renderer
-  function renderProductsGrid() {
+  // Render Cards
+  function renderCards() {
     const filtered = getFilteredTools();
-    if (resultsCounter) {
-      const providerLabel = selectedProvider ? ` · Proveedor: <span class="text-[#132e4f] font-bold underline cursor-pointer" id="btn-clear-prov-filter">${selectedProvider} ✕</span>` : '';
-      resultsCounter.innerHTML = `${filtered.length} ${filtered.length === 1 ? i18n.t('unitFound') : i18n.t('unitsFound')}${providerLabel}`;
-      resultsCounter.querySelector('#btn-clear-prov-filter')?.addEventListener('click', () => {
-        selectedProvider = '';
-        window.history.replaceState(null, '', '#/catalog');
-        renderProductsGrid();
-      });
+
+    if (resultsCountLabel) {
+      resultsCountLabel.textContent = `${filtered.length} equipos disponibles para alquiler`;
+    }
+    if (topResultsCounter) {
+      topResultsCounter.textContent = `${filtered.length} equipos listados`;
     }
 
     if (filtered.length === 0) {
       productsContainer.innerHTML = `
-        <div class="bg-white rounded-2xl border border-slate-200 p-12 text-center max-w-lg mx-auto space-y-4 shadow-xs animate-in fade-in duration-200">
-          <div class="w-12 h-12 rounded-xl bg-slate-100 text-slate-500 flex items-center justify-center mx-auto border border-slate-200">
-            ${renderIcon('Search', 'w-6 h-6')}
+        <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-12 text-center space-y-4">
+          <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto text-slate-400">
+            ${renderIcon('Search', 'w-8 h-8')}
           </div>
-          <h3 class="text-base font-bold text-slate-900 font-display">
-            ${i18n.t('emptyTitle')}
-          </h3>
-          <p class="text-xs text-slate-500">
-            ${i18n.t('emptySubtitle')}
-          </p>
-          <button id="btn-clear-empty-filters" class="btn-primary !py-2 !px-4 text-xs font-semibold">
-            ${i18n.t('btnEmptyReset')}
+          <h3 class="text-base font-bold text-slate-900 dark:text-white">No encontramos maquinaria con esos filtros</h3>
+          <p class="text-xs text-slate-500 max-w-sm mx-auto">Revisa los términos de búsqueda o restablece los filtros para ver toda la flota disponible.</p>
+          <button id="btn-empty-reset" class="px-5 py-2.5 rounded-lg bg-blue-600 text-white text-xs font-bold cursor-pointer">
+            Restablecer todos los filtros
           </button>
         </div>
       `;
-
-      productsContainer.querySelector('#btn-clear-empty-filters')?.addEventListener('click', () => {
-        resetAllFilters();
-      });
+      productsContainer.querySelector('#btn-empty-reset')?.addEventListener('click', resetFilters);
       return;
     }
 
-    // Render Cards Grid
     productsContainer.innerHTML = `
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 animate-fade-in" id="tools-cards-grid">
+      <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
         ${filtered.map(tool => {
           const isAvailable = tool.status === 'AVAILABLE';
-          const isRented = tool.status === 'RENTED';
           const primaryImg = resolveToolImageUrl(tool);
 
-          const statusBadge = isAvailable
-            ? `<span class="badge-disponible">${i18n.t('filterAvailable')}</span>`
-            : isRented
-            ? `<span class="badge-alquilada">${i18n.t('filterRented')}</span>`
-            : `<span class="badge-mantenimiento">${i18n.t('filterMaintenance')}</span>`;
-
           return `
-            <div class="tr-card flex flex-col justify-between overflow-hidden group hover-lift card-glow border border-slate-200/90 hover:border-[#132e4f]/30 transition-all duration-300">
-              
+            <div 
+              class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col justify-between hover:shadow-md hover:border-slate-300 transition-all duration-200 cursor-pointer group"
+              onclick="window.location.hash='#/product/${tool.id}'"
+            >
               <div>
-                <!-- Image Container with Aspect Ratio -->
-                <div class="relative h-48 bg-slate-100 overflow-hidden cursor-pointer tool-card-trigger border-b border-slate-100" data-id="${tool.id}">
+                <!-- Image Container with clean frame -->
+                <div class="relative h-48 bg-slate-100 dark:bg-slate-800 overflow-hidden border-b border-slate-100 dark:border-slate-800">
                   <img 
                     src="${primaryImg}" 
                     alt="${tool.name}" 
                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 select-none" 
                     loading="lazy"
-                    data-original-url="${primaryImg}"
                     onerror="window.ToolRentCacheShield?.handleImageError(this, '${primaryImg}', '${tool.categoryName || ''}', '${tool.name.replace(/'/g, "\\'")}')"
                   />
                   
-                  <!-- Top Status Badge -->
-                  <div class="absolute top-2.5 right-2.5 z-10 shadow-xs">
-                    ${statusBadge}
-                  </div>
+                  <span class="absolute top-2.5 left-2.5 px-2.5 py-0.5 rounded-md text-[10px] font-bold ${
+                    isAvailable ? 'bg-emerald-600 text-white' : 'bg-slate-700 text-white'
+                  }">
+                    ${isAvailable ? 'Disponible Hoy' : 'En Obra'}
+                  </span>
+
+                  <span class="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-white/95 text-slate-700 border border-slate-200 shadow-2xs">
+                    ${tool.brand || 'CAT'}
+                  </span>
                 </div>
 
-                <!-- Tool Content -->
-                <div class="p-4 space-y-2">
-                  <div class="text-[11px] font-semibold text-slate-500 flex items-center justify-between">
-                    <span>${tool.categoryName || 'Construcción'}</span>
-                    <span class="font-normal text-slate-400">${tool.brand || ''}</span>
+                <!-- Product Information -->
+                <div class="p-4 space-y-1.5">
+                  <div class="text-[10px] uppercase font-bold text-slate-400 font-mono tracking-wider">
+                    ${tool.categoryName || 'Construcción'}
                   </div>
 
-                  <h3 class="font-bold text-slate-900 text-sm leading-snug cursor-pointer hover:text-[#132e4f] transition-colors tool-card-trigger line-clamp-2" data-id="${tool.id}">
+                  <h3 class="font-bold text-slate-900 dark:text-white text-sm line-clamp-2 leading-snug group-hover:text-blue-600 transition-colors">
                     ${tool.name}
                   </h3>
 
                   <p class="text-xs text-slate-500 font-normal line-clamp-2 leading-relaxed">
-                    ${tool.description || 'Equipo especializado para frentes de obra y proyectos de infraestructura.'}
+                    ${tool.description || 'Equipo especializado con mantenimiento certificado y póliza todo riesgo.'}
                   </p>
                 </div>
               </div>
 
-              <!-- Card Footer: Daily Price & Action Button -->
-              <div class="p-4 pt-3 border-t border-slate-100 flex items-center justify-between bg-slate-50/60">
+              <!-- Footer: Price & Rent Action -->
+              <div class="p-4 pt-3 border-t border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-900/50 flex items-center justify-between">
                 <div>
-                  <div class="text-[10px] text-slate-400 font-medium">${i18n.t('cardDailyRate')}</div>
-                  <div class="text-sm font-bold text-slate-900">
+                  <div class="text-[10px] text-slate-400 font-medium">Tarifa por día</div>
+                  <div class="text-base font-black text-slate-900 dark:text-white font-mono">
                     ${formatCurrency(tool.dailyPrice)}
                   </div>
                 </div>
 
-                <div>
-                  <button class="btn-tool-details btn-primary !py-2 !px-3 text-xs" data-id="${tool.id}">
-                    ${isAvailable ? i18n.t('cardRent') : i18n.t('cardDetails')}
-                  </button>
-                </div>
+                <button class="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all shadow-xs">
+                  ${isAvailable ? 'Alquilar' : 'Ver Ficha'}
+                </button>
               </div>
 
             </div>
@@ -471,99 +375,67 @@ export async function renderCatalogView() {
         }).join('')}
       </div>
     `;
-
-    // Click events to open product detail view
-    productsContainer.querySelectorAll('.btn-tool-details, .tool-card-trigger').forEach(el => {
-      el.addEventListener('click', () => {
-        window.location.hash = `#/product/${el.dataset.id}`;
-      });
-    });
   }
 
-  // Filter Reset Function
-  function resetAllFilters() {
+  function resetFilters() {
     selectedCategory = 'cat-all';
     selectedStatus = 'ALL';
     selectedProvider = '';
+    selectedBrand = 'ALL';
     searchQuery = '';
-    if (searchInput) searchInput.value = '';
-    if (heroSearchInput) heroSearchInput.value = '';
-    window.history.replaceState(null, '', '#/catalog');
-    updateCategoryButtonsUI();
-    updateStatusButtonsUI();
-    renderProductsGrid();
+    minPrice = 0;
+    maxPrice = 10000000;
+    sortBy = 'relevant';
+    renderCatalogView();
   }
 
-  function updateCategoryButtonsUI() {
-    container.querySelectorAll('.cat-pill-btn').forEach(btn => {
-      const catId = btn.dataset.catId;
-      const isActive = catId === selectedCategory;
-      if (isActive) {
-        btn.className = 'cat-pill-btn flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all border flex-shrink-0 cursor-pointer bg-[#132e4f] dark:bg-blue-600 border-[#132e4f] dark:border-blue-500 text-white shadow-xs';
-      } else {
-        btn.className = 'cat-pill-btn flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all border flex-shrink-0 cursor-pointer bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800';
-      }
-    });
-  }
-
-  function updateStatusButtonsUI() {
-    container.querySelectorAll('.status-quick-btn').forEach(btn => {
-      const st = btn.dataset.status;
-      const isActive = st === selectedStatus;
-      if (isActive) {
-        btn.className = 'status-quick-btn px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer bg-[#132e4f] dark:bg-blue-600 text-white shadow-xs';
-      } else {
-        btn.className = 'status-quick-btn px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700';
-      }
-    });
-  }
-
-  // Event Listeners
-  container.querySelectorAll('.cat-pill-btn').forEach(btn => {
+  // Event Listeners for Filters
+  container.querySelectorAll('.filter-cat-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       selectedCategory = btn.dataset.catId;
-      updateCategoryButtonsUI();
-      renderProductsGrid();
+      container.querySelectorAll('.filter-cat-btn').forEach(b => {
+        b.classList.remove('bg-blue-50', 'text-blue-600', 'font-bold');
+      });
+      btn.classList.add('bg-blue-50', 'text-blue-600', 'font-bold');
+      renderCards();
     });
   });
 
-  container.querySelectorAll('.status-quick-btn').forEach(btn => {
+  container.querySelectorAll('.status-radio').forEach(radio => {
+    radio.addEventListener('change', (e) => {
+      selectedStatus = e.target.value;
+      renderCards();
+    });
+  });
+
+  container.querySelectorAll('.filter-brand-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-      selectedStatus = btn.dataset.status;
-      updateStatusButtonsUI();
-      renderProductsGrid();
+      selectedBrand = btn.dataset.brand;
+      container.querySelectorAll('.filter-brand-btn').forEach(b => {
+        b.classList.remove('text-blue-600', 'font-bold');
+      });
+      btn.classList.add('text-blue-600', 'font-bold');
+      renderCards();
     });
   });
 
-  searchInput?.addEventListener('input', (e) => {
-    searchQuery = e.target.value;
-    if (heroSearchInput) heroSearchInput.value = searchQuery;
-    renderProductsGrid();
-  });
-
-  const performHeroSearch = () => {
-    if (heroSearchInput) {
-      searchQuery = heroSearchInput.value;
-      if (searchInput) searchInput.value = searchQuery;
-      renderProductsGrid();
-      // Smooth scroll down to results
-      const resultsEl = container.querySelector('#tools-cards-grid') || container.querySelector('#catalog-products-container');
-      resultsEl?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  };
-
-  btnHeroSearch?.addEventListener('click', performHeroSearch);
-  heroSearchInput?.addEventListener('keyup', (e) => {
-    if (e.key === 'Enter') performHeroSearch();
+  container.querySelector('#btn-apply-price')?.addEventListener('click', () => {
+    const min = parseFloat(container.querySelector('#filter-min-price')?.value) || 0;
+    const max = parseFloat(container.querySelector('#filter-max-price')?.value) || 10000000;
+    minPrice = min;
+    maxPrice = max;
+    renderCards();
   });
 
   sortSelect?.addEventListener('change', (e) => {
     sortBy = e.target.value;
-    renderProductsGrid();
+    renderCards();
   });
 
-  btnReset?.addEventListener('click', resetAllFilters);
+  container.querySelector('#btn-reset-filters')?.addEventListener('click', resetFilters);
 
   // Initial render of cards
-  renderProductsGrid();
+  renderCards();
 }
+
+export default renderCatalogView;

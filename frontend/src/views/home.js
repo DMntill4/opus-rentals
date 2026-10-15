@@ -6,459 +6,303 @@ import auth from '../auth/state.js';
 import { openAuthModal } from '../components/auth-modal.js';
 import { openProviderContactModal } from '../components/provider-modal.js';
 import { resolveToolImageUrl } from '../utils/tool-images.js';
-import { i18n } from '../utils/i18n.js';
 
 export async function renderHomeView() {
   renderNavbar('home');
   const container = document.getElementById('app-content');
   if (!container) return;
 
-  const isEn = i18n.getLang() === 'EN';
-
-  // Load tools and categories
-  let featuredTools = [];
-  let categories = [];
+  // Load tools
+  let allTools = [];
   try {
-    const [toolsData, catsData] = await Promise.all([
-      api.get('/tools'),
-      api.get('/categories')
-    ]);
-    featuredTools = (toolsData || []).slice(0, 6);
-    categories = (catsData || []).slice(0, 8);
+    allTools = await api.get('/tools') || [];
   } catch (e) {
-    console.warn('Could not load data for home view', e);
+    console.warn('Could not load tools for home', e);
   }
 
-  // Major construction categories with curated imagery for high visual impact
-  const constructionCategories = [
-    {
-      id: 1,
-      name: 'Excavación y Movimiento de Tierra',
-      tag: 'Obras Viales y Cimentación',
-      icon: 'Shovel',
-      count: 'CAT · Komatsu · JCB',
-      img: 'https://images.unsplash.com/photo-1541888946425-d0fbb186156f?auto=format&fit=crop&w=800&q=80'
-    },
-    {
-      id: 2,
-      name: 'Concreto y Mezclado',
-      tag: 'Fundición y Pavimento',
-      icon: 'PaintRoller',
-      count: 'Makita · Bosch',
-      img: 'https://images.unsplash.com/photo-1504917599217-d4dc5ebe6122?auto=format&fit=crop&w=800&q=80'
-    },
-    {
-      id: 3,
-      name: 'Demolición y Martillos',
-      tag: 'Desmantelamiento Estructural',
-      icon: 'Hammer',
-      count: 'Hilti · Bosch',
-      img: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=800&q=80'
-    },
-    {
-      id: 7,
-      name: 'Elevación y Trabajo en Alturas',
-      tag: 'Estructuras y Mantenimiento',
-      icon: 'ArrowUpCircle',
-      count: 'Genie · JLG',
-      img: 'https://images.unsplash.com/photo-1581093588401-fbb62a02f120?auto=format&fit=crop&w=800&q=80'
-    },
-    {
-      id: 8,
-      name: 'Compactación de Suelos',
-      tag: 'Relleno y Asfalto',
-      icon: 'Layers',
-      count: 'Wacker Neuson · Dynapac',
-      img: 'https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?auto=format&fit=crop&w=800&q=80'
-    },
-    {
-      id: 5,
-      name: 'Generación Eléctrica y Energía',
-      tag: 'Energía Continua 24/7',
-      icon: 'Zap',
-      count: 'Cummins · CAT',
-      img: 'https://images.unsplash.com/photo-1581092795360-fd1ca04f0952?auto=format&fit=crop&w=800&q=80'
-    }
+  const featuredTools = allTools.slice(0, 8);
+  const heavyExcavators = allTools.filter(t => t.categoryId === 1 || t.name.toLowerCase().includes('excavadora')).slice(0, 4);
+
+  // Mercado Libre style Category Circles / Tiles
+  const popularCategories = [
+    { id: 1, name: 'Excavadoras', icon: 'Shovel', count: '12 equipos', img: 'https://images.unsplash.com/photo-1541888946425-d0fbb186156f?w=400&auto=format&fit=crop&q=80' },
+    { id: 2, name: 'Concreto', icon: 'PaintRoller', count: '8 equipos', img: 'https://images.unsplash.com/photo-1504917599217-d4dc5ebe6122?w=400&auto=format&fit=crop&q=80' },
+    { id: 3, name: 'Demolición', icon: 'Hammer', count: '6 equipos', img: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=400&auto=format&fit=crop&q=80' },
+    { id: 7, name: 'Plataformas', icon: 'ArrowUpCircle', count: '5 equipos', img: 'https://images.unsplash.com/photo-1581093588401-fbb62a02f120?w=400&auto=format&fit=crop&q=80' },
+    { id: 8, name: 'Compactación', icon: 'Layers', count: '7 equipos', img: 'https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?w=400&auto=format&fit=crop&q=80' },
+    { id: 5, name: 'Generadores', icon: 'Zap', count: '9 plantas', img: 'https://images.unsplash.com/photo-1581092795360-fd1ca04f0952?w=400&auto=format&fit=crop&q=80' },
+    { id: 6, name: 'Compresores', icon: 'Wind', count: '4 equipos', img: 'https://images.unsplash.com/photo-1581093458791-9f3c3900df4b?w=400&auto=format&fit=crop&q=80' },
+    { id: 10, name: 'Soldadura', icon: 'Flame', count: '6 plantas', img: 'https://images.unsplash.com/photo-1504917599217-d4dc5ebe6122?w=400&auto=format&fit=crop&q=80' }
   ];
 
   container.innerHTML = `
-    <div class="space-y-16 sm:space-y-24 pb-20 animate-fade-in w-full text-slate-900 dark:text-slate-100">
-
+    <div class="bg-[#f5f5f5] dark:bg-slate-950 min-h-screen pb-16 text-slate-800 dark:text-slate-100 animate-fade-in font-sans">
+      
       <!-- ========================================================================= -->
-      <!-- 1. FULL-BLEED CINEMATIC HERO: Deep Navy #0a192f, Real Construction Site, Pure White Text -->
+      <!-- 1. HERO CAROUSEL / BANNER: E-Commerce Style (Mercado Libre Clean Banner) -->
       <!-- ========================================================================= -->
-      <section class="relative overflow-hidden w-full">
-        <div class="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 pt-2 sm:pt-4">
+      <section class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6">
+        
+        <div class="relative rounded-2xl overflow-hidden bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm min-h-[300px] sm:min-h-[360px] md:min-h-[400px] flex items-center">
           
-          <div class="relative rounded-3xl overflow-hidden min-h-[580px] lg:min-h-[640px] flex items-center shadow-2xl border border-slate-700/60 bg-[#071322]">
+          <!-- Real Construction Site Panoramica -->
+          <div 
+            class="absolute inset-0 bg-cover bg-center"
+            style="background-image: url('https://images.unsplash.com/photo-1541888946425-d0fbb186156f?auto=format&fit=crop&w=2200&q=85');"
+          ></div>
+
+          <!-- Crisp clean gradient overlay (Dark Slate for text readability) -->
+          <div class="absolute inset-0 bg-gradient-to-r from-slate-950/90 via-slate-950/70 to-transparent"></div>
+
+          <!-- Banner content -->
+          <div class="relative z-10 p-6 sm:p-10 md:p-14 max-w-xl text-white space-y-4">
             
-            <!-- Real Construction Site Background (Heavy Civil Works / High-Contrast Machinery) -->
-            <div 
-              class="absolute inset-0 bg-cover bg-center transition-transform duration-1000 ease-out transform scale-100 hover:scale-105"
-              style="background-image: url('https://images.unsplash.com/photo-1541888946425-d0fbb186156f?auto=format&fit=crop&w=2400&q=85');"
-            ></div>
+            <span class="inline-block px-3 py-1 rounded-md text-[11px] font-black uppercase tracking-wider bg-blue-600 text-white">
+              Flota Certificada 2026
+            </span>
 
-            <!-- Deep Navy, Steel Gray & Slate Vignette Gradients (No generic orange tint) -->
-            <div class="absolute inset-0 bg-gradient-to-r from-[#071322] via-[#0b1c31]/90 to-[#132e4f]/75"></div>
-            <div class="absolute inset-0 bg-gradient-to-t from-[#071322] via-transparent to-[#071322]/50"></div>
+            <h1 class="text-3xl sm:text-4xl md:text-5xl font-black font-display tracking-tight leading-tight">
+              Alquiler de Maquinaria Pesada Directo de Proveedor
+            </h1>
 
-            <!-- Structural Drafting Grid Lines -->
-            <div class="absolute inset-0 opacity-15 pointer-events-none" style="background-image: linear-gradient(to right, #ffffff 1px, transparent 1px), linear-gradient(to bottom, #ffffff 1px, transparent 1px); background-size: 40px 40px;"></div>
-            
-            <!-- Sleek Cool Cyan & Blue Atmospheric Ambient Glow -->
-            <div class="absolute top-1/4 right-1/4 w-[450px] h-[450px] bg-blue-500/15 rounded-full blur-3xl pointer-events-none"></div>
+            <p class="text-xs sm:text-sm text-slate-200 leading-relaxed font-normal">
+              Sin sobrecostos ni intermediarios informales. Excavadoras, rodillos y generadores listos para despacho inmediato con póliza SURA.
+            </p>
 
-            <!-- Main Content Stage -->
-            <div class="relative z-10 w-full p-8 sm:p-14 lg:p-20 grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
-              
-              <!-- Left Column: Value Statement in Spanish, Pure Navy/White Corporate Look -->
-              <div class="lg:col-span-8 space-y-6 text-center lg:text-left">
-                
-                <div class="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-xs font-semibold text-blue-200">
-                  <span class="w-2.5 h-2.5 rounded-full bg-blue-400 animate-pulse"></span>
-                  <span class="font-mono text-[11px] uppercase tracking-wider">Infraestructura y Maquinaria Pesada en Colombia</span>
-                </div>
-
-                <h1 class="text-3xl sm:text-5xl lg:text-6xl font-black font-display tracking-tight leading-[1.1] text-white">
-                  <span>Equipos de Construcción para Grandes Obras.</span><br />
-                  <span class="text-blue-300">Alquila sin intermediarios. Disponibilidad real en frente de obra.</span>
-                </h1>
-
-                <p class="text-sm sm:text-base text-slate-200 max-w-2xl mx-auto lg:mx-0 leading-relaxed font-normal">
-                  Acceso directo a retroexcavadoras, rodillos, plantas eléctricas y maquinaria menor de proveedores industriales verificados. Gestión telemática, seguro todo riesgo SURA y despacho inmediato en patio.
-                </p>
-
-                <!-- Search Bar Directly in the Hero Stage (Skyscanner / Industrial Style) -->
-                <div class="pt-2 max-w-2xl">
-                  <div class="bg-white/95 dark:bg-slate-900/95 backdrop-blur-md p-2 rounded-2xl border border-white/30 dark:border-slate-700 shadow-2xl flex flex-col sm:flex-row items-stretch gap-2">
-                    <div class="relative flex-1 flex items-center">
-                      <span class="pl-3.5 pr-2 text-slate-400">
-                        ${renderIcon('Search', 'w-5 h-5')}
-                      </span>
-                      <input 
-                        type="text" 
-                        id="hero-input-search"
-                        placeholder="Buscar por equipo, marca (CAT, Bobcat, Hilti) o categoría..." 
-                        class="w-full py-3 pr-4 bg-transparent text-slate-900 dark:text-white placeholder-slate-400 text-xs sm:text-sm font-medium focus:outline-none"
-                      />
-                    </div>
-                    <button 
-                      id="hero-btn-search"
-                      class="px-7 py-3.5 rounded-xl bg-[#132e4f] hover:bg-[#0a1c33] active:bg-slate-950 text-white font-extrabold text-xs shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer whitespace-nowrap hover:scale-[1.02]"
-                    >
-                      <span>Buscar Maquinaria</span>
-                      ${renderIcon('ArrowRight', 'w-4 h-4')}
-                    </button>
-                  </div>
-                </div>
-
-                <!-- Trust Badges: Clean Blue, White and Steel Accents -->
-                <div class="pt-3 flex flex-wrap items-center justify-center lg:justify-start gap-4 text-xs text-slate-300 font-medium">
-                  <div class="flex items-center gap-2 bg-[#0b1c31]/60 backdrop-blur-sm px-3.5 py-1.5 rounded-xl border border-white/10">
-                    <span class="w-4 h-4 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold text-[10px]">✓</span>
-                    <span>Póliza SURA Todo Riesgo</span>
-                  </div>
-                  <div class="flex items-center gap-2 bg-[#0b1c31]/60 backdrop-blur-sm px-3.5 py-1.5 rounded-xl border border-white/10">
-                    <span class="w-4 h-4 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold text-[10px]">✓</span>
-                    <span>Telemetría GPS Satelital</span>
-                  </div>
-                  <div class="flex items-center gap-2 bg-[#0b1c31]/60 backdrop-blur-sm px-3.5 py-1.5 rounded-xl border border-white/10">
-                    <span class="w-4 h-4 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold text-[10px]">✓</span>
-                    <span>Mantenimiento Certificado</span>
-                  </div>
-                </div>
-
-              </div>
-
-              <!-- Right Column: Quick Action Card (Skyscanner Style / Deep Blue) -->
-              <div class="lg:col-span-4 flex flex-col gap-4">
-                
-                <div class="bg-[#0b1c31]/90 backdrop-blur-xl rounded-3xl p-6 sm:p-7 border border-white/15 shadow-2xl space-y-5 text-white">
-                  
-                  <div class="flex items-center gap-3">
-                    <div class="w-11 h-11 rounded-2xl bg-blue-500/20 text-blue-300 border border-blue-400/30 flex items-center justify-center flex-shrink-0">
-                      ${renderIcon('Building2', 'w-5 h-5')}
-                    </div>
-                    <div>
-                      <div class="text-[10px] font-mono uppercase font-bold text-blue-300">Despacho en Obra</div>
-                      <h3 class="text-sm font-black text-white">Atención a Constructoras</h3>
-                    </div>
-                  </div>
-
-                  <p class="text-xs text-slate-300 leading-relaxed font-normal">
-                    ¿Requieres cotización formal para licitaciones o movilización masiva de flota a frentes de obra remotos?
-                  </p>
-
-                  <div class="space-y-2.5 pt-1">
-                    <button 
-                      id="hero-contact-provider-btn"
-                      class="w-full py-3.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white font-extrabold text-xs shadow-md flex items-center justify-center gap-2 transition-all hover:scale-[1.02] cursor-pointer"
-                    >
-                      ${renderIcon('Phone', 'w-4 h-4 text-blue-200')}
-                      <span>Contactar Red de Proveedores</span>
-                    </button>
-
-                    <a 
-                      href="#/catalog" 
-                      class="w-full py-3 px-4 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold text-xs border border-white/15 flex items-center justify-between transition-all"
-                    >
-                      <span>Ver toda la flota disponible</span>
-                      ${renderIcon('ChevronRight', 'w-4 h-4')}
-                    </a>
-                  </div>
-
-                </div>
-
-              </div>
-
+            <div class="pt-2 flex items-center gap-3">
+              <a href="#/catalog" class="px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-xs sm:text-sm shadow-md transition-all hover:scale-[1.02] flex items-center gap-2">
+                <span>Ver Catálogo Completo</span>
+                ${renderIcon('ArrowRight', 'w-4 h-4')}
+              </a>
+              <button id="hero-btn-contact" class="px-5 py-3 rounded-xl bg-white/20 hover:bg-white/30 text-white font-bold text-xs sm:text-sm backdrop-blur-sm border border-white/30 transition-all cursor-pointer">
+                Cotización Formal
+              </button>
             </div>
+
           </div>
 
         </div>
+
       </section>
 
       <!-- ========================================================================= -->
-      <!-- 2. CATEGORÍAS CLAVE CON FOTOS REALES DE CONSTRUCCIÓN (Heavy Visual Impact) -->
+      <!-- 2. TRUST STRIP: 4 E-Commerce Benefit Pills (Mercado Libre standard) -->
       <!-- ========================================================================= -->
-      <section class="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
+      <section class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 mt-4">
         
-        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
-          <div>
-            <span class="text-xs font-mono font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">
-              Líneas de Maquinaria
-            </span>
-            <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white font-display">
-              Categorías de Obra Civil & Minería
-            </h2>
+        <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-4 sm:p-5 shadow-xs grid grid-cols-2 md:grid-cols-4 gap-4 divide-y md:divide-y-0 md:divide-x divide-slate-100 dark:divide-slate-800">
+          
+          <div class="flex items-center gap-3 pt-2 md:pt-0">
+            <div class="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center flex-shrink-0">
+              ${renderIcon('Truck', 'w-5 h-5')}
+            </div>
+            <div>
+              <div class="text-xs font-bold text-slate-900 dark:text-white">Despacho Inmediato</div>
+              <div class="text-[11px] text-slate-500">A frentes de obra en Colombia</div>
+            </div>
           </div>
-          <a href="#/catalog" class="text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 group">
-            <span>Explorar catálogo técnico completo</span>
-            ${renderIcon('ArrowRight', 'w-3.5 h-3.5 group-hover:translate-x-1 transition-transform')}
+
+          <div class="flex items-center gap-3 pl-0 md:pl-4 pt-2 md:pt-0">
+            <div class="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center flex-shrink-0">
+              ${renderIcon('ShieldCheck', 'w-5 h-5')}
+            </div>
+            <div>
+              <div class="text-xs font-bold text-slate-900 dark:text-white">Póliza SURA Todo Riesgo</div>
+              <div class="text-[11px] text-slate-500">Amparo contractual garantizado</div>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-3 pl-0 md:pl-4 pt-2 md:pt-0">
+            <div class="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center flex-shrink-0">
+              ${renderIcon('FileCheck', 'w-5 h-5')}
+            </div>
+            <div>
+              <div class="text-xs font-bold text-slate-900 dark:text-white">Facturación Oficial DIAN</div>
+              <div class="text-[11px] text-slate-500">IVA 19% desglosado deducible</div>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-3 pl-0 md:pl-4 pt-2 md:pt-0">
+            <div class="w-10 h-10 rounded-xl bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 flex items-center justify-center flex-shrink-0">
+              ${renderIcon('Wrench', 'w-5 h-5')}
+            </div>
+            <div>
+              <div class="text-xs font-bold text-slate-900 dark:text-white">Mantenimiento al Día</div>
+              <div class="text-[11px] text-slate-500">Horómetro auditado y telemetría</div>
+            </div>
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- ========================================================================= -->
+      <!-- 3. CATEGORÍAS POPULARES: Cuadrícula Limpia estilo Mercado Libre -->
+      <!-- ========================================================================= -->
+      <section class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 mt-8">
+        
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-lg sm:text-xl font-bold text-slate-900 dark:text-white">
+            Categorías Principales
+          </h2>
+          <a href="#/catalog" class="text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1">
+            <span>Ver todas las categorías</span>
+            ${renderIcon('ChevronRight', 'w-4 h-4')}
           </a>
         </div>
 
-        <!-- Visual Category Grid with Construction Photography Overlay -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          ${constructionCategories.map(cat => `
-            <div 
-              class="group relative h-64 rounded-3xl overflow-hidden shadow-lg border border-slate-200 dark:border-slate-800 cursor-pointer hover-lift transition-all duration-300"
-              onclick="window.location.hash='#/catalog?category=${cat.id}'"
+        <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
+          ${popularCategories.map(cat => `
+            <a 
+              href="#/catalog?category=${cat.id}" 
+              class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-4 flex flex-col items-center text-center hover:shadow-md hover:border-blue-400 transition-all duration-150 group cursor-pointer"
             >
-              <!-- Real Photography Background -->
-              <img 
-                src="${cat.img}" 
-                alt="${cat.name}" 
-                class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
-                loading="lazy"
-              />
-
-              <!-- High Contrast Dark Overlay (Navy / Slate Blue) -->
-              <div class="absolute inset-0 bg-gradient-to-t from-[#071322] via-[#0b1c31]/75 to-transparent"></div>
-
-              <!-- Card Content Overlay -->
-              <div class="absolute inset-0 p-6 flex flex-col justify-between text-white z-10">
-                <div class="flex items-center justify-between">
-                  <span class="w-10 h-10 rounded-2xl bg-white/20 backdrop-blur-md border border-white/20 flex items-center justify-center text-white">
-                    ${renderIcon(cat.icon, 'w-5 h-5')}
-                  </span>
-                  <span class="text-[11px] font-mono px-3 py-1 rounded-full bg-black/40 backdrop-blur-sm border border-white/20 text-blue-200 font-bold">
-                    ${cat.count}
-                  </span>
-                </div>
-
-                <div class="space-y-1">
-                  <div class="text-[11px] font-mono uppercase font-bold text-blue-300 tracking-wider">${cat.tag}</div>
-                  <h3 class="text-lg font-bold text-white group-hover:text-blue-200 transition-colors">${cat.name}</h3>
-                  <div class="pt-2 flex items-center gap-1 text-xs text-slate-300 font-semibold group-hover:translate-x-1 transition-transform">
-                    <span>Ver maquinaria en esta línea</span>
-                    ${renderIcon('ArrowRight', 'w-3.5 h-3.5')}
-                  </div>
-                </div>
+              <div class="w-14 h-14 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-700 dark:text-slate-300 group-hover:bg-blue-50 dark:group-hover:bg-blue-950/60 group-hover:text-blue-600 transition-colors mb-2.5">
+                ${renderIcon(cat.icon, 'w-6 h-6')}
               </div>
-            </div>
+              <span class="text-xs font-bold text-slate-900 dark:text-white leading-tight group-hover:text-blue-600 transition-colors">
+                ${cat.name}
+              </span>
+              <span class="text-[10px] text-slate-400 mt-1 font-mono">
+                ${cat.count}
+              </span>
+            </a>
           `).join('')}
         </div>
 
       </section>
 
       <!-- ========================================================================= -->
-      <!-- 3. FLOTA ACTIVA EN PATIO: Equipos Listos con Fotografía Real (Grid Ancho) -->
+      <!-- 4. PRODUCTOS DESTACADOS: Cards Limpias estilo E-Commerce -->
       <!-- ========================================================================= -->
-      ${featuredTools.length > 0 ? `
-        <section class="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
-          
-          <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
-            <div>
-              <span class="text-xs font-mono font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">
-                Disponibilidad Inmediata
-              </span>
-              <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white font-display">
-                Equipos Listos para Despacho a Frente de Obra
-              </h2>
-            </div>
-            <a href="#/catalog" class="px-5 py-2.5 rounded-xl bg-[#132e4f] hover:bg-[#0a1c33] text-white text-xs font-bold inline-flex items-center gap-2 shadow-sm transition-all hover:scale-[1.02]">
-              <span>Ver Catálogo Completo (25+ Máquinas)</span>
-              ${renderIcon('ChevronRight', 'w-4 h-4')}
-            </a>
+      <section class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 mt-10">
+        
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h2 class="text-lg sm:text-xl font-bold text-slate-900 dark:text-white">
+              Maquinaria con Despacho Inmediato
+            </h2>
+            <p class="text-xs text-slate-500">Equipos verificados y listos en patio para entrega en obra</p>
           </div>
+          <a href="#/catalog" class="text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline">
+            Ver todas (${allTools.length}) &rarr;
+          </a>
+        </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-5">
-            ${featuredTools.map(t => {
-              const primaryImg = resolveToolImageUrl(t);
-              return `
-                <div class="tr-card overflow-hidden flex flex-col justify-between hover-lift card-glow group cursor-pointer border border-slate-200/90 dark:border-slate-800 rounded-2xl bg-white dark:bg-slate-900 transition-all duration-300" onclick="window.location.hash='#/product/${t.id}'">
-                  <div>
-                    <div class="relative h-44 bg-slate-900 overflow-hidden">
-                      <img 
-                        src="${primaryImg}" 
-                        alt="${t.name}" 
-                        class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                        onerror="window.ToolRentCacheShield?.handleImageError(this, '${primaryImg}', '${t.categoryName || ''}', '${t.name.replace(/'/g, "\\'")}')"
-                      />
-                      <span class="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-lg text-[10px] font-bold bg-slate-950/85 backdrop-blur-sm text-white border border-white/20 font-mono shadow-xs">
-                        ${t.brand}
-                      </span>
-                    </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          ${featuredTools.map(t => {
+            const primaryImg = resolveToolImageUrl(t);
+            const isAvailable = t.status === 'AVAILABLE';
+            return `
+              <div 
+                class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col justify-between hover:shadow-lg transition-shadow duration-200 cursor-pointer group"
+                onclick="window.location.hash='#/product/${t.id}'"
+              >
+                <div>
+                  <!-- Product Image with clean white background frame -->
+                  <div class="relative h-52 bg-slate-100 dark:bg-slate-800 overflow-hidden border-b border-slate-100 dark:border-slate-800">
+                    <img 
+                      src="${primaryImg}" 
+                      alt="${t.name}" 
+                      class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      loading="lazy"
+                      onerror="window.ToolRentCacheShield?.handleImageError(this, '${primaryImg}', '${t.categoryName || ''}', '${t.name.replace(/'/g, "\\'")}')"
+                    />
+                    
+                    <!-- Availability Pill -->
+                    <span class="absolute top-2.5 left-2.5 px-2.5 py-1 rounded-md text-[10px] font-bold ${
+                      isAvailable ? 'bg-emerald-600 text-white' : 'bg-slate-700 text-white'
+                    } shadow-xs">
+                      ${isAvailable ? 'Disponible Hoy' : 'En Obra'}
+                    </span>
 
-                    <div class="p-4 space-y-1.5">
-                      <div class="text-[10px] text-slate-400 font-mono uppercase font-bold tracking-wider">${t.categoryName || 'Construcción'}</div>
-                      <h4 class="text-xs font-bold text-slate-900 dark:text-white line-clamp-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">${t.name}</h4>
-                      <p class="text-[11px] text-slate-500 line-clamp-2 leading-relaxed">${t.description || 'Equipo industrial certificado con seguro todo riesgo SURA incluido.'}</p>
-                    </div>
-                  </div>
-
-                  <div class="p-4 pt-2.5 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/50">
-                    <div>
-                      <div class="text-[9px] text-slate-400 font-mono uppercase">Tarifa día</div>
-                      <div class="text-xs font-black text-[#132e4f] dark:text-blue-400 font-mono">${formatCurrency(t.dailyPrice)}</div>
-                    </div>
-                    <span class="text-xs font-bold text-blue-600 dark:text-blue-400 flex items-center gap-1 group-hover:translate-x-1 transition-transform">
-                      Alquilar ${renderIcon('ArrowRight', 'w-3 h-3')}
+                    <span class="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-white/95 dark:bg-slate-900/95 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                      ${t.brand || 'CAT'}
                     </span>
                   </div>
+
+                  <!-- Details -->
+                  <div class="p-4 space-y-1.5">
+                    <div class="text-[10px] uppercase font-bold text-slate-400 font-mono">${t.categoryName || 'Construcción'}</div>
+                    <h3 class="text-sm font-bold text-slate-900 dark:text-white line-clamp-2 group-hover:text-blue-600 transition-colors leading-snug">
+                      ${t.name}
+                    </h3>
+                    <p class="text-[11px] text-slate-500 line-clamp-2 pt-0.5">
+                      ${t.description || 'Maquinaria industrial con póliza todo riesgo y mantenimiento al día.'}
+                    </p>
+                  </div>
                 </div>
-              `;
-            }).join('')}
-          </div>
-        </section>
-      ` : ''}
 
-      <!-- ========================================================================= -->
-      <!-- 4. PILARES OPERATIVOS: Control de Obra & Garantías B2B -->
-      <!-- ========================================================================= -->
-      <section class="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
-        
-        <div class="p-8 sm:p-12 rounded-3xl bg-slate-100 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 shadow-sm space-y-10">
-          
-          <div class="text-center max-w-2xl mx-auto space-y-2">
-            <span class="text-xs font-mono font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400 bg-white dark:bg-slate-800 px-3 py-1 rounded-full border border-slate-200 dark:border-slate-700">
-              Garantía Operativa Opus Rentals
-            </span>
-            <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white font-display">
-              Seguridad Jurídica y Técnica en Frente de Obra
-            </h2>
-            <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
-              Cero intermediarios informales. Procesos transparentes diseñados para auditorías de ingeniería civil.
-            </p>
-          </div>
+                <!-- Footer: Price & Rent Action -->
+                <div class="p-4 pt-3 border-t border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-900/50 flex items-center justify-between">
+                  <div>
+                    <div class="text-[10px] text-slate-400">Tarifa por día</div>
+                    <div class="text-base font-black text-slate-900 dark:text-white font-mono">
+                      ${formatCurrency(t.dailyPrice)}
+                    </div>
+                  </div>
 
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            
-            <div class="p-6 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 shadow-xs space-y-3">
-              <div class="w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-950/50 text-[#132e4f] dark:text-blue-400 flex items-center justify-center">
-                ${renderIcon('CalendarCheck', 'w-6 h-6')}
+                  <button class="px-3.5 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all shadow-xs">
+                    Alquilar
+                  </button>
+                </div>
+
               </div>
-              <h3 class="text-base font-bold text-slate-900 dark:text-white">Motor Anti-Colisión de Reservas</h3>
-              <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                El sistema bloquea matemáticamente fechas cruzadas. Si una excavadora está en obra, queda inhabilitada de inmediato sin sobre-reservas.
-              </p>
-            </div>
-
-            <div class="p-6 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 shadow-xs space-y-3">
-              <div class="w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-950/50 text-[#132e4f] dark:text-blue-400 flex items-center justify-center">
-                ${renderIcon('FileCheck', 'w-6 h-6')}
-              </div>
-              <h3 class="text-base font-bold text-slate-900 dark:text-white">Facturación Oficial con IVA 19%</h3>
-              <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                Liquidación contable automática para contratistas. Emisión legal de comprobante fiscal, deducciones e historial de transacciones.
-              </p>
-            </div>
-
-            <div class="p-6 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 shadow-xs space-y-3">
-              <div class="w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-950/50 text-[#132e4f] dark:text-blue-400 flex items-center justify-center">
-                ${renderIcon('ShieldCheck', 'w-6 h-6')}
-              </div>
-              <h3 class="text-base font-bold text-slate-900 dark:text-white">Acta Digital de Entrega & Averías</h3>
-              <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                Inspección técnica de horómetro y estado físico al despachar y devolver. Desacople en 4FN para reportar novedades técnicas transparentes.
-              </p>
-            </div>
-
-          </div>
-
+            `;
+          }).join('')}
         </div>
 
       </section>
 
       <!-- ========================================================================= -->
-      <!-- 5. CALL TO ACTION: Red de Proveedores (Navy #071322 / #132e4f) -->
+      <!-- 5. BANNER CONSTRUCTORAS (B2B Registro) -->
       <!-- ========================================================================= -->
-      <section class="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="rounded-3xl p-8 sm:p-14 bg-gradient-to-r from-[#071322] via-[#0b1c31] to-[#132e4f] text-white flex flex-col md:flex-row items-center justify-between gap-8 shadow-2xl border border-slate-700/60 relative overflow-hidden">
-          
-          <div class="relative z-10 space-y-3 text-center md:text-left">
-            <span class="text-[11px] font-mono uppercase font-bold text-blue-300 tracking-wider">Red de Proveedores B2B</span>
-            <h3 class="text-2xl sm:text-4xl font-extrabold font-display">¿Tienes maquinaria disponible en patio?</h3>
-            <p class="text-xs sm:text-base text-slate-300 max-w-xl leading-relaxed">
-              Publica tu inventario ante empresas constructoras y contratistas de toda Colombia. Rentabiliza tus activos ociosos con seguros y liquidaciones transparentes.
+      <section class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 mt-12">
+        <div class="bg-[#132e4f] text-white rounded-2xl p-6 sm:p-10 flex flex-col md:flex-row items-center justify-between gap-6 shadow-md">
+          <div class="space-y-2 text-center md:text-left">
+            <span class="text-xs font-mono font-bold uppercase tracking-wider text-blue-300">Constructoras & Proveedores</span>
+            <h3 class="text-xl sm:text-2xl font-black">¿Tienes equipos en patio o requieres flota para licitación?</h3>
+            <p class="text-xs sm:text-sm text-slate-300 max-w-xl">
+              Publica tu inventario con seguros incluidos o cotiza paquetes de maquinaria masiva para infraestructura vial, minería y edificación.
             </p>
           </div>
-
-          <div class="relative z-10 flex flex-col sm:flex-row gap-4 w-full md:w-auto">
-            <button id="cta-provider-btn" class="px-7 py-4 rounded-2xl bg-white hover:bg-slate-100 text-[#071322] font-black text-xs shadow-xl transition-all cursor-pointer text-center hover:scale-[1.02]">
-              Registrarme como Proveedor
+          <div class="flex items-center gap-3 flex-shrink-0">
+            <button id="btn-home-reg-prov" class="px-5 py-3 rounded-xl bg-white text-[#132e4f] hover:bg-slate-100 font-extrabold text-xs shadow-md transition-all cursor-pointer">
+              Registrar Maquinaria
             </button>
-            <a href="#/catalog" class="px-7 py-4 rounded-2xl bg-white/10 hover:bg-white/20 active:bg-white/30 text-white font-bold text-xs border border-white/20 backdrop-blur-sm transition-all text-center">
-              Explorar Catálogo
-            </a>
+            <button id="btn-home-contact" class="px-5 py-3 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs border border-white/20 transition-all cursor-pointer">
+              Atención Telefónica
+            </button>
           </div>
-
         </div>
       </section>
 
     </div>
   `;
 
-  // Attach event listeners
-  const searchInput = container.querySelector('#hero-input-search');
-  const searchBtn = container.querySelector('#hero-btn-search');
-
-  function doSearch() {
-    const q = searchInput?.value?.trim() || '';
-    if (q) {
-      window.location.hash = `#/catalog?q=${encodeURIComponent(q)}`;
-    } else {
-      window.location.hash = '#/catalog';
-    }
-  }
-
-  searchBtn?.addEventListener('click', doSearch);
-  searchInput?.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') doSearch();
-  });
-
-  container.querySelector('#cta-provider-btn')?.addEventListener('click', () => {
-    openAuthModal('register');
-  });
-
-  container.querySelector('#hero-contact-provider-btn')?.addEventListener('click', () => {
+  // Attach handlers
+  container.querySelector('#hero-btn-contact')?.addEventListener('click', () => {
     openProviderContactModal({
-      name: 'Central de Operaciones Opus Rentals',
+      name: 'Despacho Central Opus Rentals',
       phone: '+57 (1) 745-8900',
       whatsapp: '573104567890',
-      city: 'Cobertura Nacional (Bogotá, Medellín, Cali, Barranquilla)',
-      address: 'Frente de Despacho y Logística de Maquinaria Pesada'
+      city: 'Cobertura Nacional',
+      address: 'Central de Logística y Maquinaria Pesada'
     });
+  });
+
+  container.querySelector('#btn-home-contact')?.addEventListener('click', () => {
+    openProviderContactModal({
+      name: 'Despacho Central Opus Rentals',
+      phone: '+57 (1) 745-8900',
+      whatsapp: '573104567890',
+      city: 'Cobertura Nacional',
+      address: 'Central de Logística y Maquinaria Pesada'
+    });
+  });
+
+  container.querySelector('#btn-home-reg-prov')?.addEventListener('click', () => {
+    openAuthModal('register');
   });
 }
 
