@@ -1,212 +1,134 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@400;500;600;700;800;900&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  /* ========================================================================= */
+  /* PALETA CONSTRUCTORA INDUSTRIAL B2B (Centralizada)                         */
+  /* ========================================================================= */
+  --color-primary: #FFB800;          /* Amarillo Industrial CAT */
+  --color-primary-hover: #E5A600;    /* Amarillo Hover */
+  --color-primary-text: #1A1A1A;     /* Máximo contraste accesible sobre amarillo */
+  
+  --color-secondary: #FF6B00;        /* Naranja Seguridad Vial */
+  --color-secondary-hover: #E55F00;  /* Naranja Hover */
+  
+  --color-dark: #1A1A1A;             /* Gris Carbón / Chasis */
+  --color-dark-surface: #2B2B2B;     /* Superficie Oscura */
+  --color-dark-slate: #132E4F;       /* Azul Maquinaria Pesada */
+  
+  --color-bg-light: #F4F5F7;         /* Fondo Gris Obra */
+  --color-surface-white: #FFFFFF;    /* Blanco Puro */
+  --color-slate-border: #E2E8F0;     /* Borde Gris Acero */
+
+  /* Estados Funcionales */
+  --color-success: #10B981;
+  --color-warning: #F59E0B;
+  --color-danger: #EF4444;
+  --color-info: #0284C7;
+}
+
 @layer base {
   body {
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
-    @apply bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 font-sans antialiased selection:bg-[#132e4f] selection:text-white min-h-screen flex flex-col transition-colors duration-200;
+    background-color: var(--color-bg-light);
+    color: var(--color-dark);
+    @apply font-sans antialiased min-h-screen flex flex-col;
   }
 
   h1, h2, h3, h4, h5, h6 {
     font-family: 'Outfit', 'Inter', sans-serif;
-    @apply tracking-tight font-bold text-slate-900 dark:text-white;
+    color: var(--color-dark);
+    @apply tracking-tight font-black;
   }
 }
 
 @layer components {
-  /* Opus Rentals Clean Steel & White Cards */
+  /* Tarjetas Industriales de Maquinaria */
   .tr-card {
-    @apply bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl shadow-xs transition-all duration-200;
+    background-color: var(--color-surface-white);
+    border: 1px solid var(--color-slate-border);
+    @apply rounded-xl shadow-xs transition-all duration-200;
   }
-  
+
   .tr-card-hover {
-    @apply tr-card hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700;
+    @apply tr-card hover:shadow-md hover:border-slate-400;
   }
 
-  /* Opus Rentals Brand Buttons: Azul Oscuro + Gris Acero + Blanco */
+  /* Botón Primario: Amarillo Industrial con Texto Oscuro (100% Accesible) */
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-xs tracking-wide
-           bg-[#132e4f] hover:bg-[#0a1c33] dark:bg-blue-600 dark:hover:bg-blue-500 text-white shadow-xs hover:shadow
-           active:scale-[0.98] transition-all duration-150 disabled:opacity-50 disabled:pointer-events-none;
+    background-color: var(--color-primary);
+    color: var(--color-primary-text);
+    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-black text-xs uppercase tracking-wider
+           shadow-xs hover:shadow-md active:scale-[0.98] transition-all duration-150 cursor-pointer disabled:opacity-50 disabled:pointer-events-none;
+  }
+  .btn-primary:hover {
+    background-color: var(--color-primary-hover);
   }
 
+  /* Botón Secundario: Naranja Seguridad Obra */
   .btn-secondary {
-    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-xs
-           bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 shadow-xs
-           active:scale-[0.98] transition-all duration-150 disabled:opacity-50 disabled:pointer-events-none;
+    background-color: var(--color-secondary);
+    color: #FFFFFF;
+    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-extrabold text-xs uppercase tracking-wider
+           shadow-xs hover:shadow active:scale-[0.98] transition-all duration-150 cursor-pointer;
+  }
+  .btn-secondary:hover {
+    background-color: var(--color-secondary-hover);
   }
 
+  /* Botón Chasis Oscuro / Azul Maquinaria */
+  .btn-dark {
+    background-color: var(--color-dark);
+    color: #FFFFFF;
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs
+           hover:bg-slate-800 active:scale-[0.98] transition-all duration-150 cursor-pointer shadow-xs;
+  }
+
+  /* Botón Outline */
   .btn-outline {
-    @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl font-semibold text-xs
-           border border-[#132e4f] dark:border-blue-400 text-[#132e4f] dark:text-blue-300 hover:bg-slate-100 dark:hover:bg-slate-800
-           active:scale-[0.98] transition-all duration-150;
-  }
-
-  .btn-steel {
-    @apply inline-flex items-center justify-center gap-2 px-3.5 py-2 rounded-xl font-semibold text-xs
-           bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700
-           active:scale-[0.98] transition-all duration-150;
-  }
-
-  .btn-danger {
-    @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl font-semibold text-xs
-           bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800 hover:bg-rose-100 dark:hover:bg-rose-900/50
-           active:scale-[0.98] transition-all duration-150;
-  }
-
-  .btn-success {
-    @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl font-semibold text-xs
-           bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100 dark:hover:bg-emerald-900/50
-           active:scale-[0.98] transition-all duration-150;
-  }
-
-  .btn-disabled {
-    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-medium text-xs
-           bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-slate-700 cursor-not-allowed select-none;
+    background-color: transparent;
+    border: 1.5px solid var(--color-dark);
+    color: var(--color-dark);
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl font-bold text-xs
+           hover:bg-slate-100 active:scale-[0.98] transition-all duration-150 cursor-pointer;
   }
 
   /* Form Inputs */
   .input-field {
-    @apply w-full px-3.5 py-2.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 text-xs font-medium
-           focus:outline-none focus:border-[#132e4f] dark:focus:border-blue-500 focus:ring-2 focus:ring-[#132e4f]/15 dark:focus:ring-blue-500/20 transition-all duration-150;
+    background-color: #FFFFFF;
+    border: 1px solid var(--color-slate-border);
+    color: var(--color-dark);
+    @apply w-full px-3.5 py-2.5 rounded-xl text-xs font-semibold placeholder-slate-400
+           focus:outline-none focus:border-[#FFB800] focus:ring-2 focus:ring-[#FFB800]/30 transition-all duration-150;
   }
 
   /* Status Badges */
   .badge-disponible {
-    @apply inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800;
+    @apply inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-[10px] font-black uppercase font-mono
+           bg-emerald-50 text-emerald-800 border border-emerald-300;
   }
 
   .badge-alquilada {
-    @apply inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700;
+    @apply inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-[10px] font-black uppercase font-mono
+           bg-slate-100 text-slate-700 border border-slate-300;
   }
 
   .badge-mantenimiento {
-    @apply inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800;
+    @apply inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-[10px] font-black uppercase font-mono
+           bg-amber-100 text-amber-900 border border-amber-300;
   }
 
-  .badge-confirmada {
-    @apply inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800;
+  /* Franja Amarilla/Negro de Señalización de Obra */
+  .hazard-stripe {
+    background: repeating-linear-gradient(
+      -45deg,
+      #FFB800,
+      #FFB800 12px,
+      #1A1A1A 12px,
+      #1A1A1A 24px
+    );
   }
-
-  .badge-en-curso {
-    @apply inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-[#132e4f]/10 dark:bg-blue-950/50 text-[#132e4f] dark:text-blue-300 border border-[#132e4f]/20 dark:border-blue-800;
-  }
-
-  .badge-completada {
-    @apply inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800;
-  }
-
-  .badge-cancelada {
-    @apply inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-rose-50 dark:bg-rose-950/50 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800;
-  }
-
-  .badge-pendiente {
-    @apply inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700;
-  }
-}
-
-/* Scrollbars */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 4px;
-}
-.dark ::-webkit-scrollbar-thumb {
-  background: #334155;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
-}
-
-/* Hide scrollbar utility */
-.no-scrollbar::-webkit-scrollbar {
-  display: none !important;
-  width: 0 !important;
-  height: 0 !important;
-}
-.no-scrollbar {
-  -ms-overflow-style: none !important;
-  scrollbar-width: none !important;
-}
-
-/* Polish Micro-animations */
-@keyframes trFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(4px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes trPopIn {
-  0% {
-    opacity: 0;
-    transform: scale(0.92) translateY(6px);
-  }
-  60% {
-    opacity: 1;
-    transform: scale(1.02) translateY(-2px);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
-}
-
-.animate-fade-in {
-  animation: trFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-.animate-pop-in {
-  animation: trPopIn 0.32s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-}
-
-/* Premium Industrial Hover Effects */
-.hover-lift {
-  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-}
-.hover-lift:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 16px 32px -8px rgba(19, 46, 79, 0.12), 0 8px 16px -4px rgba(0, 0, 0, 0.04);
-}
-
-.card-glow {
-  position: relative;
-  overflow: hidden;
-}
-.card-glow::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 50%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
-  transform: skewX(-20deg);
-  transition: 0.6s;
-  pointer-events: none;
-}
-.card-glow:hover::after {
-  left: 200%;
-}
-
-@keyframes floatSlow {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-6px); }
-}
-
-.animate-float {
-  animation: floatSlow 4s ease-in-out infinite;
 }

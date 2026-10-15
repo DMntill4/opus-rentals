@@ -90,18 +90,18 @@ export async function openRentalModal(tool) {
             <p class="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 mt-1">${tool.description || 'Maquinaria pesada certificada de alto rendimiento para obras civiles e infraestructura en Colombia.'}</p>
           </div>
 
-          <div class="p-3.5 bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-800 rounded-xl space-y-2 text-xs">
-            <div class="flex justify-between text-slate-600 dark:text-slate-300">
-              <span>Tarifa por día:</span>
-              <strong class="text-[#132e4f] dark:text-blue-400 font-bold">${formatCurrency(tool.dailyPrice || 850000)} / día</strong>
+            <div class="p-3.5 bg-amber-500/5 dark:bg-amber-500/10 border border-amber-500/20 rounded-xl space-y-2 text-xs">
+            <div class="flex justify-between text-slate-700 dark:text-slate-300">
+              <span class="font-medium">Tarifa por día:</span>
+              <strong class="text-amber-600 dark:text-amber-400 font-black text-sm">${formatCurrency(tool.dailyPrice || 850000)} / día</strong>
             </div>
-            <div class="flex justify-between text-slate-600 dark:text-slate-300">
+            <div class="flex justify-between text-slate-600 dark:text-slate-400">
               <span>Valor de reposición:</span>
-              <strong class="text-slate-800 dark:text-slate-200 font-medium">${formatCurrency(tool.replacementValue || 85000000)}</strong>
+              <strong class="text-slate-900 dark:text-slate-200 font-semibold">${formatCurrency(tool.replacementValue || 85000000)}</strong>
             </div>
-            <div class="flex justify-between text-slate-600 dark:text-slate-300">
+            <div class="flex justify-between text-slate-600 dark:text-slate-400">
               <span>Depósito de garantía (10%):</span>
-              <strong class="text-slate-800 dark:text-slate-200 font-medium">${formatCurrency(deposit)}</strong>
+              <strong class="text-slate-900 dark:text-slate-200 font-semibold">${formatCurrency(deposit)}</strong>
             </div>
           </div>
         </div>
@@ -109,38 +109,38 @@ export async function openRentalModal(tool) {
         <!-- Right: Dates Selection & Costs Breakdown -->
         <div class="space-y-5 flex flex-col justify-between">
           <div class="space-y-3">
-            <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
-              ${renderIcon('Calendar', 'w-4 h-4 inline mr-1 text-[#132e4f] dark:text-blue-400')} Período de Alquiler
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-200">
+              ${renderIcon('Calendar', 'w-4 h-4 inline mr-1 text-amber-500')} Período de Alquiler en Obra
             </label>
             
             <div class="grid grid-cols-2 gap-3">
               <div>
-                <label class="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1" for="rental-start-date">Fecha de inicio</label>
-                <input type="date" id="rental-start-date" value="${startDate}" min="${formatDateInput(new Date())}" class="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-[#132e4f] dark:focus:border-blue-500" />
+                <label class="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1" for="rental-start-date">Fecha de inicio</label>
+                <input type="date" id="rental-start-date" value="${startDate}" min="${formatDateInput(new Date())}" class="w-full bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-amber-400" />
               </div>
               <div>
-                <label class="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1" for="rental-end-date">Fecha de fin</label>
-                <input type="date" id="rental-end-date" value="${endDate}" min="${startDate}" class="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-[#132e4f] dark:focus:border-blue-500" />
+                <label class="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1" for="rental-end-date">Fecha de fin</label>
+                <input type="date" id="rental-end-date" value="${endDate}" min="${startDate}" class="w-full bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-amber-400" />
               </div>
             </div>
 
             <!-- Availability Status Alert -->
             <div id="availability-alert" class="transition-all">
               ${isCheckingAvailability ? `
-                <div class="text-slate-500 dark:text-slate-400 text-xs flex items-center gap-2 p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
-                  ${renderIcon('Loader2', 'w-4 h-4 animate-spin text-[#132e4f] dark:text-blue-400')} Verificando disponibilidad...
+                <div class="text-slate-600 dark:text-slate-400 text-xs flex items-center gap-2 p-3 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+                  ${renderIcon('Loader2', 'w-4 h-4 animate-spin text-amber-500')} Verificando disponibilidad telemática de la máquina...
                 </div>
               ` : isAvailable ? `
-                <div class="text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 p-2.5 rounded-lg flex items-center gap-2 text-xs">
+                <div class="text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-800 p-3 rounded-xl flex items-center gap-2 text-xs font-medium">
                   ${renderIcon('CheckCircle2', 'w-4 h-4 text-emerald-600 flex-shrink-0')}
-                  <span>Equipo disponible para las fechas seleccionadas (${days} días).</span>
+                  <span>Máquina lista para despacho inmediato (${days} días en obra). Póliza SURA incluida.</span>
                 </div>
               ` : `
-                <div class="text-rose-700 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 p-2.5 rounded-lg flex items-start gap-2 text-xs">
+                <div class="text-rose-700 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 p-3 rounded-xl flex items-start gap-2 text-xs">
                   ${renderIcon('AlertCircle', 'w-4 h-4 text-rose-600 flex-shrink-0 mt-0.5')}
                   <div>
                     <span class="font-bold">No disponible en estas fechas.</span>
-                    <p class="text-[11px] text-rose-600 dark:text-rose-400 mt-0.5">El equipo ya tiene un alquiler reservado en ese intervalo.</p>
+                    <p class="text-[11px] text-rose-600 dark:text-rose-400 mt-0.5">El equipo ya tiene un contrato activo en ese intervalo de fechas.</p>
                   </div>
                 </div>
               `}
@@ -148,23 +148,23 @@ export async function openRentalModal(tool) {
           </div>
 
           <!-- Price Summary Breakdown -->
-          <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800 space-y-2 text-xs">
+          <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/80 border-2 border-slate-200 dark:border-slate-700 space-y-2 text-xs">
             <div class="flex justify-between text-slate-600 dark:text-slate-400">
               <span>Alquiler (${days} días × ${formatCurrency(tool.dailyPrice || 850000)}):</span>
-              <span class="text-slate-800 dark:text-slate-200 font-medium">${formatCurrency(subtotal)}</span>
+              <span class="text-slate-900 dark:text-slate-200 font-bold">${formatCurrency(subtotal)}</span>
             </div>
             <div class="flex justify-between text-slate-600 dark:text-slate-400">
-              <span>IVA Legal (19%):</span>
-              <span class="text-slate-800 dark:text-slate-200 font-medium">${formatCurrency(tax)}</span>
+              <span>IVA Legal DIAN (19%):</span>
+              <span class="text-slate-900 dark:text-slate-200 font-bold">${formatCurrency(tax)}</span>
             </div>
-            <div class="border-t border-slate-200 dark:border-slate-700 pt-2 flex justify-between items-baseline">
-              <span class="text-sm font-bold text-slate-900 dark:text-white">Total a pagar:</span>
-              <span class="text-lg font-bold text-[#132e4f] dark:text-blue-400 font-display">${formatCurrency(total)}</span>
+            <div class="border-t-2 border-slate-200 dark:border-slate-700 pt-3 flex justify-between items-baseline">
+              <span class="text-sm font-black text-slate-900 dark:text-white uppercase tracking-wider">Total a pagar:</span>
+              <span class="text-2xl font-black text-slate-900 dark:text-white font-display text-amber-500">${formatCurrency(total)}</span>
             </div>
           </div>
 
           <!-- Action Button -->
-          <button id="btn-proceed-checkout" ${!isAvailable || isCheckingAvailability ? 'disabled' : ''} class="w-full py-2.5 px-4 rounded-xl text-xs font-bold text-white bg-[#132e4f] hover:bg-[#0a1c33] dark:bg-blue-600 dark:hover:bg-blue-700 disabled:opacity-50 shadow-xs transition-colors flex items-center justify-center gap-2 cursor-pointer">
+          <button id="btn-proceed-checkout" ${!isAvailable || isCheckingAvailability ? 'disabled' : ''} class="w-full py-3 px-5 rounded-xl text-sm font-black text-[#1A1A1A] bg-[#FFB800] hover:bg-[#E5A600] disabled:opacity-50 shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95 uppercase tracking-wide">
             ${renderIcon('CreditCard', 'w-4 h-4')} Continuar al Pago (${formatCurrency(total)})
           </button>
         </div>
@@ -233,45 +233,45 @@ async function openCheckoutModal(tool, rentalData) {
       <div>
         <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-2">Selecciona Método de Pago</label>
         <div class="grid grid-cols-3 gap-2.5">
-          <label class="p-3 rounded-xl border-2 border-[#132e4f] dark:border-blue-500 bg-[#132e4f]/5 dark:bg-blue-950/30 cursor-pointer flex flex-col items-center text-center gap-1.5 transition-all">
-            <input type="radio" name="payment-method" value="CREDIT_CARD" checked class="text-[#132e4f] dark:text-blue-400">
-            ${renderIcon('CreditCard', 'w-5 h-5 text-[#132e4f] dark:text-blue-400')}
-            <span class="text-xs font-semibold text-slate-900 dark:text-white">Tarjeta Crédito</span>
+          <label class="p-3 rounded-xl border-2 border-amber-500 bg-amber-500/10 dark:bg-amber-500/20 cursor-pointer flex flex-col items-center text-center gap-1.5 transition-all">
+            <input type="radio" name="payment-method" value="CREDIT_CARD" checked class="text-amber-500">
+            ${renderIcon('CreditCard', 'w-5 h-5 text-amber-600 dark:text-amber-400')}
+            <span class="text-xs font-bold text-slate-900 dark:text-white">Tarjeta Crédito</span>
           </label>
-          <label class="p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-slate-300 cursor-pointer flex flex-col items-center text-center gap-1.5 transition-all">
-            <input type="radio" name="payment-method" value="DEBIT_CARD" class="text-[#132e4f] dark:text-blue-400">
+          <label class="p-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-slate-300 cursor-pointer flex flex-col items-center text-center gap-1.5 transition-all">
+            <input type="radio" name="payment-method" value="DEBIT_CARD" class="text-amber-500">
             ${renderIcon('Wallet', 'w-5 h-5 text-slate-600 dark:text-slate-300')}
-            <span class="text-xs font-semibold text-slate-900 dark:text-white">PSE / Débito</span>
+            <span class="text-xs font-bold text-slate-900 dark:text-white">PSE / Débito</span>
           </label>
-          <label class="p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-slate-300 cursor-pointer flex flex-col items-center text-center gap-1.5 transition-all">
-            <input type="radio" name="payment-method" value="BANK_TRANSFER" class="text-[#132e4f] dark:text-blue-400">
+          <label class="p-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-slate-300 cursor-pointer flex flex-col items-center text-center gap-1.5 transition-all">
+            <input type="radio" name="payment-method" value="BANK_TRANSFER" class="text-amber-500">
             ${renderIcon('Building2', 'w-5 h-5 text-slate-600 dark:text-slate-300')}
-            <span class="text-xs font-semibold text-slate-900 dark:text-white">Transferencia</span>
+            <span class="text-xs font-bold text-slate-900 dark:text-white">Transferencia</span>
           </label>
         </div>
       </div>
 
       <!-- Simulated Card Form -->
-      <div class="space-y-3 p-4 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+      <div class="space-y-3 p-4 rounded-xl bg-slate-50 dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700">
         <div>
-          <label class="block text-[11px] font-semibold text-slate-600 dark:text-slate-300 mb-1">Número de Tarjeta (Simulado)</label>
-          <input type="text" class="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-xs font-mono text-slate-800 dark:text-slate-100" value="4532 •••• •••• 8892" />
+          <label class="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">Número de Tarjeta Corporativa</label>
+          <input type="text" class="w-full bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-mono font-bold text-slate-900 dark:text-white" value="4532 •••• •••• 8892" />
         </div>
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-[11px] font-semibold text-slate-600 dark:text-slate-300 mb-1">Vencimiento</label>
-            <input type="text" class="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-xs font-mono text-slate-800 dark:text-slate-100" value="12/28" />
+            <label class="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">Vencimiento</label>
+            <input type="text" class="w-full bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-mono font-bold text-slate-900 dark:text-white" value="12/28" />
           </div>
           <div>
-            <label class="block text-[11px] font-semibold text-slate-600 dark:text-slate-300 mb-1">CVC / CVV</label>
-            <input type="password" class="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-xs font-mono text-slate-800 dark:text-slate-100" value="892" />
+            <label class="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">CVC / CVV</label>
+            <input type="password" class="w-full bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-mono font-bold text-slate-900 dark:text-white" value="892" />
           </div>
         </div>
       </div>
 
       <div id="checkout-error" class="hidden text-xs text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 p-2.5 rounded-lg"></div>
 
-      <button id="btn-confirm-payment" class="w-full py-2.5 px-4 rounded-xl text-xs font-bold text-white bg-[#132e4f] hover:bg-[#0a1c33] dark:bg-blue-600 dark:hover:bg-blue-700 shadow-xs transition-colors flex items-center justify-center gap-2 cursor-pointer">
+      <button id="btn-confirm-payment" class="w-full py-3 px-5 rounded-xl text-sm font-black text-[#1A1A1A] bg-[#FFB800] hover:bg-[#E5A600] shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95 uppercase tracking-wide">
         ${renderIcon('Lock', 'w-4 h-4')} Confirmar y Pagar ${formatCurrency(rentalData.total)}
       </button>
     </div>
@@ -355,29 +355,29 @@ function showSuccessModal(rental, payment, tool, rentalData) {
   content.className = 'p-6 text-center space-y-5 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100';
 
   content.innerHTML = `
-    <div class="w-14 h-14 rounded-full bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400 mx-auto flex items-center justify-center">
+    <div class="w-14 h-14 rounded-full bg-emerald-50 dark:bg-emerald-950/40 border-2 border-emerald-300 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400 mx-auto flex items-center justify-center shadow-sm">
       ${renderIcon('CheckCircle2', 'w-7 h-7')}
     </div>
 
     <div>
-      <h3 class="text-lg font-bold text-slate-900 dark:text-white font-display">¡Reserva y Pago Exitosos!</h3>
+      <h3 class="text-xl font-black text-slate-900 dark:text-white font-display">¡Reserva y Pago Exitosos!</h3>
       <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
         Tu solicitud ha sido radicada correctamente con el código 
-        <strong class="text-slate-900 dark:text-white font-mono">${rental.id}</strong>
+        <strong class="text-slate-900 dark:text-white font-mono bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded">${rental?.id || 'RES-001'}</strong>
       </p>
     </div>
 
-    <div class="p-3.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-left space-y-1.5">
-      <div class="flex justify-between"><span class="text-slate-500 dark:text-slate-400">Estado:</span> <span class="badge-pending">Pendiente de Despacho</span></div>
-      <div class="flex justify-between"><span class="text-slate-500 dark:text-slate-400">Transacción Pago:</span> <strong class="text-emerald-600 dark:text-emerald-400 font-mono">${payment?.id || 'APROBADA'}</strong></div>
-      <div class="flex justify-between"><span class="text-slate-500 dark:text-slate-400">Total Abonado:</span> <strong class="text-slate-900 dark:text-white font-bold">${formatCurrency(payment?.amount || rentalData?.total || 2550000)}</strong></div>
+    <div class="p-4 bg-slate-50 dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-xl text-xs text-left space-y-2">
+      <div class="flex justify-between"><span class="text-slate-500 dark:text-slate-400 font-medium">Estado:</span> <span class="bg-amber-400 text-black px-2.5 py-0.5 rounded font-black text-[11px] uppercase tracking-wide">Pendiente de Despacho</span></div>
+      <div class="flex justify-between"><span class="text-slate-500 dark:text-slate-400 font-medium">Transacción Pago:</span> <strong class="text-emerald-600 dark:text-emerald-400 font-mono font-bold">${payment?.id || 'APROBADA'}</strong></div>
+      <div class="flex justify-between"><span class="text-slate-500 dark:text-slate-400 font-medium">Total Abonado:</span> <strong class="text-slate-900 dark:text-white font-black text-sm">${formatCurrency(payment?.amount || rentalData?.total || 2550000)}</strong></div>
     </div>
 
-    <div class="flex flex-col gap-2 pt-2">
-      <button id="btn-view-invoice-modal" class="w-full py-2.5 px-4 rounded-xl text-xs font-bold text-white bg-[#132e4f] hover:bg-[#0a1c33] dark:bg-blue-600 dark:hover:bg-blue-700 shadow-xs transition-colors flex items-center justify-center gap-2 cursor-pointer">
+    <div class="flex flex-col gap-2.5 pt-2">
+      <button id="btn-view-invoice-modal" class="w-full py-3 px-4 rounded-xl text-xs font-black text-[#1A1A1A] bg-[#FFB800] hover:bg-[#E5A600] shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer uppercase tracking-wide">
         ${renderIcon('Printer', 'w-4 h-4')} Ver Factura Oficial de Alquiler
       </button>
-      <button id="btn-goto-my-rentals" class="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 py-2 rounded-xl text-xs font-semibold transition-colors cursor-pointer">
+      <button id="btn-goto-my-rentals" class="w-full bg-slate-100 dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer">
         ${renderIcon('Calendar', 'w-4 h-4 inline mr-1')} Ir a Mis Alquileres
       </button>
     </div>

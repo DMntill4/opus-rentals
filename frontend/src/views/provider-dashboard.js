@@ -104,14 +104,17 @@ export async function renderProviderDashboard() {
           <!-- Top Header & Action -->
           <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
-              <h1 class="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white font-display">Gestión de Alquileres</h1>
-              <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">Supervisa tu flota pesada, disponibilidad en obra y despachos contractuales.</p>
+              <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-500 text-xs font-bold uppercase tracking-wider mb-2">
+                ${renderIcon('Building2', 'w-3.5 h-3.5')} Portal Oficial de Proveedores de Flota
+              </div>
+              <h1 class="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white font-display">Gestión de Flota & Despachos</h1>
+              <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mt-1">Supervisa tu maquinaria en frentes de obra, contratos activos y solicitudes de alquiler B2B.</p>
             </div>
 
             <div class="flex items-center gap-3">
-              <button id="btn-open-new-tool-drawer" class="btn-primary !py-2.5 !px-4 text-xs font-bold flex items-center gap-2 shadow-xs cursor-pointer">
+              <button id="btn-open-new-tool-drawer" class="btn-primary !py-2.5 !px-5 text-xs font-black uppercase tracking-wide flex items-center gap-2 shadow-md cursor-pointer active:scale-95">
                 ${renderIcon('Plus', 'w-4 h-4')}
-                <span>Nueva herramienta</span>
+                <span>Publicar Maquinaria</span>
               </button>
             </div>
           </div>
@@ -120,85 +123,85 @@ export async function renderProviderDashboard() {
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" id="provider-kpis-grid">
             
             <!-- Card 1: Disponibles -->
-            <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/90 dark:border-slate-800 shadow-sm space-y-2">
+            <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border-2 border-slate-200 dark:border-slate-800 shadow-sm space-y-2">
               <div class="flex items-center justify-between">
-                <span class="text-xs font-semibold text-slate-500 dark:text-slate-400">Herramientas disponibles</span>
-                <div class="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                <span class="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Disponibles para Alquiler</span>
+                <div class="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold">
                   ${renderIcon('CheckCircle2', 'w-4 h-4')}
                 </div>
               </div>
               <div class="text-3xl font-black text-slate-900 dark:text-white font-display">${availableTools}</div>
               <div class="text-[11px] text-slate-500 dark:text-slate-400">
-                de ${totalTools} registradas (<span class="text-emerald-600 dark:text-emerald-400 font-bold">${Math.round((availableTools / (totalTools || 1)) * 100)}%</span>)
+                de ${totalTools} registradas (<span class="text-emerald-600 dark:text-emerald-400 font-bold">${Math.round((availableTools / (totalTools || 1)) * 100)}% operativa</span>)
               </div>
             </div>
 
             <!-- Card 2: Alquiladas -->
-            <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/90 dark:border-slate-800 shadow-sm space-y-2">
+            <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border-2 border-slate-200 dark:border-slate-800 shadow-sm space-y-2">
               <div class="flex items-center justify-between">
-                <span class="text-xs font-semibold text-slate-500 dark:text-slate-400">Alquiladas</span>
-                <div class="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+                <span class="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Operando en Obra</span>
+                <div class="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center font-bold">
                   ${renderIcon('Calendar', 'w-4 h-4')}
                 </div>
               </div>
               <div class="text-3xl font-black text-slate-900 dark:text-white font-display">${rentedTools}</div>
               <div class="text-[11px] text-slate-500 dark:text-slate-400">
-                en <span class="text-[#132e4f] dark:text-blue-400 font-semibold">5</span> clientes activos
+                en <span class="text-amber-600 dark:text-amber-400 font-bold">5</span> frentes de obra activos
               </div>
             </div>
 
             <!-- Card 3: En mantenimiento -->
-            <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/90 dark:border-slate-800 shadow-sm space-y-2">
+            <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border-2 border-slate-200 dark:border-slate-800 shadow-sm space-y-2">
               <div class="flex items-center justify-between">
-                <span class="text-xs font-semibold text-slate-500 dark:text-slate-400">En mantenimiento</span>
-                <div class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 flex items-center justify-center">
+                <span class="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Mantenimiento Preventivo</span>
+                <div class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 flex items-center justify-center font-bold">
                   ${renderIcon('Wrench', 'w-4 h-4')}
                 </div>
               </div>
               <div class="text-3xl font-black text-slate-900 dark:text-white font-display">${maintenanceTools}</div>
-              <div class="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
-                revisión programada
+              <div class="text-[11px] text-slate-500 dark:text-slate-400 font-semibold">
+                inspección técnica en taller
               </div>
             </div>
 
             <!-- Card 4: Solicitudes pendientes -->
-            <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/90 dark:border-slate-800 shadow-sm space-y-2">
+            <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border-2 border-amber-400 dark:border-amber-500 shadow-sm space-y-2 bg-gradient-to-br from-amber-500/5 to-transparent">
               <div class="flex items-center justify-between">
-                <span class="text-xs font-semibold text-slate-500 dark:text-slate-400">Solicitudes pendientes</span>
-                <div class="w-8 h-8 rounded-lg bg-[#132e4f]/10 dark:bg-blue-950/40 text-[#132e4f] dark:text-blue-400 flex items-center justify-center relative">
+                <span class="text-xs font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider">Solicitudes por Aprobar</span>
+                <div class="w-8 h-8 rounded-lg bg-amber-400 text-black flex items-center justify-center relative font-black">
                   ${renderIcon('Clock', 'w-4 h-4')}
-                  ${pendingRequests > 0 ? '<span class="absolute top-1 right-1 w-2 h-2 rounded-full bg-[#132e4f] dark:bg-blue-500 ring-2 ring-white dark:ring-slate-900"></span>' : ''}
+                  ${pendingRequests > 0 ? '<span class="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-rose-500 ring-2 ring-white"></span>' : ''}
                 </div>
               </div>
-              <div class="text-3xl font-black text-slate-900 dark:text-white font-display">${pendingRequests}</div>
-              <div class="text-[11px] text-[#132e4f] dark:text-blue-400 font-semibold">
-                por confirmar hoy
+              <div class="text-3xl font-black text-slate-900 dark:text-white font-display text-amber-500">${pendingRequests}</div>
+              <div class="text-[11px] text-amber-700 dark:text-amber-400 font-bold">
+                requieren confirmación hoy
               </div>
             </div>
 
           </div>
 
           <!-- Navigation Tabs: Inventario vs Solicitudes -->
-          <div class="border-b border-slate-200 dark:border-slate-800">
+          <div class="border-b-2 border-slate-200 dark:border-slate-800">
             <nav class="flex space-x-8" aria-label="Tabs">
               <button 
                 id="tab-btn-inventory" 
-                class="py-3 px-1 border-b-2 font-bold text-sm flex items-center gap-2 transition-colors cursor-pointer ${activeTab === 'inventory' ? 'border-[#132e4f] text-[#132e4f] dark:border-blue-400 dark:text-white' : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:border-slate-300 dark:hover:border-slate-700'}"
+                class="py-3 px-1 border-b-2 font-black text-sm flex items-center gap-2 transition-all cursor-pointer uppercase tracking-wider ${activeTab === 'inventory' ? 'border-[#FFB800] text-slate-900 dark:text-white' : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:border-slate-300'}"
               >
-                ${renderIcon('Package', 'w-4 h-4')}
+                ${renderIcon('Package', 'w-4 h-4 text-amber-500')}
                 <span>Inventario de Maquinaria</span>
-                <span class="px-2 py-0.5 rounded-full text-xs font-semibold ${activeTab === 'inventory' ? 'bg-[#132e4f]/10 dark:bg-blue-950/60 text-[#132e4f] dark:text-blue-300' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300'}">
+                <span class="px-2 py-0.5 rounded-md text-xs font-black ${activeTab === 'inventory' ? 'bg-[#FFB800] text-[#1A1A1A]' : 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300'}">
                   ${toolsList.length}
                 </span>
               </button>
 
               <button 
                 id="tab-btn-requests" 
-                class="py-3 px-1 border-b-2 font-bold text-sm flex items-center gap-2 transition-colors cursor-pointer ${activeTab === 'requests' ? 'border-[#132e4f] text-[#132e4f] dark:border-blue-400 dark:text-white' : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:border-slate-300 dark:hover:border-slate-700'}"
+                class="py-3 px-1 border-b-2 font-black text-sm flex items-center gap-2 transition-all cursor-pointer uppercase tracking-wider ${activeTab === 'requests' ? 'border-[#FFB800] text-slate-900 dark:text-white' : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:border-slate-300'}"
               >
-                ${renderIcon('FileText', 'w-4 h-4')}
+                ${renderIcon('FileText', 'w-4 h-4 text-amber-500')}
                 <span>Despachos y Solicitudes</span>
-                <span class="px-2 py-0.5 rounded-full text-xs font-semibold ${pendingRequests > 0 ? 'bg-[#132e4f] dark:bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300'}">
+                <span class="px-2 py-0.5 rounded-md text-xs font-black ${pendingRequests > 0 ? 'bg-[#FF6B00] text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300'}">
                   ${requestsList.length}
                 </span>
               </button>

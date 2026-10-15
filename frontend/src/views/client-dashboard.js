@@ -14,18 +14,18 @@ export async function renderClientDashboard() {
 
   if (!auth.isAuthenticated()) {
     container.innerHTML = `
-      <section class="min-h-[70vh] bg-[#f5f5f5] flex items-center justify-center p-4">
-        <div class="bg-white rounded-xl border border-slate-200 p-8 max-w-md w-full shadow-sm text-center space-y-4">
-          <div class="w-12 h-12 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center mx-auto">
-            ${renderIcon('Lock', 'w-6 h-6')}
+      <section class="min-h-[70vh] bg-[#F4F5F7] flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl border border-slate-200 p-8 max-w-md w-full shadow-sm text-center space-y-4">
+          <div class="w-14 h-14 rounded-2xl bg-amber-50 text-amber-700 flex items-center justify-center mx-auto border border-amber-200">
+            ${renderIcon('Lock', 'w-7 h-7')}
           </div>
-          <h2 class="text-lg font-bold text-slate-900">Inicia sesión para ver tus alquileres</h2>
-          <p class="text-xs text-slate-500">Consulta tus órdenes activas, fechas de entrega en obra y comprobantes fiscales.</p>
+          <h2 class="text-xl font-black text-slate-900">Inicia sesión para ver tus alquileres</h2>
+          <p class="text-xs text-slate-500 font-normal">Consulta tus órdenes activas en obra, fechas de entrega y facturación oficial DIAN.</p>
           <div class="flex flex-col gap-2 pt-2">
-            <button id="btn-login-prompt" class="w-full py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs">
+            <button id="btn-login-prompt" class="btn-primary w-full !py-3 text-xs font-black">
               Iniciar Sesión
             </button>
-            <button id="btn-demo-client-login" class="w-full py-2.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs">
+            <button id="btn-demo-client-login" class="w-full py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs cursor-pointer">
               Entrar como Cliente (Demo)
             </button>
           </div>
@@ -47,25 +47,23 @@ export async function renderClientDashboard() {
   const user = auth.getUser();
 
   container.innerHTML = `
-    <div class="bg-[#f5f5f5] dark:bg-slate-950 min-h-screen pb-16 text-slate-800 dark:text-slate-100 font-sans">
+    <div class="bg-[#F4F5F7] min-h-screen pb-16 text-[#1A1A1A] font-sans">
       
-      <!-- Top Bar: Mercado Libre "Mis Compras" Style -->
-      <div class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 py-4 shadow-2xs">
+      <!-- Top Bar: Mis Alquileres -->
+      <div class="bg-white border-b border-slate-200 py-4 shadow-2xs">
         <div class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <h1 class="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
+            <span class="text-[10px] font-mono font-bold uppercase tracking-wider text-amber-700">Gestión de Obra B2B</span>
+            <h1 class="text-xl sm:text-2xl font-black text-slate-900 leading-tight">
               Mis Alquileres de Maquinaria
             </h1>
-            <p class="text-xs text-slate-500 font-mono mt-0.5">
-              Historial de órdenes, contratos en curso y facturación oficial
-            </p>
           </div>
 
           <div class="flex items-center gap-3">
-            <button id="btn-refresh-rentals" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-lg text-xs font-bold flex items-center gap-1.5 cursor-pointer">
+            <button id="btn-refresh-rentals" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer">
               ${renderIcon('RefreshCw', 'w-3.5 h-3.5')} Actualizar
             </button>
-            <a href="#/catalog" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-xs">
+            <a href="#/catalog" class="btn-primary !px-4 !py-2 text-xs font-black shadow-xs flex items-center gap-1.5">
               ${renderIcon('PlusCircle', 'w-4 h-4')} Alquilar Nuevo Equipo
             </a>
           </div>
@@ -98,13 +96,13 @@ export async function renderClientDashboard() {
 
       if (!rentals || rentals.length === 0) {
         rentalsContainer.innerHTML = `
-          <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-12 text-center space-y-4 max-w-lg mx-auto">
-            <div class="w-14 h-14 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 mx-auto">
+          <div class="bg-white rounded-2xl border border-slate-200 p-12 text-center space-y-4 max-w-lg mx-auto shadow-sm">
+            <div class="w-14 h-14 rounded-full bg-amber-50 text-amber-700 flex items-center justify-center mx-auto">
               ${renderIcon('FileText', 'w-7 h-7')}
             </div>
-            <h3 class="text-base font-bold text-slate-900 dark:text-white">Aún no tienes alquileres registrados</h3>
-            <p class="text-xs text-slate-500">Explora nuestro catálogo para reservar maquinaria con entrega garantizada en tu frente de obra.</p>
-            <a href="#/catalog" class="inline-block px-5 py-2.5 bg-blue-600 text-white rounded-lg text-xs font-bold">
+            <h3 class="text-base font-black text-slate-900">Aún no tienes alquileres registrados</h3>
+            <p class="text-xs text-slate-500 font-normal">Explora nuestro catálogo para reservar maquinaria con entrega garantizada en tu frente de obra.</p>
+            <a href="#/catalog" class="btn-primary !px-5 !py-2.5 text-xs font-black inline-block">
               Ir al Catálogo de Maquinaria
             </a>
           </div>
@@ -121,13 +119,12 @@ export async function renderClientDashboard() {
         const total = Math.round(baseSubtotal * 1.19);
 
         return `
-          <!-- Mercado Libre Style Order Card -->
-          <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-5 shadow-xs flex flex-col md:flex-row justify-between gap-5 items-start md:items-center">
+          <!-- Order Card with Industrial Yellow & Slate Accents -->
+          <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs flex flex-col md:flex-row justify-between gap-5 items-start md:items-center">
             
-            <!-- Left: Order Info & Dates -->
             <div class="space-y-2 flex-1">
               <div class="flex items-center gap-3 text-xs">
-                <span class="font-mono font-bold text-slate-700 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded">
+                <span class="font-mono font-black text-slate-900 bg-slate-100 px-2.5 py-0.5 rounded border border-slate-200">
                   Orden #${rental.id}
                 </span>
                 ${getRentalStatusBadge(rental.status)}
@@ -137,41 +134,41 @@ export async function renderClientDashboard() {
               </div>
 
               <div class="flex items-center gap-3 pt-1">
-                <div class="w-12 h-12 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-600 flex-shrink-0">
+                <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center flex-shrink-0 border border-amber-200">
                   ${renderIcon('Truck', 'w-6 h-6')}
                 </div>
                 <div>
-                  <h3 class="text-sm font-bold text-slate-900 dark:text-white leading-tight">
+                  <h3 class="text-sm font-black text-slate-900 leading-tight">
                     ${toolName}
                   </h3>
-                  <div class="text-xs text-slate-500 font-mono mt-0.5">
+                  <div class="text-xs text-slate-500 font-mono mt-0.5 font-medium">
                     Tarifa: ${formatCurrency(dailyRate)}/día · Duración: ${days} día${days > 1 ? 's' : ''}
                   </div>
                 </div>
               </div>
 
-              <div class="text-xs text-slate-600 dark:text-slate-300 pt-1 flex flex-wrap gap-4">
+              <div class="text-xs text-slate-600 pt-1 flex flex-wrap gap-4 font-normal">
                 <span>Vigencia en obra: <strong>${formatDate(rental.startDate)}</strong> hasta <strong>${formatDate(rental.endDate)}</strong></span>
                 ${rental.providerCompanyName ? `<span>Proveedor: <strong>${rental.providerCompanyName}</strong></span>` : ''}
               </div>
             </div>
 
             <!-- Right: Exact Total & Actions -->
-            <div class="flex flex-row md:flex-col items-end justify-between w-full md:w-auto gap-4 pt-3 md:pt-0 border-t md:border-t-0 border-slate-100">
+            <div class="flex flex-row md:flex-col items-end justify-between w-full md:w-auto gap-3 pt-3 md:pt-0 border-t md:border-t-0 border-slate-100">
               <div class="text-left md:text-right">
-                <div class="text-[10px] text-slate-400 uppercase font-bold font-mono">Total Liquidado (IVA 19%)</div>
-                <div class="text-xl font-black text-slate-900 dark:text-white font-mono">
+                <div class="text-[9px] text-slate-400 uppercase font-black font-mono">Total Liquidado (IVA 19%)</div>
+                <div class="text-xl font-black text-slate-900 font-mono">
                   ${formatCurrency(total)}
                 </div>
               </div>
 
               <div class="flex items-center gap-2">
-                <button class="btn-check-invoice px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg flex items-center gap-1.5 cursor-pointer shadow-xs" data-rental-id="${rental.id}">
-                  ${renderIcon('FileText', 'w-3.5 h-3.5 text-blue-600')} Ver Factura Oficial
+                <button class="btn-check-invoice btn-dark !py-2 !px-3 text-xs flex items-center gap-1.5" data-rental-id="${rental.id}">
+                  ${renderIcon('FileText', 'w-3.5 h-3.5 text-[#FFB800]')} Ver Factura Oficial
                 </button>
 
                 ${isPending ? `
-                  <button class="btn-cancel-rental px-3 py-2 bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer" data-rental-id="${rental.id}">
+                  <button class="btn-cancel-rental px-3 py-2 bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-bold rounded-xl flex items-center gap-1 cursor-pointer border border-rose-200" data-rental-id="${rental.id}">
                     ${renderIcon('XCircle', 'w-3.5 h-3.5')} Cancelar
                   </button>
                 ` : ''}
@@ -182,7 +179,6 @@ export async function renderClientDashboard() {
         `;
       }).join('');
 
-      // Invoice viewer handler
       rentalsContainer.querySelectorAll('.btn-check-invoice').forEach(btn => {
         btn.addEventListener('click', async () => {
           const rentalId = btn.dataset.rentalId;
@@ -231,7 +227,6 @@ export async function renderClientDashboard() {
         });
       });
 
-      // Cancel handler
       rentalsContainer.querySelectorAll('.btn-cancel-rental').forEach(btn => {
         btn.addEventListener('click', async () => {
           const rentalId = btn.dataset.rentalId;
