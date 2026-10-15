@@ -4,8 +4,7 @@ import { formatCurrency } from '../utils/formatters.js';
 import api from '../api/client.js';
 import auth from '../auth/state.js';
 import { openAuthModal } from '../components/auth-modal.js';
-import { openProviderContactModal } from '../components/provider-modal.js';
-import { resolveToolImageUrl, constructionHeroImage, constructionCategories } from '../utils/tool-images.js';
+import { resolveToolImageUrl, constructionHeroImage, constructionHeroImage2, constructionCategories } from '../utils/tool-images.js';
 
 export async function renderHomeView() {
   renderNavbar('home');
@@ -250,10 +249,11 @@ export async function renderHomeView() {
 
           <div class="lg:col-span-5 h-72 lg:h-full min-h-[300px] bg-slate-900 relative overflow-hidden">
             <img 
-              src="${constructionHeroImage}" 
+              src="${constructionHeroImage2}" 
               alt="Excavadora Pesada CAT 320D2" 
               class="w-full h-full object-cover"
               loading="lazy"
+              onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1581094288338-2314dddb7ece?auto=format&fit=crop&w=1200&q=85';"
             />
             <div class="absolute bottom-4 left-4 right-4 bg-slate-950/85 backdrop-blur-md px-3.5 py-2 rounded-xl text-white flex items-center justify-between text-xs border border-white/10 font-mono">
               <span class="font-bold text-[#FFB800]">Excavadora CAT 320D2</span>

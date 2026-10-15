@@ -10,6 +10,9 @@ import { customLinks } from './custom-links.js';
 export const constructionHeroImage = customLinks?.general?.heroBackground || '/assets/hero/hero-excavator.jpg';
 export const constructionHeroRemoteFallback = 'https://images.unsplash.com/photo-1579762715118-a6f1d4b934f1?auto=format&fit=crop&w=1920&q=85';
 
+// Second showcase/banner image for technical guide section in Home (constructionHeroImage2)
+export const constructionHeroImage2 = customLinks?.general?.featuredMachineryGuide || 'https://images.unsplash.com/photo-1541888946425-d0fbb186156f?auto=format&fit=crop&w=1200&q=85';
+
 // Worksite engineer & contractor visual for Auth Modal & B2B Portals
 export const loginConstructionImage = customLinks?.general?.loginBackground || 'https://plus.unsplash.com/premium_photo-1658506693963-75f3e1b849c7?auto=format&fit=crop&w=1200&q=85';
 
