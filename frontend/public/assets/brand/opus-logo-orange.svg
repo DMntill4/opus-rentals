@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="100%" height="100%" fill="none">
+  <!-- Modern Geometric Heavy Construction Badge / Shield -->
+  <defs>
+    <linearGradient id="orangeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF7A00" />
+      <stop offset="100%" stop-color="#E65100" />
+    </linearGradient>
+    <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFA726" />
+      <stop offset="100%" stop-color="#FF6D00" />
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="6" stdDeviation="4" flood-color="#000000" flood-opacity="0.3" />
+    </filter>
+  </defs>
+
+  <!-- Construction Hexagon Base Shield -->
+  <path d="M60 6 L108 32 L108 88 L60 114 L12 88 L12 32 Z" fill="#1A1A1A" stroke="url(#orangeGrad)" stroke-width="4" stroke-linejoin="round" filter="url(#shadow)" />
+
+  <!-- Inner Industrial Ring -->
+  <path d="M60 16 L98 38 L98 82 L60 104 L22 82 L22 38 Z" fill="#242424" stroke="#333333" stroke-width="2" stroke-linejoin="round" />
+
+  <!-- Construction Orange "O" Monogram with Excavator Arm / Helmet Geometry -->
+  <!-- Outer O Cut -->
+  <path d="M60 26 C78.778 26 94 41.222 94 60 C94 78.778 78.778 94 60 94 C41.222 94 26 78.778 26 60 C26 41.222 41.222 26 60 26 Z" fill="url(#orangeGrad)" />
+
+  <!-- Inner O Cutout (Dark Core) -->
+  <circle cx="60" cy="60" r="19" fill="#1A1A1A" />
+
+  <!-- Stylized Heavy Construction Bucket / Hydraulic Tooth Notch in Safety Orange -->
+  <path d="M60 37 L74 60 L60 83 L46 60 Z" fill="url(#accentGrad)" opacity="0.9" />
+  <circle cx="60" cy="60" r="7" fill="#FFFFFF" />
+
+  <!-- Safety Hazard Diagonal Accents at Bottom -->
+  <path d="M48 97 L54 103 L50 103 L44 97 Z" fill="#FF7A00" />
+  <path d="M58 97 L64 103 L60 103 L54 97 Z" fill="#FF7A00" />
+  <path d="M68 97 L74 103 L70 103 L64 97 Z" fill="#FF7A00" />
+</svg>

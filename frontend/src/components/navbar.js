@@ -34,11 +34,11 @@ export function renderNavbar(activeRoute = 'catalog') {
         <div class="flex items-center justify-between h-20 gap-4 lg:gap-8">
           
           <!-- Brand Logo -->
-          <a href="#/home" class="flex items-center gap-2.5 flex-shrink-0 group" title="Opus Rentals - Inicio">
-            <img src="/iconWebPageNoBg.png" alt="Opus Rentals" class="w-10 h-10 object-contain" />
+          <a href="#/home" class="flex items-center gap-3 flex-shrink-0 group" title="Opus Rentals - Inicio">
+            <img src="/assets/brand/opus-logo-orange.svg" alt="Opus Rentals" class="w-10 h-10 object-contain drop-shadow-sm group-hover:scale-105 transition-transform" />
             <div class="flex flex-col">
               <span class="text-xl sm:text-2xl font-black font-display tracking-tight text-[#1A1A1A] leading-none">
-                Opus Rentals
+                OPUS <span class="text-[#FF7A00]">RENTALS</span>
               </span>
               <span class="text-[9px] font-mono font-bold uppercase tracking-wider text-amber-700 mt-0.5">
                 Maquinaria Pesada & Construcción

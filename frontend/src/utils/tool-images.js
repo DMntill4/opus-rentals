@@ -11,6 +11,7 @@ export const constructionHeroImage = 'https://images.unsplash.com/photo-15797627
 export const loginConstructionImage = 'https://images.unsplash.com/photo-1581094794329-c8112a89af12?auto=format&fit=crop&w=1200&q=80';
 
 // 6 Photographic Category Backgrounds with real equipment & worksites
+// 6 Photographic Category Backgrounds with real equipment & worksites (checks local /assets/categories/ first, falls back to remote)
 export const constructionCategories = [
   {
     id: 1,
@@ -18,7 +19,8 @@ export const constructionCategories = [
     tag: 'CAT · Komatsu · JCB',
     count: '12 unidades',
     icon: 'Shovel',
-    imageUrl: 'https://images.unsplash.com/photo-1503708928676-1cb796a0891e?auto=format&fit=crop&w=800&q=80'
+    imageUrl: '/assets/categories/cat-excavadoras.jpg',
+    remoteFallback: 'https://images.unsplash.com/photo-1503708928676-1cb796a0891e?auto=format&fit=crop&w=800&q=80'
   },
   {
     id: 2,
@@ -26,7 +28,8 @@ export const constructionCategories = [
     tag: 'Allanadoras · Mezcladoras',
     count: '8 unidades',
     icon: 'PaintRoller',
-    imageUrl: 'https://images.unsplash.com/photo-1589939705384-5185137a7f0f?auto=format&fit=crop&w=800&q=80'
+    imageUrl: '/assets/categories/cat-concreto.jpg',
+    remoteFallback: 'https://images.unsplash.com/photo-1589939705384-5185137a7f0f?auto=format&fit=crop&w=800&q=80'
   },
   {
     id: 3,
@@ -34,7 +37,8 @@ export const constructionCategories = [
     tag: 'Hilti · Bosch Demoledores',
     count: '6 unidades',
     icon: 'Hammer',
-    imageUrl: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=800&q=80'
+    imageUrl: '/assets/categories/cat-demolicion.jpg',
+    remoteFallback: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=800&q=80'
   },
   {
     id: 7,
@@ -42,7 +46,8 @@ export const constructionCategories = [
     tag: 'Genie · Tijeras Eléctricas',
     count: '5 unidades',
     icon: 'ArrowUpCircle',
-    imageUrl: 'https://images.unsplash.com/photo-1581093588401-fbb62a02f120?auto=format&fit=crop&w=800&q=80'
+    imageUrl: '/assets/categories/cat-elevacion.jpg',
+    remoteFallback: 'https://images.unsplash.com/photo-1581093588401-fbb62a02f120?auto=format&fit=crop&w=800&q=80'
   },
   {
     id: 8,
@@ -50,7 +55,8 @@ export const constructionCategories = [
     tag: 'Rodillos · Bailarinas Wacker',
     count: '7 unidades',
     icon: 'Layers',
-    imageUrl: 'https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?auto=format&fit=crop&w=800&q=80'
+    imageUrl: '/assets/categories/cat-compactacion.jpg',
+    remoteFallback: 'https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?auto=format&fit=crop&w=800&q=80'
   },
   {
     id: 5,
@@ -58,7 +64,8 @@ export const constructionCategories = [
     tag: 'Plantas Insonorizadas 24/7',
     count: '9 unidades',
     icon: 'Zap',
-    imageUrl: 'https://images.unsplash.com/photo-1581092795360-fd1ca04f0952?auto=format&fit=crop&w=800&q=80'
+    imageUrl: '/assets/categories/cat-generadores.jpg',
+    remoteFallback: 'https://images.unsplash.com/photo-1581092795360-fd1ca04f0952?auto=format&fit=crop&w=800&q=80'
   },
   {
     id: 6,
@@ -66,7 +73,8 @@ export const constructionCategories = [
     tag: 'Atlas Copco Tornillo',
     count: '4 unidades',
     icon: 'Wind',
-    imageUrl: 'https://images.unsplash.com/photo-1581092446327-9b52bd1570c2?auto=format&fit=crop&w=800&q=80'
+    imageUrl: '/assets/categories/cat-compresores.jpg',
+    remoteFallback: 'https://images.unsplash.com/photo-1581092446327-9b52bd1570c2?auto=format&fit=crop&w=800&q=80'
   }
 ];
 

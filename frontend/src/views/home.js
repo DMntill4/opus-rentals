@@ -293,6 +293,7 @@ export async function renderHomeView() {
                 alt="${cat.name}" 
                 class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out select-none"
                 loading="lazy"
+                onerror="if (this.src !== '${cat.remoteFallback}') { this.src = '${cat.remoteFallback}'; } else { this.onerror=null; this.src='https://images.unsplash.com/photo-1503708928676-1cb796a0891e?w=800'; }"
               />
 
               <!-- Film overlay for clear text contrast -->
