@@ -36,6 +36,7 @@ export async function renderHomeView() {
           alt="Maquinaria Pesada en Obra Civil" 
           class="absolute inset-0 w-full h-full object-cover object-center select-none"
           loading="eager"
+          onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1579762715118-a6f1d4b934f1?auto=format&fit=crop&w=1920&q=85';"
         />
 
         <!-- Soft Dark Film for 100% WCAG Contrast Readability (No heavy artificial gradients) -->

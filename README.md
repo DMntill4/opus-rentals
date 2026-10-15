@@ -332,7 +332,6 @@ The database seed provides operational accounts for all three user archetypes:
 
 ```text
 opus-rentals/
-├── bannerOpus.png                   # High-resolution architectural branding banner
 ├── docker-compose.yml               # Multi-container orchestration specification
 ├── database/
 │   └── init/

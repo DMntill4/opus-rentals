@@ -4,8 +4,9 @@
  * NO LOCAL STORAGE - STRICT REMOTE HTTPS FETCH
  */
 
-// Full-width worksite hero background (Large industrial heavy machinery on site)
-export const constructionHeroImage = 'https://images.unsplash.com/photo-1579762715118-a6f1d4b934f1?auto=format&fit=crop&w=1920&q=85';
+// Full-width worksite hero background (Uses local hero-excavator.jpg with remote fallback)
+export const constructionHeroImage = '/assets/hero/hero-excavator.jpg';
+export const constructionHeroRemoteFallback = 'https://images.unsplash.com/photo-1579762715118-a6f1d4b934f1?auto=format&fit=crop&w=1920&q=85';
 
 // Worksite engineer & contractor visual for Auth Modal & B2B Portals
 export const loginConstructionImage = 'https://images.unsplash.com/photo-1581094794329-c8112a89af12?auto=format&fit=crop&w=1200&q=80';
