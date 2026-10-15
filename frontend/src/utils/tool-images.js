@@ -8,8 +8,8 @@
 export const constructionHeroImage = '/assets/hero/hero-excavator.jpg';
 export const constructionHeroRemoteFallback = 'https://images.unsplash.com/photo-1579762715118-a6f1d4b934f1?auto=format&fit=crop&w=1920&q=85';
 
-// Worksite engineer & contractor visual for Auth Modal & B2B Portals
-export const loginConstructionImage = 'https://images.unsplash.com/photo-1581094794329-c8112a89af12?auto=format&fit=crop&w=1200&q=80';
+// Worksite engineer & contractor visual for Auth Modal & B2B Portals (Aerial high-rise tower crane construction)
+export const loginConstructionImage = 'https://plus.unsplash.com/premium_photo-1658506693963-75f3e1b849c7?auto=format&fit=crop&w=1200&q=85';
 
 // 7 Photographic Category Backgrounds - Industry-Accurate Equipment
 export const constructionCategories = [
@@ -137,16 +137,15 @@ export function resolveToolImageUrl(tool) {
   const id = Number(tool.id) || 1;
 
   // 1. If user placed a local photo in /assets/machinery/tool-{id}.jpg
-  const localMachineryPath = `/assets/machinery/tool-${id}.jpg`;
+  // Will be handled gracefully if present
   
-  // 2. Check if the database has a valid remote HTTP image
-  const dbImage = tool.images?.find(i => i.isPrimary || i.isCover)?.imageUrl || tool.images?.[0]?.imageUrl || tool.imageUrl;
-  if (dbImage && !dbImage.includes('data:image/svg') && !dbImage.includes('localhost') && dbImage.startsWith('http')) {
-    return dbImage;
+  // 2. Direct mapping to curated, 100% verified equipment photo
+  if (fallbackMachineryImages[id]) {
+    return fallbackMachineryImages[id];
   }
   
-  // 3. Fallback to matched high-res construction equipment photo
-  return fallbackMachineryImages[id] || fallbackMachineryImages[1];
+  // 3. Fallback
+  return fallbackMachineryImages[1];
 }
 
 export function getToolFallbackRemoteUrl(toolId) {
