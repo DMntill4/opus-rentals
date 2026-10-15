@@ -6,7 +6,7 @@ import { renderIcon } from '../utils/icons.js';
 import { openRentalModal } from './rental-modal.js';
 import { openAuthModal } from '../components/auth-modal.js';
 import { openProviderContactModal } from '../components/provider-modal.js';
-import { resolveToolImageUrl, constructionHeroImage } from '../utils/tool-images.js';
+import { resolveToolImageUrl, resolveToolGalleryImages, constructionHeroImage } from '../utils/tool-images.js';
 
 export async function renderProductPageView(toolId) {
   const container = document.getElementById('app-content');
@@ -48,10 +48,7 @@ export async function renderProductPageView(toolId) {
   }
 
   const primaryResolved = resolveToolImageUrl(tool);
-  const images = tool.images && tool.images.length > 0 ? tool.images : [
-    { imageUrl: primaryResolved },
-    { imageUrl: constructionHeroImage }
-  ];
+  const images = resolveToolGalleryImages(tool);
 
   let activeImageIndex = 0;
   let rentalDays = 3;
