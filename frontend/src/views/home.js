@@ -29,31 +29,30 @@ export async function renderHomeView() {
       <!-- ========================================================================= -->
       <section class="relative w-full overflow-hidden bg-slate-950 text-white min-h-[500px] sm:min-h-[560px] lg:min-h-[600px] flex items-center justify-center">
         
-        <!-- Real Heavy CAT Excavator Worksite Photography (Direct <img> with object-cover) -->
+        <!-- Clean, Bright Construction Backdrop (No heavy dark overlays or blur) -->
         <img 
           src="${constructionHeroImage}" 
           alt="Maquinaria Pesada en Obra Civil" 
-          class="absolute inset-0 w-full h-full object-cover object-center select-none"
+          class="absolute inset-0 w-full h-full object-cover object-bottom select-none brightness-105 contrast-105"
           loading="eager"
           onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1579762715118-a6f1d4b934f1?auto=format&fit=crop&w=1920&q=85';"
         />
 
-        <!-- Soft Dark Film for 100% WCAG Contrast Readability (No heavy artificial gradients) -->
-        <div class="absolute inset-0 bg-slate-950/70 backdrop-blur-[1px]"></div>
-        <div class="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-transparent to-slate-950/40"></div>
+        <!-- Soft Warm Atmospheric Mist / Fog (Allows natural image colors and cranes to pop) -->
+        <div class="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-slate-900/25 to-slate-900/10"></div>
 
         <div class="relative z-10 w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-10 flex flex-col items-center text-center space-y-5">
           
-          <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#FFB800] text-[#1A1A1A] text-xs font-black uppercase font-mono tracking-wider shadow-sm">
+          <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#FFB800] text-[#1A1A1A] text-xs font-black uppercase font-mono tracking-wider shadow-lg border border-amber-300">
             <span class="w-2 h-2 rounded-full bg-[#1A1A1A] animate-pulse"></span>
             Flota Pesada Certificada con Telemetría en Vivo
           </div>
 
-          <h1 class="text-3xl sm:text-5xl lg:text-6xl font-black font-display tracking-tight max-w-4xl leading-[1.12] text-white">
+          <h1 class="text-3xl sm:text-5xl lg:text-6xl font-black font-display tracking-tight max-w-4xl leading-[1.12] text-white drop-shadow-[0_4px_16px_rgba(0,0,0,0.85)]">
             Alquiler de Maquinaria Pesada para Grandes Proyectos
           </h1>
 
-          <p class="text-sm sm:text-base text-slate-200 max-w-2xl font-normal leading-relaxed">
+          <p class="text-sm sm:text-base text-white font-medium max-w-2xl leading-relaxed drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
             Disponibilidad en tiempo real en Bogotá y Sabana, tarifas transparentes por día, semana y mes con facturación electrónica DIAN.
           </p>
 
