@@ -110,11 +110,21 @@ export const fallbackMachineryImages = {
 export function resolveToolImageUrl(tool) {
   if (!tool) return constructionHeroImage;
   const id = Number(tool.id) || 1;
-  const dbImage = tool.images?.find(i => i.isPrimary || i.isCover)?.imageUrl || tool.images?.[0]?.imageUrl || tool.imageUrl;
+
+  // 1. If user put a local high-res image for this machine in /assets/machinery/tool-{id}.jpg
+  const localMachineryPath = `/assets/machinery/tool-${id}.jpg`;
   
+  // 2. Check if the database has a valid remote HTTP image
+  const dbImage = tool.images?.find(i => i.isPrimary || i.isCover)?.imageUrl || tool.images?.[0]?.imageUrl || tool.imageUrl;
   if (dbImage && !dbImage.includes('data:image/svg') && !dbImage.includes('localhost') && dbImage.startsWith('http')) {
     return dbImage;
   }
   
+  // 3. Fallback to centralized verified machinery photos
+  return localMachineryPath;
+}
+
+export function getToolFallbackRemoteUrl(toolId) {
+  const id = Number(toolId) || 1;
   return fallbackMachineryImages[id] || fallbackMachineryImages[1];
 }

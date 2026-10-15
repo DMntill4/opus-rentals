@@ -355,6 +355,7 @@ export async function renderHomeView() {
                       alt="${t.name}" 
                       class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       loading="lazy"
+                      onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1503708928676-1cb796a0891e?w=800';"
                     />
                     
                     <span class="absolute top-2.5 left-2.5 px-2.5 py-0.5 rounded-md text-[10px] font-black uppercase font-mono ${
