@@ -12,10 +12,10 @@ export const customLinks = {
   // =========================================================================
   general: {
     // Foto grande del fondo del inicio (portada detrás del cotizador)
-    heroBackground: 'https://i.pinimg.com/1200x/db/b1/4a/dbb14ae1a02a03dc96283f95765b6401.jpg',
+    heroBackground: '/assets/hero/hero-construction-helmet.png',
 
     // Foto para el lateral del modal de Login / Registro (construcción aérea, rascacielos o grúa)
-    loginBackground: 'https://i.pinimg.com/736x/2a/76/1c/2a761c8817df5d9d7823a963466f5769.jpg',
+    loginBackground: 'https://i.pinimg.com/1200x/8f/76/fb/8f76fb44afe8cdec2bfb8ba247a4b72a.jpg',
 
     // Foto de la máquina destacada en la sección 50/50 de la Guía Técnica del Home
     featuredMachineryGuide: 'https://i.pinimg.com/736x/2a/76/1c/2a761c8817df5d9d7823a963466f5769.jpg'
