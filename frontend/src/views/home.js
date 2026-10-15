@@ -38,26 +38,24 @@ export async function renderHomeView() {
           onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1579762715118-a6f1d4b934f1?auto=format&fit=crop&w=1920&q=85';"
         />
 
-        <!-- Subtle Bottom & Top Vignette (Keeps the photo vivid in the center while grounding the quote box) -->
-        <div class="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/60"></div>
+        <!-- Real Full-Coverage Dark Overlay (Uniform, cinematic & highly readable) -->
+        <div class="absolute inset-0 bg-slate-950/65"></div>
+        <div class="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-slate-950/30"></div>
 
-        <div class="relative z-10 w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col items-center text-center space-y-4">
+        <div class="relative z-10 w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-10 flex flex-col items-center text-center space-y-4">
           
-          <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#FFB800] text-[#1A1A1A] text-xs font-black uppercase font-mono tracking-wider shadow-lg border border-amber-300">
+          <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#FFB800] text-[#1A1A1A] text-xs font-black uppercase font-mono tracking-wider shadow-lg">
             <span class="w-2 h-2 rounded-full bg-[#1A1A1A] animate-pulse"></span>
             Flota Pesada Certificada con Telemetría en Vivo
           </div>
 
-          <!-- Title Card with Gentle Dark Glow for 100% Crisp Legibility -->
-          <div class="max-w-4xl py-2 px-4 sm:px-6 rounded-3xl bg-black/45 backdrop-blur-[3px] border border-white/15 shadow-2xl">
-            <h1 class="text-3xl sm:text-5xl lg:text-6xl font-black font-display tracking-tight leading-[1.12] text-white drop-shadow-[0_4px_16px_rgba(0,0,0,0.9)]">
-              Alquiler de Maquinaria Pesada para Grandes Proyectos
-            </h1>
+          <h1 class="text-3xl sm:text-5xl lg:text-6xl font-black font-display tracking-tight max-w-4xl leading-[1.12] text-white drop-shadow-[0_4px_20px_rgba(0,0,0,0.95)]">
+            Alquiler de Maquinaria Pesada para Grandes Proyectos
+          </h1>
 
-            <p class="text-sm sm:text-base text-slate-100 font-medium max-w-2xl mx-auto mt-2 leading-relaxed drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
-              Disponibilidad en tiempo real en Bogotá y Sabana, tarifas transparentes por día, semana y mes con facturación electrónica DIAN.
-            </p>
-          </div>
+          <p class="text-sm sm:text-base text-slate-100 font-medium max-w-2xl leading-relaxed drop-shadow-[0_2px_10px_rgba(0,0,0,0.95)]">
+            Disponibilidad en tiempo real en Bogotá y Sabana, tarifas transparentes por día, semana y mes con facturación electrónica DIAN.
+          </p>
 
           <!-- Floating Quote Box (Exact replica of your reference image) -->
           <div class="w-full max-w-4xl bg-white rounded-2xl p-4 sm:p-5 shadow-2xl border border-slate-200 text-[#1A1A1A] mt-2 text-left">
@@ -216,50 +214,50 @@ export async function renderHomeView() {
       </section>
 
       <!-- ========================================================================= -->
-      <!-- 4. GUÍA Y CATÁLOGO TÉCNICO 2026 (50/50 CON FOTO DE EXCAVADORA CAT)       -->
+      <!-- 4. GUÍA Y CATÁLOGO TÉCNICO 2026 (Banner Delgado, Compacto y Elegante)      -->
       <!-- ========================================================================= -->
-      <section class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pb-12">
-        <div class="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm grid grid-cols-1 lg:grid-cols-12 items-center">
+      <section class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pb-10">
+        <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm grid grid-cols-1 lg:grid-cols-12 items-center">
           
-          <div class="lg:col-span-7 p-8 sm:p-12 space-y-4">
-            <span class="text-[11px] font-mono uppercase font-black text-amber-700">
+          <div class="lg:col-span-7 p-6 sm:p-8 space-y-3">
+            <span class="text-[10px] font-mono uppercase font-black text-amber-700 tracking-wider">
               Documentación Técnica Oficial
             </span>
-            <h3 class="text-2xl sm:text-3xl font-black text-slate-900 font-display leading-snug">
+            <h3 class="text-xl sm:text-2xl font-black text-slate-900 font-display leading-tight">
               Catálogo de Maquinaria Pesada & Guía de Selección 2026
             </h3>
-            <p class="text-xs sm:text-sm text-slate-600 leading-relaxed font-normal">
-              Elegir la maquinaria adecuada optimiza los tiempos de ciclo y ahorra hasta un 35% en combustible en obra. Conoce tablas de rendimiento, capacidades de balde, horas de vida útil, potencia diésel y requisitos de transporte en nuestro PDF.
+            <p class="text-xs text-slate-600 leading-relaxed font-normal max-w-xl">
+              Optimiza tiempos de ciclo y ahorra hasta un 35% en combustible. Tablas de rendimiento, capacidades de balde, horas de vida útil, potencia diésel y requisitos de transporte.
             </p>
-            <div class="pt-2 flex flex-col sm:flex-row items-center gap-3">
+            <div class="pt-1 flex flex-wrap items-center gap-2.5">
               <a 
                 href="#/catalog" 
-                class="btn-primary w-full sm:w-auto flex items-center justify-center gap-2"
+                class="btn-primary !py-2 !px-4 text-xs font-black flex items-center justify-center gap-1.5 shadow-sm"
               >
-                ${renderIcon('Download', 'w-4 h-4')}
-                <span>Descargar Catálogo en PDF</span>
+                ${renderIcon('Download', 'w-3.5 h-3.5')}
+                <span>Descargar Catálogo (PDF)</span>
               </a>
               <a 
                 href="#/catalog" 
-                class="btn-dark w-full sm:w-auto flex items-center justify-center gap-2 text-center"
+                class="btn-dark !py-2 !px-4 text-xs font-extrabold flex items-center justify-center gap-1.5"
               >
-                <span>Explorar Catálogo Online</span>
-                ${renderIcon('ArrowRight', 'w-4 h-4')}
+                <span>Explorar Online</span>
+                ${renderIcon('ArrowRight', 'w-3.5 h-3.5')}
               </a>
             </div>
           </div>
 
-          <div class="lg:col-span-5 h-72 lg:h-full min-h-[300px] bg-slate-900 relative overflow-hidden">
+          <div class="lg:col-span-5 h-48 sm:h-56 lg:h-64 bg-slate-900 relative overflow-hidden">
             <img 
               src="${constructionHeroImage2}" 
               alt="Excavadora Pesada CAT 320D2" 
-              class="w-full h-full object-cover"
+              class="w-full h-full object-cover object-center"
               loading="lazy"
               onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1581094288338-2314dddb7ece?auto=format&fit=crop&w=1200&q=85';"
             />
-            <div class="absolute bottom-4 left-4 right-4 bg-slate-950/85 backdrop-blur-md px-3.5 py-2 rounded-xl text-white flex items-center justify-between text-xs border border-white/10 font-mono">
+            <div class="absolute bottom-2.5 left-3 right-3 bg-slate-950/85 backdrop-blur-md px-3 py-1.5 rounded-lg text-white flex items-center justify-between text-[11px] border border-white/10 font-mono">
               <span class="font-bold text-[#FFB800]">Excavadora CAT 320D2</span>
-              <span class="text-slate-300 text-[10px]">Patio Central Bogotá</span>
+              <span class="text-slate-300 text-[9px]">Patio Central Bogotá</span>
             </div>
           </div>
 
