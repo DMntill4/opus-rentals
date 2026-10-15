@@ -159,7 +159,32 @@ mysql -u root -p < database/init/01_schema.sql
 mysql -u root -p < database/init/02_data.sql
 ```
 
-### 2. Launch Backend (Spring Boot 3)
+### 2. Configuration (`application.properties`)
+The backend is preconfigured to load production properties and fallback defaults from `backend/src/main/resources/application.properties`:
+```properties
+# Spring Application & Server
+spring.application.name=opus-rentals-backend
+server.port=8080
+
+# MySQL DataSource
+spring.datasource.url=jdbc:mysql://localhost:3306/opus_rentals_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+spring.datasource.username=opus_user
+spring.datasource.password=opus_secure_password_2026
+spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+
+# JPA & Hibernate
+spring.jpa.hibernate.ddl-auto=none
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQLDialect
+
+# JWT Security
+app.jwt.secret=404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+app.jwt.expiration-ms=86400000
+
+# CORS Allowed Origins
+app.cors.allowed-origins=http://localhost:5173,http://localhost:3000,http://localhost:80
+```
+
+### 3. Launch Backend (Spring Boot 3)
 ```bash
 cd backend
 ./mvnw clean spring-boot:run
@@ -167,7 +192,7 @@ cd backend
 Backend API will start at: `http://localhost:8080`
 Interactive Swagger UI: `http://localhost:8080/swagger-ui.html`
 
-### 3. Launch Frontend (Vite)
+### 4. Launch Frontend (Vite)
 ```bash
 cd frontend
 npm install
@@ -175,7 +200,7 @@ npm run dev
 ```
 Frontend Web Application: `http://localhost:5173`
 
-### 4. Autonomous Docker Deployment
+### 5. Autonomous Docker Deployment
 To launch the entire platform (MySQL + Spring Boot + Frontend Nginx) in a single command:
 ```bash
 docker compose up -d --build
@@ -183,7 +208,96 @@ docker compose up -d --build
 
 ---
 
-## 6. PRECONFIGURED SYSTEM ROLES & DEMONSTRATION CREDENTIALS
+## 6. API ENDPOINTS & JSON SPECIFICATION
+
+### Authentication (`/api/v1/auth`)
+- `POST /api/v1/auth/login`: Authenticate and obtain JWT token.
+```json
+// Request
+{
+  "usernameOrEmail": "cli_constructora_col",
+  "password": "Password123*"
+}
+// Response
+{
+  "success": true,
+  "message": "Autenticación exitosa",
+  "data": {
+    "token": "eyJhbGciOiJIUzI1NiJ9...",
+    "type": "Bearer",
+    "id": 1,
+    "username": "cli_constructora_col",
+    "email": "contacto@constructora.co",
+    "roles": ["ROLE_CLIENT"]
+  }
+}
+```
+
+### Equipment Catalog (`/api/v1/tools`)
+- `GET /api/v1/tools`: List all tools with optional category, status, and keyword filters.
+- `GET /api/v1/tools/{id}`: Detailed specification sheet, images, and provider info.
+- `POST /api/v1/tools`: Register new machine (Provider/Admin).
+
+### Rental Reservations (`/api/v1/rentals`)
+- `POST /api/v1/rentals`: Request booking with date validation and conflict checks.
+```json
+// Request (Headers: Authorization: Bearer <token>)
+{
+  "toolId": 1,
+  "startDate": "2026-10-18",
+  "endDate": "2026-10-20",
+  "notes": "Entrega en frente de obra norte"
+}
+// Response
+{
+  "success": true,
+  "message": "Reserva creada exitosamente",
+  "data": {
+    "id": 5,
+    "toolId": 1,
+    "toolName": "Excavadora Hidráulica CAT 320 GC",
+    "totalDays": 3,
+    "dailyRate": 850000.00,
+    "subtotal": 2550000.00,
+    "totalAmount": 3034500.00,
+    "depositAmount": 2500000.00,
+    "status": "PENDING",
+    "invoiceId": 12,
+    "invoiceNumber": "INV-2026-AB71C3D9"
+  }
+}
+```
+- `GET /api/v1/rentals/my-rentals`: Current user's rental history.
+- `GET /api/v1/rentals/provider-requests`: Incoming rental requests for provider inventory.
+- `PATCH /api/v1/rentals/{id}/status`: Transition booking state (`APPROVED`, `IN_PROGRESS`, `CANCELLED`).
+
+### Invoices & Payments (`/api/v1/invoices`, `/api/v1/payments`)
+- `GET /api/v1/invoices/rental/{rentalId}`: Retrieve official fiscal invoice breakdown.
+- `POST /api/v1/payments`: Register payment against an issued invoice.
+
+### Returns & Physical Inspection (`/api/v1/returns`)
+- `POST /api/v1/returns/rental/{rentalId}`: Process equipment check-in with optional damage items (4NF).
+
+---
+
+## 7. AUTOMATED TESTING GUIDE
+
+The project includes unit and integration tests executing under the `test` profile:
+
+### Execute Backend Tests
+```bash
+cd backend
+./mvnw test
+```
+*(On Windows: `.\mvnw.cmd test`)*
+
+### Test Coverage Highlights
+- `RentalServiceUnitTest`: Validates the date collision engine, subtotal and VAT calculations, and prevents overbooking conflicts.
+- `OpusRentalsApplicationTests`: Verifies Spring context loading and security filter chain initialization.
+
+---
+
+## 8. PRECONFIGURED SYSTEM ROLES & DEMONSTRATION CREDENTIALS
 
 The database seed provides operational accounts for all three user archetypes:
 
@@ -195,7 +309,7 @@ The database seed provides operational accounts for all three user archetypes:
 
 ---
 
-## 7. PROJECT REPOSITORY STRUCTURE
+## 9. PROJECT REPOSITORY STRUCTURE
 
 ```text
 opus-rentals/
