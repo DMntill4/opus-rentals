@@ -9,7 +9,21 @@ import * as LucideIcons from 'lucide';
  * @returns {string} - SVG string markup
  */
 export function renderIcon(name, classes = 'w-5 h-5', attrs = {}) {
-  const iconNode = LucideIcons[name] || LucideIcons['HelpCircle'];
+  if (!name) return `<span class="inline-block ${classes}"></span>`;
+  
+  // Normalize kebab-case or snake_case to PascalCase if needed
+  let normalizedName = name;
+  if (name.includes('-') || name.includes('_')) {
+    normalizedName = name
+      .split(/[-_]/)
+      .filter(Boolean)
+      .map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+      .join('');
+  } else if (name.charAt(0) === name.charAt(0).toLowerCase()) {
+    normalizedName = name.charAt(0).toUpperCase() + name.slice(1);
+  }
+
+  const iconNode = LucideIcons[normalizedName] || LucideIcons.icons?.[normalizedName] || LucideIcons[name] || LucideIcons['HelpCircle'];
   if (!iconNode) {
     return `<span class="inline-block ${classes}"></span>`;
   }

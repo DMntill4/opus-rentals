@@ -89,15 +89,21 @@ export async function renderCatalogView() {
     <div class="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 pb-16 transition-colors duration-200">
       <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-6">
         
-        <!-- Opus Rentals Hero Banner: Azul Oscuro + Gris Acero + Blanco -->
-        <div class="relative rounded-2xl overflow-hidden min-h-[260px] sm:min-h-[290px] md:min-h-[300px] flex items-center shadow-lg bg-gradient-to-br from-[#0c1e33] via-[#132e4f] to-[#1c3f68] select-none border border-slate-700/60">
+        <!-- Opus Rentals Hero Banner: Construction Site Real Photography + Deep Navy #071322 -->
+        <div class="relative rounded-3xl overflow-hidden min-h-[280px] sm:min-h-[320px] flex items-center shadow-2xl bg-[#071322] select-none border border-slate-700/60">
           
-          <!-- Subtle Architectural Blueprint Grid Overlay (echoes bannerOpus drafting lines) -->
+          <!-- Real Construction Site Background Photo -->
+          <div 
+            class="absolute inset-0 bg-cover bg-center opacity-30 pointer-events-none"
+            style="background-image: url('https://images.unsplash.com/photo-1541888946425-d0fbb186156f?auto=format&fit=crop&w=2000&q=80');"
+          ></div>
+
+          <!-- Deep Navy Overlay -->
+          <div class="absolute inset-0 bg-gradient-to-r from-[#071322] via-[#0b1c31]/95 to-[#132e4f]/85"></div>
+
+          <!-- Subtle Architectural Blueprint Grid Overlay -->
           <div class="absolute inset-0 opacity-15 pointer-events-none" style="background-image: linear-gradient(to right, #ffffff 1px, transparent 1px), linear-gradient(to bottom, #ffffff 1px, transparent 1px); background-size: 32px 32px;"></div>
           
-          <!-- Diagonal geometric accent glow -->
-          <div class="absolute -right-20 -bottom-20 w-96 h-96 rounded-full bg-blue-500/10 blur-3xl pointer-events-none"></div>
-
           <div class="relative z-10 w-full p-6 sm:p-8 md:p-10 flex flex-col lg:flex-row items-center justify-between gap-6">
             
             <!-- Left: Hero Text & Quick Search -->
@@ -161,7 +167,7 @@ export async function renderCatalogView() {
                 />
                 <div class="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-500 font-mono">
                   <span class="flex items-center gap-1 font-semibold text-[#132e4f]">
-                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Operaciones 24/7
+                    <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span> Despacho Certificado
                   </span>
                   <span>NIT 901.884.219-5</span>
                 </div>
