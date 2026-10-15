@@ -64,7 +64,7 @@ export function renderIcon(name, classes = 'w-5 h-5', attrs = {}) {
  * @param {string} classes - Tailwind CSS size and styling classes
  */
 export function renderToolRentMark(classes = 'w-9 h-9') {
-  return `<img src="/assets/brand/opus-logo-orange.svg" alt="Opus Rentals Logo" class="${classes} object-contain flex-shrink-0 select-none" />`;
+  return `<img src="/assets/brand/logo.png" alt="Opus Rentals Logo" class="${classes} object-contain flex-shrink-0 select-none" onerror="this.onerror=null; this.src='/assets/brand/opus-logo-orange.svg'" />`;
 }
 
 export const renderOpusMark = renderToolRentMark;
@@ -74,7 +74,7 @@ export const renderOpusMark = renderToolRentMark;
  * @param {string} classes - Tailwind CSS size and styling classes
  */
 export function renderOpusBanner(classes = 'h-9 w-auto') {
-  return `<img src="/assets/brand/opus-banner-orange.svg" alt="Opus Rentals" class="${classes} object-contain flex-shrink-0 select-none" />`;
+  return `<img src="/assets/brand/banner.png" alt="Opus Rentals" class="${classes} object-contain flex-shrink-0 select-none" onerror="this.onerror=null; this.src='/assets/brand/opus-banner-orange.svg'" />`;
 }
 
 /**

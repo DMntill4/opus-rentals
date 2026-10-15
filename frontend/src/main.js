@@ -26,7 +26,7 @@ export function render404View() {
         
         <div class="relative z-10 flex flex-col items-center">
           <div class="w-20 h-20 bg-slate-50 border border-slate-200 rounded-2xl flex items-center justify-center p-3 mb-6 shadow-xs">
-            <img src="/iconWebPageNoBg.png" alt="Opus Rentals" class="w-full h-full object-contain" />
+            <img src="/assets/brand/logo.png" alt="Opus Rentals" class="w-full h-full object-contain" onerror="this.src='/assets/brand/opus-logo-orange.svg'" />
           </div>
           
           <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-slate-100 text-[#132e4f] mb-3">

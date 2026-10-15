@@ -35,7 +35,7 @@ export function renderNavbar(activeRoute = 'catalog') {
           
           <!-- Brand Logo -->
           <a href="#/home" class="flex items-center gap-3 flex-shrink-0 group" title="Opus Rentals - Inicio">
-            <img src="/assets/brand/opus-logo-orange.svg" alt="Opus Rentals" class="w-10 h-10 object-contain drop-shadow-sm group-hover:scale-105 transition-transform" />
+            <img src="/assets/brand/logo.png" alt="Opus Rentals" class="w-10 h-10 object-contain drop-shadow-sm group-hover:scale-105 transition-transform" onerror="this.onerror=null; this.src='/assets/brand/opus-logo-orange.svg'" />
             <div class="flex flex-col">
               <span class="text-xl sm:text-2xl font-black font-display tracking-tight text-[#1A1A1A] leading-none">
                 OPUS <span class="text-[#FF7A00]">RENTALS</span>
