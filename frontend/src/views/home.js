@@ -29,32 +29,35 @@ export async function renderHomeView() {
       <!-- ========================================================================= -->
       <section class="relative w-full overflow-hidden bg-slate-950 text-white min-h-[500px] sm:min-h-[560px] lg:min-h-[600px] flex items-center justify-center">
         
-        <!-- Clean, Bright Construction Backdrop (No heavy dark overlays or blur) -->
+        <!-- High Quality Image (Preserves 100% natural colors, sharpness and details) -->
         <img 
           src="${constructionHeroImage}" 
           alt="Maquinaria Pesada en Obra Civil" 
-          class="absolute inset-0 w-full h-full object-cover object-bottom select-none brightness-105 contrast-105"
+          class="absolute inset-0 w-full h-full object-cover object-bottom select-none"
           loading="eager"
           onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1579762715118-a6f1d4b934f1?auto=format&fit=crop&w=1920&q=85';"
         />
 
-        <!-- Soft Warm Atmospheric Mist / Fog (Allows natural image colors and cranes to pop) -->
-        <div class="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-slate-900/25 to-slate-900/10"></div>
+        <!-- Subtle Bottom & Top Vignette (Keeps the photo vivid in the center while grounding the quote box) -->
+        <div class="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/60"></div>
 
-        <div class="relative z-10 w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-10 flex flex-col items-center text-center space-y-5">
+        <div class="relative z-10 w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col items-center text-center space-y-4">
           
           <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#FFB800] text-[#1A1A1A] text-xs font-black uppercase font-mono tracking-wider shadow-lg border border-amber-300">
             <span class="w-2 h-2 rounded-full bg-[#1A1A1A] animate-pulse"></span>
             Flota Pesada Certificada con Telemetría en Vivo
           </div>
 
-          <h1 class="text-3xl sm:text-5xl lg:text-6xl font-black font-display tracking-tight max-w-4xl leading-[1.12] text-white drop-shadow-[0_4px_16px_rgba(0,0,0,0.85)]">
-            Alquiler de Maquinaria Pesada para Grandes Proyectos
-          </h1>
+          <!-- Title Card with Gentle Dark Glow for 100% Crisp Legibility -->
+          <div class="max-w-4xl py-2 px-4 sm:px-6 rounded-3xl bg-black/45 backdrop-blur-[3px] border border-white/15 shadow-2xl">
+            <h1 class="text-3xl sm:text-5xl lg:text-6xl font-black font-display tracking-tight leading-[1.12] text-white drop-shadow-[0_4px_16px_rgba(0,0,0,0.9)]">
+              Alquiler de Maquinaria Pesada para Grandes Proyectos
+            </h1>
 
-          <p class="text-sm sm:text-base text-white font-medium max-w-2xl leading-relaxed drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
-            Disponibilidad en tiempo real en Bogotá y Sabana, tarifas transparentes por día, semana y mes con facturación electrónica DIAN.
-          </p>
+            <p class="text-sm sm:text-base text-slate-100 font-medium max-w-2xl mx-auto mt-2 leading-relaxed drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
+              Disponibilidad en tiempo real en Bogotá y Sabana, tarifas transparentes por día, semana y mes con facturación electrónica DIAN.
+            </p>
+          </div>
 
           <!-- Floating Quote Box (Exact replica of your reference image) -->
           <div class="w-full max-w-4xl bg-white rounded-2xl p-4 sm:p-5 shadow-2xl border border-slate-200 text-[#1A1A1A] mt-2 text-left">
