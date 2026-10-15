@@ -280,7 +280,26 @@ docker compose up -d --build
 
 ---
 
-## 7. AUTOMATED TESTING GUIDE
+## 7. POSTMAN TEST COLLECTION
+
+The project includes an official Postman collection preconfigured with automated JWT token handling, environment variables, and realistic request payloads for all 5 business modules:
+
+- **Collection File**: [`docs/OpusRentals.postman_collection.json`](./docs/OpusRentals.postman_collection.json)
+- **Import Instructions**:
+  1. Open Postman.
+  2. Click **Import** (top left).
+  3. Drag and drop or select `docs/OpusRentals.postman_collection.json`.
+  4. The collection variable `{{baseUrl}}` is preset to `http://localhost:8080/api/v1`.
+- **Preconfigured Request Folders**:
+  1. `1. Authentication`: Login as Admin, Provider, Client, and Register Client (automatically extracts and sets `{{token}}` in collection variables).
+  2. `2. Tools & Catalog`: Public catalog query, search by keyword, filter by ID, categories, and Provider tool creation (POST).
+  3. `3. Rentals & Returns`: Client rental creation with dates, rental history, provider requests, status transitions (PATCH), and return inspections with 4NF damage items.
+  4. `4. Billing & Payments`: Payment methods query, user invoices, and checkout payment processing.
+  5. `5. Admin Reports & Analytics`: Platform KPI metrics dashboard and user directory administration.
+
+---
+
+## 8. AUTOMATED TESTING GUIDE
 
 The project includes unit and integration tests executing under the `test` profile:
 
@@ -297,7 +316,7 @@ cd backend
 
 ---
 
-## 8. PRECONFIGURED SYSTEM ROLES & DEMONSTRATION CREDENTIALS
+## 9. PRECONFIGURED SYSTEM ROLES & DEMONSTRATION CREDENTIALS
 
 The database seed provides operational accounts for all three user archetypes:
 
@@ -309,7 +328,7 @@ The database seed provides operational accounts for all three user archetypes:
 
 ---
 
-## 9. PROJECT REPOSITORY STRUCTURE
+## 10. PROJECT REPOSITORY STRUCTURE
 
 ```text
 opus-rentals/
