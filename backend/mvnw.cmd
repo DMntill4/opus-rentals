@@ -2,7 +2,7 @@
 @REM Maven Wrapper Batch Script for Windows
 @REM ----------------------------------------------------------------------------
 @IF "%DEBUG%" == "" @ECHO OFF
-@SETLOCAL LEAVE_ENVIRONMENT
+@SETLOCAL
 
 SET ERROR_CODE=0
 SET MAVEN_PROJECTBASEDIR=%~dp0
@@ -24,7 +24,7 @@ ECHO Executing Maven through wrapper...
 IF EXIST "%USERPROFILE%\.m2\wrapper\dists" (
     FOR /R "%USERPROFILE%\.m2\wrapper\dists" %%F IN (mvn.cmd) DO (
         IF EXIST "%%F" (
-            "%%F" %*
+            CALL "%%F" %*
             EXIT /B %ERRORLEVEL%
         )
     )

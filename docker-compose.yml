@@ -68,6 +68,8 @@ services:
       - backend
     ports:
       - "${FRONTEND_PORT:-80}:80"
+    volumes:
+      - ./frontend/dist:/usr/share/nginx/html:ro
     networks:
       - opus_network
 

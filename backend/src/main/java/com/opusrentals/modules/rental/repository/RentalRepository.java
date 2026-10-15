@@ -12,9 +12,9 @@ import java.util.List;
 @Repository
 public interface RentalRepository extends JpaRepository<Rental, Long> {
 
-    List<Rental> findByClientId(Long clientId);
+    List<Rental> findByClientIdOrderByIdDesc(Long clientId);
 
-    @Query("SELECT r FROM Rental r WHERE r.tool.provider.id = :providerId")
+    @Query("SELECT r FROM Rental r WHERE r.tool.provider.id = :providerId ORDER BY r.id DESC")
     List<Rental> findByProviderId(@Param("providerId") Long providerId);
 
     List<Rental> findByStatus(String status);

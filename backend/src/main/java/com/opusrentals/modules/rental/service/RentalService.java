@@ -112,6 +112,11 @@ public class RentalService {
 
         if ("APPROVED".equals(targetStatus) || "IN_PROGRESS".equals(targetStatus)) {
             invoiceService.createInvoiceForRental(rental);
+            rental.getTool().setStatus("RENTED");
+            toolRepository.save(rental.getTool());
+        } else if ("CANCELLED".equals(targetStatus) || "RETURNED".equals(targetStatus)) {
+            rental.getTool().setStatus("AVAILABLE");
+            toolRepository.save(rental.getTool());
         }
 
         Rental updated = rentalRepository.save(rental);
@@ -125,7 +130,14 @@ public class RentalService {
         Client client = clientRepository.findByUser(user)
                 .orElseThrow(() -> new ResourceNotFoundException("Perfil de cliente no encontrado"));
 
-        return rentalRepository.findByClientId(client.getId()).stream()
+        return rentalRepository.findByClientIdOrderByIdDesc(client.getId()).stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<RentalResponse> getRentalsByClientId(Long clientId) {
+        return rentalRepository.findByClientIdOrderByIdDesc(clientId).stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }
@@ -164,7 +176,8 @@ public class RentalService {
         }
 
         BigDecimal tax = rental.getSubtotal().multiply(new BigDecimal("0.19")).setScale(2, RoundingMode.HALF_UP);
-        BigDecimal estimatedTotal = rental.getSubtotal().add(tax).add(rental.getDepositAmount());
+        BigDecimal totalWithTax = rental.getSubtotal().add(tax);
+        BigDecimal estimatedTotal = totalWithTax;
 
         Long invoiceId = null;
         String invoiceNumber = null;
@@ -197,6 +210,7 @@ public class RentalService {
                 .subtotal(rental.getSubtotal())
                 .depositAmount(rental.getDepositAmount())
                 .estimatedTotal(estimatedTotal)
+                .totalAmount(totalWithTax)
                 .status(rental.getStatus())
                 .notes(rental.getNotes())
                 .createdAt(rental.getCreatedAt())

@@ -1,300 +1,228 @@
-# PLATAFORMA DE RENTA DE HERRAMIENTAS Y EQUIPOS DE CONSTRUCCIÓN
-## OPUS RENTALS
+# OPUS RENTALS — HEAVY MACHINERY & INDUSTRIAL EQUIPMENT RENTAL PLATFORM
 
-Sistema integral para la gestión, reserva, alquiler y facturación de herramientas y maquinaria de construcción, desarrollado con **Arquitectura Hexagonal (Puertos y Adaptadores)**, principios de **Domain-Driven Design (DDD)** organizado por módulos de negocio, persistencia relacional con **Normalización en Cuarta Forma Normal (4FN)** en **MySQL 8.0**, seguridad basada en **Spring Security 6 con JWT (RBAC)** y un frontend moderno con **React + Vite + Tailwind CSS**.
+<div align="center">
 
----
+![Opus Rentals Banner](./bannerOpus.png)
 
-## 1. TECNOLOGÍAS UTILIZADAS
+[![Java 21](https://img.shields.io/badge/Java-21_LTS-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)](https://openjdk.org/)
+[![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.3.4-6DB33F?style=for-the-badge&logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
+[![Spring Security](https://img.shields.io/badge/Spring_Security-6.x_JWT-6DB33F?style=for-the-badge&logo=springsecurity&logoColor=white)](https://spring.io/projects/spring-security)
+[![MySQL 8.0](https://img.shields.io/badge/MySQL-8.0_4FN-4479A1?style=for-the-badge&logo=mysql&logoColor=white)](https://www.mysql.com/)
+[![Vite](https://img.shields.io/badge/Vite-8.3.0-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4.17-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
+[![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
+[![License](https://img.shields.io/badge/License-Proprietary-0f172a?style=for-the-badge)](./LICENSE)
 
-### Backend
-- **Lenguaje**: Java 21 (LTS)
-- **Framework**: Spring Boot 3.3.4
-- **Seguridad**: Spring Security 6.x con JSON Web Tokens (JJWT 0.12.6)
-- **Persistencia**: Spring Data JPA / Hibernate 6
-- **Base de Datos**: MySQL 8.0+
-- **Validación**: Jakarta Bean Validation (`hibernate-validator`)
-- **Documentación de API**: Springdoc OpenAPI 3.0 / Swagger UI (`springdoc-openapi-starter-webmvc-ui 2.6.0`)
-- **Empaquetado**: Maven (Soporte dual WAR para Tomcat nativo y JAR autónomo)
+**Enterprise-grade B2B equipment rental and management platform engineered with Hexagonal Architecture (Ports and Adapters), Domain-Driven Design (DDD), 4th Normal Form (4NF) relational persistence, and a reactive, zero-framework frontend.**
 
-### Frontend
-- **Framework**: React 18 / 19
-- **Bundler & Dev Server**: Vite 5
-- **Estilos**: Tailwind CSS 3.4
-- **Iconografía**: Lucide React
-- **Cliente HTTP**: Axios con interceptor dinámico de tokens JWT
-- **Servidor Web**: Nginx 1.27 Alpine (Modo contenedor con reverse proxy)
+[Architecture Documentation](./docs/ARQUITECTURA_4FN.md) • [Build & Compilation Guide](./docs/COMPILACION.md) • [Deployment Manual](./docs/DESPLIEGUE.md) • [API Specification (Swagger)](http://localhost:8080/swagger-ui.html)
 
-### Infraestructura & Despliegue
-- **Contenedores**: Docker Engine & Docker Compose
-- **Servidor de Aplicaciones**: Apache Tomcat 10.1+ (Despliegue nativo WAR)
+</div>
 
 ---
 
-## 2. ARQUITECTURA DEL SISTEMA: HEXAGONAL + DDD POR MÓDULOS
+## AUTHORS & CORE CONTRIBUTORS
 
-El backend sigue una arquitectura modular donde cada módulo representa un **Bounded Context** de negocio. El código está escrito en **inglés técnico**, manteniendo la lógica de negocio desacoplada de la tecnología de persistencia o entrega:
+| Contributor | Role & Responsibilities | GitHub | Email |
+| :--- | :--- | :--- | :--- |
+| **Diego Mantilla** | Lead Architect, Backend Engineer (Spring Boot & 4NF) & Frontend Developer | [@DMntill4](https://github.com/DMntill4) | dmantill44@gmail.com |
+
+---
+
+## 1. TECHNICAL STACK & DEPENDENCY INVENTORY
+
+### Backend Ecosystem
+- **Language**: Java 21 LTS
+- **Core Framework**: Spring Boot 3.3.4
+- **Security & Authorization**: Spring Security 6.x with Stateless JWT (`io.jsonwebtoken:jjwt:0.12.6`)
+- **Persistence & ORM**: Spring Data JPA / Hibernate 6 (`org.hibernate.orm:hibernate-core`)
+- **Relational Database**: MySQL 8.0+ with InnoDB engine and explicit UTF-8 mb4 encoding
+- **Bean Validation**: Jakarta Bean Validation API with Hibernate Validator (`org.springframework.boot:spring-boot-starter-validation`)
+- **API Documentation**: SpringDoc OpenAPI 3.0 / Swagger UI (`org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0`)
+- **Code Generation & Boilerplate Reduction**: Project Lombok 1.18.34
+- **Build & Packaging**: Apache Maven 3.8+ (Autonomous Executable JAR & Apache Tomcat 10.1+ Native WAR dual target)
+
+### Frontend Ecosystem
+- **Bundler & Development Engine**: Vite 8.3.0 (ESM native HMR)
+- **Runtime & Language**: Vanilla JavaScript (ECMAScript 2024 Modules), zero runtime framework dependencies for maximum performance and sub-100ms load times
+- **Styling Architecture**: Tailwind CSS 3.4.17 + PostCSS 8.5.30 + Autoprefixer 10.6.1
+- **Design Tokens**: Slate 950 industrial palette, Construction Amber (`#f59e0b`), Deep Corporate Navy (`#132e4f`), and High-Contrast Typography (Outfit + Inter)
+- **Iconography**: Lucide 1.56.0 (dynamic SVG rendering engine)
+- **UI Components & Interactions**: Preline UI 2.7.0
+- **HTTP Client**: Native Fetch API wrapper (`api/client.js`) featuring automated JWT Bearer authorization headers, error boundaries, and response unwrapping
+
+### Infrastructure & Operations
+- **Containerization**: Docker Engine 24.0+ & Docker Compose v2+
+- **Reverse Proxy / Production Gateway**: Nginx 1.27 Alpine
+- **Database Migrations**: Deterministic SQL initialization scripts (`database/init/01_schema.sql`, `database/init/02_data.sql`)
+
+---
+
+## 2. ARCHITECTURAL PATTERN: HEXAGONAL + DOMAIN-DRIVEN DESIGN (DDD)
+
+The backend is partitioned into independent **Bounded Contexts** following Domain-Driven Design and Hexagonal Architecture principles. Business domain logic remains isolated from delivery channels (HTTP REST) and infrastructure concerns (JPA / MySQL):
 
 ```text
 com.opusrentals/
-├── config/                          # Configuración global (CORS, OpenAPI/Swagger)
-├── security/                        # Spring Security 6 + Filtros JWT Stateless
-│   ├── jwt/                         # JwtTokenProvider, JwtAuthenticationFilter, JwtEntryPoint
+├── config/                          # Cross-cutting configurations (CORS filters, OpenAPI Swagger)
+├── security/                        # Spring Security 6 + Stateless JWT Filters
+│   ├── jwt/                         # JwtTokenProvider, JwtAuthenticationFilter, JwtAuthenticationEntryPoint
 │   └── service/                     # CustomUserDetailsService
-├── shared/                          # Clases transversales
-│   ├── dto/ApiResponse.java        # Envoltorio uniforme para respuestas REST
-│   └── exception/                   # GlobalExceptionHandler, ResourceNotFoundException, ConflictException
+├── shared/                          # Universal DTOs & exception handling
+│   ├── dto/ApiResponse.java        # Standardized uniform response envelope: { success, message, data }
+│   └── exception/                   # GlobalExceptionHandler, ResourceNotFoundException, ConflictException, BadRequestException
 └── modules/
-    ├── user/                        # Bounded Context: Autenticación, Usuarios, Clientes y Proveedores
-    ├── tool/                        # Bounded Context: Inventario, Categorías, Especificaciones y Fotos
-    ├── rental/                      # Bounded Context: Reservas, Disponibilidad, Devoluciones y Daños
-    ├── billing/                     # Bounded Context: Facturación Automática, Métodos de Pago y Transacciones
-    └── report/                      # Bounded Context: KPIs, Métricas de Ocupación y Rentabilidad
+    ├── user/                        # Bounded Context: Security, Users, Roles, Clients & Providers
+    ├── tool/                        # Bounded Context: Heavy Machinery, Categories, Specifications & Images
+    ├── rental/                      # Bounded Context: Bookings, Date Collision Engine, Inspections & Damages
+    ├── billing/                     # Bounded Context: Invoices, Tax Settlement (19% VAT), Payments & Gateway
+    └── report/                      # Bounded Context: Business KPIs, Fleet Utilization & Revenue Analytics
 ```
 
-### Separación de Capas por Módulo:
-- **`controller/`**: Adaptadores primarios que exponen endpoints REST documentados con OpenAPI.
-- **`service/`**: Lógica de aplicación y orquestación de casos de uso (disponibilidad anti-colisiones, cálculo de impuestos, generación de comprobantes).
-- **`repository/`**: Adaptadores secundarios de persistencia con Spring Data JPA.
-- **`entity/`**: Modelos de datos mapeados a tablas MySQL cumpliendo 4FN.
-- **`dto/`**: Objetos inmutables de transferencia de datos con validaciones estrictas (`@NotBlank`, `@DecimalMin`, `@FutureOrPresent`).
+### Layer Separation Within Each Bounded Context:
+- **`controller/`**: Inbound HTTP primary adapters exposing REST endpoints annotated with OpenAPI tags.
+- **`service/`**: Application services orchestrating use cases (preventing booking collisions, computing fiscal amounts, processing returns).
+- **`repository/`**: Outbound secondary adapters extending Spring Data JPA with custom JPQL queries.
+- **`entity/`**: Relational domain models strictly aligned with 4th Normal Form (4NF).
+- **`dto/`**: Request and response immutable data transfer objects with Jakarta Validation constraints.
 
 ---
 
-## 3. MODELO DE DATOS Y NORMALIZACIÓN EN CUARTA FORMA NORMAL (4FN)
+## 3. RELATIONAL SCHEMA & FOURTH NORMAL FORM (4NF)
 
-### 3.1. Justificación Teórica de 4FN
-Para alcanzar la **4FN**, la base de datos debe cumplir con **BCNF (Boyce-Codd)** y eliminar cualquier **Dependencia Multivaluada (MVD)** independiente no trivial ($X \twoheadrightarrow Y \mid Z$):
+### Theoretical Justification of 4NF
+A relation $R$ is in **Fourth Normal Form (4NF)** if and only if, for every non-trivial Multivalued Dependency (MVD) $X \twoheadrightarrow Y$, $X$ is a superkey of $R$.
 
-1. **Herramientas (Desacoplamiento de Fotos y Especificaciones)**:
-   - Una herramienta tiene múltiples imágenes fotográficas y múltiples especificaciones técnicas (potencia, peso, combustible).
-   - Si se mantuviesen en una sola tabla, se crearía una redundancia cartesiana ($tool\_id \twoheadrightarrow image\_url \mid spec$).
-   - **Solución 4FN**: Tablas atómicas separadas `tool_images(id, tool_id, image_url, is_cover)` y `tool_specifications(id, tool_id, spec_key, spec_value)`.
-2. **Proveedores (Desacoplamiento de Contactos y Coberturas)**:
-   - Un proveedor cuenta con múltiples líneas de contacto (teléfonos, emails) y múltiples zonas de cobertura geográfica (ciudades). No existe dependencia entre un número telefónico y una ciudad.
-   - **Solución 4FN**: Tablas independientes `provider_contacts(id, provider_id, contact_type, contact_value)` y `provider_coverage_zones(id, provider_id, state, city)`.
-3. **Devoluciones (Desacoplamiento de Daños e Inspección)**:
-   - La devolución registra el estado formal del equipo y, de manera desacoplada, los daños físicos encontrados con su respectivo costo de penalización.
-   - **Solución 4FN**: `rental_returns` y `rental_damages(id, return_id, description, severity, penalty_amount)`.
+1. **Equipment Specifications & Gallery Decoupling**:
+   - An industrial machine possesses multiple gallery photos and multiple technical specifications (operating weight, horsepower, bucket capacity).
+   - Combining these into a single entity creates Cartesian product redundancy ($tool\_id \twoheadrightarrow image\_url \mid spec$).
+   - **4NF Resolution**: Independent normalized tables `tool_images(id, tool_id, image_url, is_cover)` and `tool_specifications(id, tool_id, spec_key, spec_value)`.
+2. **Provider Contacts & Territorial Coverage Decoupling**:
+   - A machinery provider operates multiple contact lines (telephones, corporate emails) and multiple geographical operational zones (departments, cities). There is no functional relation between phone numbers and cities.
+   - **4NF Resolution**: Independent tables `provider_contacts(id, provider_id, contact_type, contact_value)` and `provider_coverage_zones(id, provider_id, state, city)`.
+3. **Equipment Returns & Damage Penalization Decoupling**:
+   - Return inspections evaluate general equipment condition and separately track independent damage incidences with individualized monetary penalties.
+   - **4NF Resolution**: `rental_returns(id, rental_id, return_date, ...)` and `rental_damages(id, return_id, description, severity, penalty_amount)`.
 
-### 3.2. Diagrama Entidad-Relación (ERD)
-
-```mermaid
-erDiagram
-    ROLES ||--o{ USERS : "tiene asignado"
-    USERS ||--o| CLIENTS : "perfil cliente"
-    USERS ||--o| PROVIDERS : "perfil proveedor"
-    
-    PROVIDERS ||--o{ PROVIDER_CONTACTS : "posee (4FN)"
-    PROVIDERS ||--o{ PROVIDER_COVERAGE_ZONES : "cubre (4FN)"
-    PROVIDERS ||--o{ TOOLS : "publica"
-    
-    TOOL_CATEGORIES ||--o{ TOOLS : "clasifica"
-    TOOLS ||--o{ TOOL_IMAGES : "fotografias (4FN)"
-    TOOLS ||--o{ TOOL_SPECIFICATIONS : "fichas tecnicas (4FN)"
-    
-    CLIENTS ||--o{ RENTALS : "solicita"
-    TOOLS ||--o{ RENTALS : "alquilada en"
-    
-    RENTALS ||--o| RENTAL_RETURNS : "acta recepcion"
-    RENTAL_RETURNS ||--o{ RENTAL_DAMAGES : "danios liquidados (4FN)"
-    
-    RENTALS ||--o| INVOICES : "genera factura"
-    INVOICES ||--o{ PAYMENTS : "liquidada con"
-    PAYMENT_METHODS ||--o{ PAYMENTS : "metodo utilizado"
-```
+### Complete 16-Table Relational Schema:
+1. `roles`: Security roles (`ROLE_ADMIN`, `ROLE_PROVIDER`, `ROLE_CLIENT`).
+2. `users`: Credentials, emails, encrypted password hashes (BCrypt).
+3. `clients`: Client business profiles, company tax IDs, contact information.
+4. `providers`: Equipment supplier corporate profiles, verification status.
+5. `provider_contacts`: Multi-channel communication records (4NF).
+6. `provider_coverage_zones`: Regional operational territories (4NF).
+7. `tool_categories`: Hierarchical fleet categorization.
+8. `tools`: Heavy equipment catalog, daily rental rates, replacement values.
+9. `tool_images`: Multi-angle photography gallery (4NF).
+10. `tool_specifications`: Engineering specifications and technical datasheets (4NF).
+11. `rentals`: Contractual bookings, date ranges, status machine (`PENDING`, `APPROVED`, `IN_PROGRESS`, `RETURNED`, `CANCELLED`).
+12. `rental_returns`: Reception physical audit records.
+13. `rental_damages`: Damage penalty settlements (4NF).
+14. `invoices`: Official fiscal invoices with automated legal tax breakdown (19% VAT).
+15. `payment_methods`: Approved payment instruments (Credit Cards, PSE, Bank Wire).
+16. `payments`: Payment gateway audit trails and settlement records.
 
 ---
 
-## 4. INICIO RÁPIDO Y EJECUCIÓN CON DOCKER (RECOMENDADO)
+## 4. CORE BUSINESS WORKFLOWS
 
-### Paso 1: Clonar e ingresar al repositorio
+### Date Collision Engine (Zero-Overbooking Guarantee)
+Before any reservation is saved to the database, the backend executes an atomic overlapping query:
+```sql
+SELECT COUNT(r) > 0 FROM Rental r 
+WHERE r.tool.id = :toolId 
+  AND r.status NOT IN ('CANCELLED', 'RETURNED') 
+  AND r.startDate <= :endDate 
+  AND r.endDate >= :startDate
+```
+If a conflicting booking exists within the requested date span, the transaction immediately rolls back with an HTTP `409 Conflict` and descriptive localized feedback.
+
+### Fiscal Invoice & Pricing Precision
+- **Daily Rate Calculation**: `subtotal = dailyPrice * totalDays`.
+- **National VAT (19%)**: `taxAmount = subtotal * 0.19` (Half-Up rounding, 2 decimal places).
+- **Transaction Total**: `totalAmount = subtotal + taxAmount`.
+- **Deposit Policy**: Security deposits (`depositAmount`) are tracked exclusively for asset protection and physical handover agreements; they are not conflated with transaction invoice totals.
+
+---
+
+## 5. QUICK START & RUNNING LOCALLY
+
+### Prerequisites
+- Java 21 JDK
+- Node.js 20+ & npm 10+
+- MySQL 8.0+ or Docker Desktop
+
+### 1. Database Initialization
+Create and populate the database using the provided deterministic SQL scripts:
 ```bash
-git clone https://github.com/DMntill4/opus-rentals.git
-cd opus-rentals
+mysql -u root -p < database/init/01_schema.sql
+mysql -u root -p < database/init/02_data.sql
 ```
 
-> **Estrategia de Ramas**: El desarrollo activo se centraliza en la rama `develop`, mientras que las versiones consolidadas se integran a la rama `main`.
-
-### Paso 2: Configurar el entorno
-Copie el archivo de variables de entorno:
+### 2. Launch Backend (Spring Boot 3)
 ```bash
-cp .env.example .env
+cd backend
+./mvnw clean spring-boot:run
 ```
+Backend API will start at: `http://localhost:8080`
+Interactive Swagger UI: `http://localhost:8080/swagger-ui.html`
 
-### Paso 3: Levantar el ecosistema
+### 3. Launch Frontend (Vite)
+```bash
+cd frontend
+npm install
+npm run dev
+```
+Frontend Web Application: `http://localhost:5173`
+
+### 4. Autonomous Docker Deployment
+To launch the entire platform (MySQL + Spring Boot + Frontend Nginx) in a single command:
 ```bash
 docker compose up -d --build
 ```
 
-El script poblará automáticamente MySQL con **más de 20 registros consistentes por entidad** tomados de `database/init/01_schema.sql` y `database/init/02_data.sql`.
+---
 
-### URLs de Acceso:
-- **Aplicación Web (Frontend)**: [http://localhost](http://localhost) (Puerto 80)
-- **Documentación Swagger / OpenAPI**: [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
-- **Documentación OpenAPI JSON**: [http://localhost:8080/v3/api-docs](http://localhost:8080/v3/api-docs)
+## 6. PRECONFIGURED SYSTEM ROLES & DEMONSTRATION CREDENTIALS
+
+The database seed provides operational accounts for all three user archetypes:
+
+| Role | Username | Password | Key Responsibilities |
+| :--- | :--- | :--- | :--- |
+| **Administrator** | `admin_principal` | `Password123*` | System KPIs, supplier verification, global rental audits, user role administration |
+| **Machinery Provider** | `prov_maquinaria_bog` | `Password123*` | Fleet inventory CRUD, rental request approval/rejection, technical check-in inspections & damages |
+| **Client / Contractor** | `cli_constructora_col` | `Password123*` | Catalog search & filters, live availability check, checkout payment, official invoice PDF/HTML viewer |
 
 ---
 
-## 5. CREDENCIALES POR DEFECTO PARA PRUEBAS
+## 7. PROJECT REPOSITORY STRUCTURE
 
-Todos los usuarios cuentan con la contraseña unificada: `password123`
-
-| Rol | Correo Electrónico | Contraseña | Vistas y Funcionalidades |
-| :--- | :--- | :--- | :--- |
-| **ADMIN** | `admin@opusrentals.com` | `password123` | Dashboard general con métricas de rentabilidad, herramientas más rentadas, gestión y bloqueo de usuarios, auditoría global. |
-| **PROVEEDOR** | `provider.caterpillar@opusrentals.com` | `password123` | Gestión de inventario de equipos, subida de fotos y especificaciones, aprobación de solicitudes y acta de recepción con daños (4FN). |
-| **CLIENTE** | `client.carlos@gmail.com` | `password123` | Catálogo con filtros, solicitud de reserva con validación temporal, pasarela de pago simulada y descarga de facturas legales. |
-
----
-
-## 6. CATÁLOGO DE ENDPOINTS DE LA API (REST + JSON)
-
-### 6.1. Autenticación (`/api/v1/auth`)
-| Método | Endpoint | Permiso | Descripción |
-| :--- | :--- | :--- | :--- |
-| `POST` | `/api/v1/auth/login` | Público | Autenticación y obtención del token JWT Bearer. |
-| `POST` | `/api/v1/auth/register/client` | Público | Registro de cliente con documento, teléfono y dirección. |
-| `POST` | `/api/v1/auth/register/provider` | Público | Registro de proveedor con razón social, NIT, contactos y zonas. |
-
-#### Ejemplo de Request: `POST /api/v1/auth/login`
-```json
-{
-  "email": "admin@opusrentals.com",
-  "password": "password123"
-}
+```text
+opus-rentals/
+├── bannerOpus.png                   # High-resolution architectural branding banner
+├── docker-compose.yml               # Multi-container orchestration specification
+├── database/
+│   └── init/
+│       ├── 01_schema.sql            # DDL: 16 tables, 4NF foreign keys and check constraints
+│       └── 02_data.sql              # DML: Production catalogs and baseline roles
+├── backend/
+│   ├── pom.xml                      # Maven project configuration (Java 21, Spring Boot 3.3.4)
+│   └── src/main/java/com/opusrentals/
+│       ├── config/                  # CORS, Swagger OpenAPI configuration
+│       ├── security/                # JWT filters, TokenProvider, UserDetailsService
+│       ├── shared/                  # Common responses, GlobalExceptionHandler
+│       └── modules/                 # Bounded contexts (user, tool, rental, billing, report)
+├── frontend/
+│   ├── package.json                 # Node dependencies (Vite 8, Tailwind 3.4, Lucide)
+│   ├── index.html                   # HTML5 Entrypoint
+│   └── src/
+│       ├── api/                     # Unified HTTP client and mock store fallbacks
+│       ├── auth/                    # JWT session and role state management
+│       ├── components/              # Modals, toasts, navigation, system skeletons
+│       ├── utils/                   # Currency formatters, Lucide icon renderer, i18n
+│       └── views/                   # Dynamic views: Catalog, Product Detail, Dashboards, Invoices
+└── docs/
+    ├── ARQUITECTURA_4FN.md          # Mathematical 4NF proof and ERD diagram
+    ├── COMPILACION.md               # Build instructions for local JAR and Tomcat WAR
+    └── DESPLIEGUE.md                # Deployment manual for Docker and production environments
 ```
-#### Ejemplo de Response:
-```json
-{
-  "success": true,
-  "message": "Inicio de sesión exitoso",
-  "data": {
-    "token": "eyJhbGciOiJIUzI1NiIsIn...",
-    "tokenType": "Bearer",
-    "userId": 1,
-    "email": "admin@opusrentals.com",
-    "role": "ROLE_ADMIN",
-    "displayName": "Administrador del Sistema"
-  }
-}
-```
-
----
-
-### 6.2. Inventario y Herramientas (`/api/v1/tools`)
-| Método | Endpoint | Permiso | Descripción |
-| :--- | :--- | :--- | :--- |
-| `GET` | `/api/v1/tools` | Público | Consulta de herramientas con filtros por categoría, estado y búsqueda. |
-| `GET` | `/api/v1/tools/{id}` | Público | Consulta detallada con imágenes y especificaciones técnicas (4FN). |
-| `POST` | `/api/v1/tools` | `PROVEEDOR`, `ADMIN` | Creación de equipo con tarifas, depósito, imágenes y especificaciones. |
-| `PUT` | `/api/v1/tools/{id}` | `PROVEEDOR`, `ADMIN` | Actualización de datos de la herramienta propia. |
-| `DELETE`| `/api/v1/tools/{id}` | `PROVEEDOR`, `ADMIN` | Eliminación de herramienta. |
-
-#### Ejemplo de Request: `POST /api/v1/tools`
-```json
-{
-  "categoryId": 1,
-  "name": "Excavadora Compacta Cat 305",
-  "brand": "Caterpillar",
-  "model": "305 CR",
-  "dailyPrice": 320000.00,
-  "depositAmount": 1200000.00,
-  "images": [
-    {
-      "imageUrl": "https://images.unsplash.com/photo-1579762715118-a6f1d4b934f1",
-      "isCover": true
-    }
-  ],
-  "specifications": [
-    { "specKey": "Potencia Neta", "specValue": "48.9 HP" },
-    { "specKey": "Profundidad de Excavación", "specValue": "3.82 m" }
-  ]
-}
-```
-
----
-
-### 6.3. Reservas y Alquileres (`/api/v1/rentals`)
-| Método | Endpoint | Permiso | Descripción |
-| :--- | :--- | :--- | :--- |
-| `POST` | `/api/v1/rentals` | `CLIENTE`, `ADMIN` | Reserva de equipo validando no-solapamiento de fechas. Genera factura. |
-| `GET` | `/api/v1/rentals/my-rentals` | `CLIENTE`, `ADMIN` | Historial de alquileres del cliente autenticado. |
-| `GET` | `/api/v1/rentals/provider-requests` | `PROVEEDOR`, `ADMIN` | Bandeja de solicitudes de alquiler para el proveedor. |
-| `PATCH`| `/api/v1/rentals/{id}/status` | Autenticado | Aprobación (`APPROVED`), rechazo o cancelación (`CANCELLED`). |
-
-#### Ejemplo de Request: `POST /api/v1/rentals`
-```json
-{
-  "toolId": 1,
-  "startDate": "2026-11-01",
-  "endDate": "2026-11-05",
-  "notes": "Entrega en obra proyecto Calle 93 con Cra 11"
-}
-```
-
----
-
-### 6.4. Devoluciones e Inspección de Daños (`/api/v1/returns`)
-| Método | Endpoint | Permiso | Descripción |
-| :--- | :--- | :--- | :--- |
-| `POST` | `/api/v1/returns/rental/{rentalId}` | `PROVEEDOR`, `ADMIN` | Cierre del alquiler con acta de inspección y registro atómico de daños. |
-| `GET` | `/api/v1/returns/rental/{rentalId}` | Autenticado | Consulta del informe de devolución y desglose de penalizaciones. |
-
-#### Ejemplo de Request: `POST /api/v1/returns/rental/1`
-```json
-{
-  "returnDate": "2026-11-05",
-  "generalNotes": "Equipo devuelto en bodega",
-  "inspectorNotes": "Revisión técnica detecta rotura de manguera de alta presión",
-  "damages": [
-    {
-      "description": "Manguera de circuito hidráulico reventada",
-      "severity": "MODERATE",
-      "penaltyAmount": 150000.00
-    }
-  ]
-}
-```
-
----
-
-### 6.5. Facturación y Pagos (`/api/v1/invoices` y `/api/v1/payments`)
-| Método | Endpoint | Permiso | Descripción |
-| :--- | :--- | :--- | :--- |
-| `GET` | `/api/v1/payment-methods` | Público | Lista los métodos de pago habilitados (Tarjetas, PSE, etc.). |
-| `GET` | `/api/v1/invoices/my-invoices` | Autenticado | Consulta las facturas del usuario actual (Cliente o Proveedor). |
-| `POST` | `/api/v1/payments` | Autenticado | Simula y registra la transacción de pago, pasando la factura a `PAID`. |
-
----
-
-### 6.6. Métricas y Supervisión (`/api/v1/admin`)
-| Método | Endpoint | Permiso | Descripción |
-| :--- | :--- | :--- | :--- |
-| `GET` | `/api/v1/admin/reports/dashboard`| `ADMIN` | Métricas generales, ingresos por mes y top 10 de herramientas más rentadas. |
-| `GET` | `/api/v1/admin/users` | `ADMIN` | Listado completo de usuarios registrados en el sistema. |
-| `PATCH`| `/api/v1/admin/users/{id}/status` | `ADMIN` | Inhabilita o reactiva cuentas de usuario en la plataforma. |
-
----
-
-## 7. SUITE DE PRUEBAS AUTOMATIZADAS Y POSTMAN
-
-1. **Pruebas en Spring Boot**:
-   ```bash
-   cd backend
-   mvn test
-   ```
-2. **Colección Postman**:
-   - En la carpeta de documentación encontrará la colección lista:
-     [`docs/OpusRentals.postman_collection.json`](file:///c:/Users/dalej/OneDrive/Documents/opus-rentals/docs/OpusRentals.postman_collection.json).
-   - Impórtelo en Postman.
-   - Ejecute la petición **1. Authentication > Login - Admin** para que el token JWT se guarde automáticamente en la variable de colección `{{token}}`.
-
----
-
-## 8. DOCUMENTACIÓN ADICIONAL DEL REPOSITORIO (CARPETA `docs/`)
-
-- Consulte [`docs/COMPILACION.md`](file:///c:/Users/dalej/OneDrive/Documents/opus-rentals/docs/COMPILACION.md) para detalles de construcción paso a paso.
-- Consulte [`docs/DESPLIEGUE.md`](file:///c:/Users/dalej/OneDrive/Documents/opus-rentals/docs/DESPLIEGUE.md) para la configuración en Apache Tomcat nativo y Docker Compose.
-- Consulte [`docs/ARQUITECTURA_4FN.md`](file:///c:/Users/dalej/OneDrive/Documents/opus-rentals/docs/ARQUITECTURA_4FN.md) para la demostración formal y matemática de la Cuarta Forma Normal.
-

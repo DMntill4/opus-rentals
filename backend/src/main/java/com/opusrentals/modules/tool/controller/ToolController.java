@@ -3,6 +3,8 @@ package com.opusrentals.modules.tool.controller;
 import com.opusrentals.modules.tool.dto.request.CreateToolRequest;
 import com.opusrentals.modules.tool.dto.request.UpdateToolRequest;
 import com.opusrentals.modules.tool.dto.response.ToolResponse;
+import com.opusrentals.modules.tool.dto.response.CategoryResponse;
+import com.opusrentals.modules.tool.service.CategoryService;
 import com.opusrentals.modules.tool.service.ToolService;
 import com.opusrentals.shared.dto.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -25,6 +27,13 @@ import java.util.List;
 public class ToolController {
 
     private final ToolService toolService;
+    private final CategoryService categoryService;
+
+    @GetMapping("/categories")
+    @Operation(summary = "Get all categories (alias)")
+    public ResponseEntity<ApiResponse<List<CategoryResponse>>> getCategories() {
+        return ResponseEntity.ok(ApiResponse.ok(categoryService.getAllCategories()));
+    }
 
     @GetMapping
     @Operation(summary = "Search and filter tools", description = "Public endpoint to query available tools by category, status, and keyword")

@@ -1,125 +1,92 @@
-# GUÍA MAESTRA DE DESPLIEGUE
-## Plataforma de Renta de Herramientas y Equipos de Construcción (Opus Rentals)
+# DEPLOYMENT AND ORCHESTRATION GUIDE
+## Opus Rentals Platform
 
-Este documento detalla las dos alternativas oficiales para poner en producción la plataforma:
-1. **Opción 1: Despliegue Contenerizado con Docker & Docker-Compose (Recomendado)**.
-2. **Opción 2: Despliegue Nativo en Apache Tomcat 10.1+ (Servidor de Aplicaciones)**.
+This guide outlines deployment options for local development, containerized staging, and production hosting:
+1. Containerized deployment via Docker and Docker Compose (Recommended).
+2. Native deployment on Apache Tomcat 10.1+ application server.
 
 ---
 
-## OPCIÓN 1: DESPLIEGUE CON DOCKER & DOCKER-COMPOSE
+## 1. DOCKER & DOCKER COMPOSE DEPLOYMENT
 
-Esta opción orquesta de manera autónoma tres contenedores: la base de datos MySQL 8.0 pre-poblada con datos 4FN, el backend en Spring Boot 3 y el frontend servido por Nginx como Single Page Application y reverse proxy.
+The orchestration config in `docker-compose.yml` provisions three isolated services:
+- `mysql_db`: MySQL 8.0 server with automated schema initialization.
+- `backend`: Spring Boot 3 on Eclipse Temurin JRE 21.
+- `frontend`: Single Page Application served by Nginx 1.27 Alpine.
 
-### 1.1. Prerrequisitos
-- **Docker Engine**: versión 20.10+ o Docker Desktop.
-- **Docker Compose**: versión 2.0+.
+### Prerequisites
+- Docker Engine 24.0+ or Docker Desktop.
+- Docker Compose v2.0+.
 
-### 1.2. Paso 1: Configurar Variables de Entorno
-Asegúrese de que el archivo `.env` exista en la raíz del repositorio (`opus-rentals/.env`):
+### Step 1: Environment Setup
+Ensure environment parameters exist in `.env`:
 ```bash
 cp .env.example .env
 ```
 
-### 1.3. Paso 2: Construcción y Levantamiento
-Desde la raíz del proyecto, ejecute:
+### Step 2: Build and Run Services
+From the repository root:
 ```bash
 docker compose up -d --build
 ```
 
-### 1.4. Flujo de Inicialización Automática
-1. **`mysql_db`**: Se inicia en el puerto `3306`. Ejecuta automáticamente en orden alfabético los scripts montados en `/docker-entrypoint-initdb.d/`:
-   - `01_schema.sql` (Crea el esquema con restricciones 4FN).
-   - `02_data.sql` (Puebla 20+ registros por entidad).
-   - El contenedor pasa a estado `healthy` tras validar la conectividad con `mysqladmin ping`.
-2. **`backend`**: Espera a que `mysql_db` esté saludable (`condition: service_healthy`). Construye el artefacto WAR con Java 21 en la etapa de build y lo ejecuta en un contenedor JRE 21 ligero exponiendo el puerto `8080`.
-3. **`frontend`**: Compila los activos React con Node 20 y monta el bundle en Nginx Alpine en el puerto `80`.
+### Initialization Order & Health Checks
+1. `mysql_db` starts on port `3306` and mounts scripts from `database/init/`:
+   - `01_schema.sql` (16 normalized tables and constraints).
+   - `02_data.sql` (Seed data for categories, roles, and baseline assets).
+   - Container health is monitored via `mysqladmin ping`.
+2. `backend` starts only after `mysql_db` reports healthy. It compiles the source code via Maven inside a multi-stage Dockerfile and exposes port `8080`.
+3. `frontend` builds the client bundle via Vite and deploys static files to Nginx on port `80`.
 
-### 1.5. Verificación de Contenedores en Ejecución
+### Service Verification
 ```bash
 docker compose ps
 ```
-Debe observar los tres servicios con estado `running`:
+All services should report `Up`:
 - `opus_mysql_db` (Up, healthy)
 - `opus_backend` (Up)
 - `opus_frontend` (Up)
 
-Para consultar los logs del sistema:
+### Inspect Container Logs
 ```bash
 docker compose logs -f backend
 ```
 
-### 1.6. Detención del Entorno
+### Teardown
 ```bash
 docker compose down
 ```
+To purge persistent volume data:
+```bash
+docker compose down -v
+```
 
 ---
 
-## OPCIÓN 2: DESPLIEGUE NATIVO EN APACHE TOMCAT 10.1+
+## 2. NATIVE APACHE TOMCAT 10.1+ DEPLOYMENT
 
-Para desplegar el backend directamente en un servidor de aplicaciones Tomcat nativo en Windows o Linux:
-
-### 2.1. Prerrequisitos
-- **Apache Tomcat 10.1.x o superior** (Compatible con Jakarta EE 10 / Servlet 6.0).
-- **Java 21 JDK** configurado en la variable `JAVA_HOME`.
-- **MySQL Server 8.0** activo en `localhost:3306`.
-
-### 2.2. Paso 1: Inicializar la Base de Datos en MySQL
-Ejecute los scripts de inicialización en su gestor de MySQL:
+### Step 1: Build the WAR Package
 ```bash
-mysql -u root -p < database/init/01_schema.sql
-mysql -u root -p < database/init/02_data.sql
-```
-
-### 2.3. Paso 2: Generar el archivo WAR
-En la carpeta `backend/`:
-```bash
+cd backend
 mvn clean package -DskipTests
 ```
-Se obtendrá el archivo `backend/target/opus-rentals.war`.
+The file `target/opus-rentals-backend-1.0.0.war` is generated.
 
-### 2.4. Paso 3: Configuración de Variables en Tomcat
-En Tomcat, declare las variables en `bin/setenv.bat` (Windows) o `bin/setenv.sh` (Linux):
-
-**En Windows (`bin/setenv.bat`):**
-```cmd
-set "SPRING_DATASOURCE_URL=jdbc:mysql://localhost:3306/opus_rentals_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"
-set "SPRING_DATASOURCE_USERNAME=opus_user"
-set "SPRING_DATASOURCE_PASSWORD=opus_secure_password_2026"
-set "JWT_SECRET=404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970"
-set "JWT_EXPIRATION_MS=86400000"
-set "JAVA_OPTS=-Xms512m -Xmx1024m"
-```
-
-### 2.5. Paso 4: Despliegue del archivo WAR
-Copie `backend/target/opus-rentals.war` a la carpeta `webapps/` de su Tomcat:
-```bash
-cp backend/target/opus-rentals.war $CATALINA_HOME/webapps/
-```
-Tomcat desplegará el contexto automáticamente en:
-```text
-http://localhost:8080/opus-rentals/
-```
+### Step 2: Deploy to Tomcat
+1. Copy `target/opus-rentals-backend-1.0.0.war` to `$CATALINA_HOME/webapps/ROOT.war` (or your chosen context path).
+2. Set JVM database and JWT environment variables in `$CATALINA_HOME/bin/setenv.sh` (or `setenv.bat`).
+3. Start Tomcat:
+   ```bash
+   $CATALINA_HOME/bin/startup.sh
+   ```
 
 ---
 
-## 3. URLs DE ACCESO A LOS SERVICIOS
+## 3. NETWORK TOPOLOGY & PORTS
 
-| Servicio | Entorno Docker | Entorno Tomcat Nativo |
-| :--- | :--- | :--- |
-| **Frontend Web** | `http://localhost` (Puerto 80) | `http://localhost:5173` (Dev server) |
-| **Backend API** | `http://localhost:8080/api/v1` | `http://localhost:8080/opus-rentals/api/v1` |
-| **Swagger UI** | `http://localhost:8080/swagger-ui.html` | `http://localhost:8080/opus-rentals/swagger-ui.html` |
-| **OpenAPI Docs** | `http://localhost:8080/v3/api-docs` | `http://localhost:8080/opus-rentals/v3/api-docs` |
-| **MySQL Database** | `localhost:3306` (`opus_rentals_db`) | `localhost:3306` (`opus_rentals_db`) |
-
----
-
-## 4. CREDENCIALES DE PRUEBA POR ROL
-
-| Rol | Correo Electrónico | Contraseña | Perfil / Capacidades |
-| :--- | :--- | :--- | :--- |
-| **ADMIN** | `admin@opusrentals.com` | `password123` | Supervisión total, KPIs financieros, auditoría y control de usuarios. |
-| **PROVEEDOR** | `provider.caterpillar@opusrentals.com` | `password123` | Gestión de inventario de equipos, aprobación de reservas y actas de daños 4FN. |
-| **CLIENTE** | `client.carlos@gmail.com` | `password123` | Catálogo interactivo, creación de reservas, checkout en línea y facturas. |
+| Service | Container Internal Port | Host Port | Protocol | Description |
+| :--- | :--- | :--- | :--- | :--- |
+| MySQL Database | 3306 | 3306 | TCP | Relational database instance |
+| Spring Boot Backend | 8080 | 8080 | HTTP | REST API and OpenAPI Swagger |
+| Frontend Nginx | 80 | 80 | HTTP | Static asset delivery and SPA routing |
+| Frontend Dev Server | 5173 | 5173 | HTTP | Vite development server with HMR |

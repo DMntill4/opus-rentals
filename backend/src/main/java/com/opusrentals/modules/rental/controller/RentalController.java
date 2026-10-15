@@ -28,7 +28,7 @@ public class RentalController {
     private final RentalService rentalService;
 
     @PostMapping
-    @PreAuthorize("hasAnyAuthority('ROLE_CLIENT', 'ROLE_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ROLE_CLIENT', 'ROLE_CLIENTE', 'ROLE_ADMIN')")
     @Operation(summary = "Create a rental booking", description = "Checks tool availability, calculates fees, and reserves equipment")
     public ResponseEntity<ApiResponse<RentalResponse>> createRental(
             @Valid @RequestBody CreateRentalRequest request,
@@ -39,15 +39,23 @@ public class RentalController {
     }
 
     @GetMapping("/my-rentals")
-    @PreAuthorize("hasAnyAuthority('ROLE_CLIENT', 'ROLE_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ROLE_CLIENT', 'ROLE_CLIENTE', 'ROLE_ADMIN')")
     @Operation(summary = "Get client rental history", description = "Returns all rentals placed by the currently logged-in client")
     public ResponseEntity<ApiResponse<List<RentalResponse>>> getClientRentals(Authentication authentication) {
         List<RentalResponse> rentals = rentalService.getRentalsByClient(authentication.getName());
         return ResponseEntity.ok(ApiResponse.ok(rentals));
     }
 
+    @GetMapping("/client/{clientId}")
+    @PreAuthorize("hasAnyAuthority('ROLE_CLIENT', 'ROLE_CLIENTE', 'ROLE_ADMIN')")
+    @Operation(summary = "Get client rentals by client ID")
+    public ResponseEntity<ApiResponse<List<RentalResponse>>> getRentalsByClientId(@PathVariable Long clientId) {
+        List<RentalResponse> rentals = rentalService.getRentalsByClientId(clientId);
+        return ResponseEntity.ok(ApiResponse.ok(rentals));
+    }
+
     @GetMapping("/provider-requests")
-    @PreAuthorize("hasAnyAuthority('ROLE_PROVIDER', 'ROLE_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ROLE_PROVIDER', 'ROLE_PROVEEDOR', 'ROLE_ADMIN')")
     @Operation(summary = "Get provider rental requests", description = "Returns all incoming rental requests for the provider's inventory")
     public ResponseEntity<ApiResponse<List<RentalResponse>>> getProviderRentals(Authentication authentication) {
         List<RentalResponse> rentals = rentalService.getRentalsByProvider(authentication.getName());

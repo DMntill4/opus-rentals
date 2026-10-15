@@ -34,6 +34,7 @@ public class RentalResponse {
     private BigDecimal subtotal;
     private BigDecimal depositAmount;
     private BigDecimal estimatedTotal; // subtotal + 19% tax + deposit
+    private BigDecimal totalAmount;    // subtotal + 19% tax (invoice value)
     private String status;
     private String notes;
     private LocalDateTime createdAt;

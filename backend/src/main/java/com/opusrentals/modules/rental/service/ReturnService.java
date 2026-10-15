@@ -5,7 +5,6 @@ import com.opusrentals.modules.rental.dto.response.ReturnResponse;
 import com.opusrentals.modules.rental.entity.Rental;
 import com.opusrentals.modules.rental.entity.RentalDamage;
 import com.opusrentals.modules.rental.entity.RentalReturn;
-import com.opusrentals.modules.rental.repository.RentalDamageRepository;
 import com.opusrentals.modules.rental.repository.RentalRepository;
 import com.opusrentals.modules.rental.repository.RentalReturnRepository;
 import com.opusrentals.modules.tool.entity.Tool;
@@ -19,14 +18,12 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class ReturnService {
 
     private final RentalReturnRepository returnRepository;
-    private final RentalDamageRepository damageRepository;
     private final RentalRepository rentalRepository;
     private final ToolRepository toolRepository;
 

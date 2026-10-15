@@ -4,9 +4,10 @@
   "private": true,
   "description": "Opus Rentals - Heavy Equipment & Tools Marketplace Monorepo Root",
   "scripts": {
-    "dev": "npm --prefix frontend run dev",
+    "dev": "node scripts/start-all.js",
+    "docker:all": "docker compose up -d",
     "build": "npm --prefix frontend run build",
     "preview": "npm --prefix frontend run preview",
-    "backend:run": "mvn clean spring-boot:run"
+    "backend:run": "cd backend && .\\mvnw.cmd spring-boot:run"
   }
 }

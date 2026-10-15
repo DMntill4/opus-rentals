@@ -29,3 +29,7 @@ Thumbs.db
 
 # Docker volumes
 mysql_data/
+
+# Reference repository
+reference-project/
+

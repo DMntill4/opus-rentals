@@ -30,16 +30,24 @@ public class JwtTokenProvider {
     }
 
     public String generateToken(Authentication authentication, Long userId) {
-        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+        String username;
+        String roles = "";
+        if (authentication.getPrincipal() instanceof UserDetails userDetails) {
+            username = userDetails.getUsername();
+            roles = userDetails.getAuthorities().stream()
+                    .map(GrantedAuthority::getAuthority)
+                    .collect(Collectors.joining(","));
+        } else {
+            username = authentication.getName();
+            roles = authentication.getAuthorities().stream()
+                    .map(GrantedAuthority::getAuthority)
+                    .collect(Collectors.joining(","));
+        }
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + jwtExpirationMs);
 
-        String roles = userDetails.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.joining(","));
-
         return Jwts.builder()
-                .subject(userDetails.getUsername())
+                .subject(username)
                 .claim("userId", userId)
                 .claim("roles", roles)
                 .issuedAt(now)
