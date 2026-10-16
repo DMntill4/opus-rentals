@@ -97,7 +97,7 @@ export async function renderProductPageView(toolId) {
                 <div class="flex sm:flex-col gap-2 order-2 sm:order-1 flex-shrink-0" id="detail-thumbs">
                   ${images.map((img, idx) => `
                     <button class="thumb-btn w-14 h-14 rounded-lg overflow-hidden border-2 transition-all cursor-pointer ${
-                      idx === activeImageIndex ? 'border-[#FFB800] ring-2 ring-[#FFB800]/40' : 'border-slate-200 hover:border-slate-400'
+                      idx === activeImageIndex ? 'border-[#FF7A00] ring-2 ring-[#FF7A00]/40' : 'border-slate-200 hover:border-slate-400'
                     }" data-index="${idx}">
                       <img src="${img.imageUrl}" class="w-full h-full object-cover" alt="Vista ${idx + 1}" />
                     </button>
@@ -111,7 +111,7 @@ export async function renderProductPageView(toolId) {
                     alt="${tool.name}" 
                     class="max-h-[360px] w-full object-contain"
                   />
-                  <span class="absolute top-3 left-3 px-2.5 py-1 rounded bg-[#FFB800] text-slate-950 text-[10px] font-mono font-black">
+                  <span class="absolute top-3 left-3 px-2.5 py-1 rounded bg-[#FF7A00] text-white text-[10px] font-mono font-black shadow-xs">
                     ID: ${tool.id}
                   </span>
                 </div>

@@ -214,25 +214,26 @@ export function openAuthModal(initialTab = 'login') {
             loading="eager"
             onerror="this.src='https://plus.unsplash.com/premium_photo-1682144435143-97c426ff3a77?auto=format&fit=crop&w=1200&q=85';"
           />
-          <!-- Gentle gradient vignette to preserve picture vibrancy and details while keeping typography readable -->
-          <div class="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/35 to-slate-950/20"></div>
+          <!-- Full dark protective overlay for high contrast, dramatic construction feel -->
+          <div class="absolute inset-0 bg-slate-950/75"></div>
+          <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/60 to-transparent"></div>
 
           <!-- Top Badge & Title with Drop Shadow -->
           <div class="relative z-10 space-y-4">
-            <span class="inline-block px-3.5 py-1.5 rounded-full text-xs font-mono font-black uppercase bg-[#FFB800] text-slate-950 shadow-md">
+            <span class="inline-block px-3.5 py-1.5 rounded-full text-xs font-mono font-black uppercase bg-[#FF7A00] text-white shadow-md">
               Infraestructura B2B Certificada
             </span>
             <h3 class="text-2xl sm:text-3xl font-black font-display leading-tight text-white drop-shadow-[0_4px_12px_rgba(0,0,0,0.9)]">
               La Plataforma de Alquiler de Maquinaria Más Robusta de Colombia
             </h3>
-            <p class="text-sm text-slate-100 leading-relaxed font-medium drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)]">
+            <p class="text-sm text-slate-200 leading-relaxed font-normal drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)]">
               Flota supervisada con telemetría satelital en vivo, póliza todo riesgo SURA e inspección técnica previa a cada entrega en frente de obra.
             </p>
           </div>
 
           <!-- Trust Badges -->
           <div class="relative z-10 space-y-4 pt-6 border-t border-white/20">
-            <div class="text-xs font-mono uppercase text-amber-400 font-black tracking-wider">
+            <div class="text-xs font-mono uppercase text-[#FF7A00] font-black tracking-wider">
               Garantías Contractuales en Obra
             </div>
             <div class="grid grid-cols-2 gap-3 text-xs text-slate-200">

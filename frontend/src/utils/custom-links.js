@@ -3,7 +3,7 @@
  * 
  * Puedes pegar directamente aquí los enlaces que encuentres en Pinterest,
  * Google Imágenes, Catálogos CAT, Komatsu o cualquier página web.
- * (Clic derecho en la imagen -> "Copiar dirección de la imagen" y la pegas entre las comillas)
+ * (Clic derecho en la imagen -> "Copiar dirección de la imagen" y la pegas entre las comillas)l
  */
 
 export const customLinks = {

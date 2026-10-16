@@ -303,18 +303,18 @@ export async function renderHomeView() {
 
               <!-- Top Bar -->
               <div class="relative z-10 flex items-center justify-between">
-                <span class="w-9 h-9 rounded-xl bg-[#FFB800] text-slate-950 flex items-center justify-center font-bold shadow-sm">
+                <span class="w-9 h-9 rounded-xl bg-[#FF7A00] text-white flex items-center justify-center font-bold shadow-sm">
                   ${renderIcon(cat.icon, 'w-4 h-4')}
                 </span>
-                <span class="px-2.5 py-0.5 rounded-md bg-slate-950/90 text-[10px] font-mono font-bold text-amber-300 border border-white/20">
+                <span class="px-2.5 py-0.5 rounded-md bg-slate-950/90 text-[10px] font-mono font-bold text-orange-200 border border-white/20">
                   ${cat.count}
                 </span>
               </div>
 
               <!-- Bottom Content -->
               <div class="relative z-10 space-y-0.5">
-                <div class="text-[10px] font-mono uppercase font-black text-[#FFB800] tracking-wider">${cat.tag}</div>
-                <h3 class="text-base font-bold text-white group-hover:text-amber-200 transition-colors">${cat.name}</h3>
+                <div class="text-[10px] font-mono uppercase font-black text-[#FF7A00] tracking-wider">${cat.tag}</div>
+                <h3 class="text-base font-bold text-white group-hover:text-orange-200 transition-colors">${cat.name}</h3>
               </div>
             </a>
           `).join('')}

@@ -174,7 +174,7 @@ export async function openRentalModal(tool) {
           </div>
 
           <!-- Action Button -->
-          <button id="btn-proceed-checkout" ${!isAvailable || isCheckingAvailability ? 'disabled' : ''} class="w-full py-3 px-5 rounded-xl text-sm font-black text-[#1A1A1A] bg-[#FFB800] hover:bg-[#E5A600] disabled:opacity-50 shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95 uppercase tracking-wide">
+          <button id="btn-proceed-checkout" ${!isAvailable || isCheckingAvailability ? 'disabled' : ''} class="w-full py-3 px-5 rounded-xl text-sm font-black text-white bg-[#FF7A00] hover:bg-[#E56E00] disabled:opacity-50 shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95 uppercase tracking-wide">
             ${renderIcon('CreditCard', 'w-4 h-4')} Continuar al Pago (${formatCurrency(total)})
           </button>
         </div>
@@ -295,7 +295,7 @@ async function openCheckoutModal(tool, rentalData) {
 
       <div id="checkout-error" class="hidden text-xs text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 p-2.5 rounded-lg"></div>
 
-      <button id="btn-confirm-payment" class="w-full py-3 px-5 rounded-xl text-sm font-black text-[#1A1A1A] bg-[#FFB800] hover:bg-[#E5A600] shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95 uppercase tracking-wide">
+      <button id="btn-confirm-payment" class="w-full py-3 px-5 rounded-xl text-sm font-black text-white bg-[#FF7A00] hover:bg-[#E56E00] shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95 uppercase tracking-wide">
         ${renderIcon('Lock', 'w-4 h-4')} Confirmar y Pagar ${formatCurrency(rentalData.total)}
       </button>
     </div>
@@ -398,7 +398,7 @@ function showSuccessModal(rental, payment, tool, rentalData) {
     </div>
 
     <div class="flex flex-col gap-2.5 pt-2">
-      <button id="btn-view-invoice-modal" class="w-full py-3 px-4 rounded-xl text-xs font-black text-[#1A1A1A] bg-[#FFB800] hover:bg-[#E5A600] shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer uppercase tracking-wide">
+      <button id="btn-view-invoice-modal" class="w-full py-3 px-4 rounded-xl text-xs font-black text-white bg-[#FF7A00] hover:bg-[#E56E00] shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer uppercase tracking-wide">
         ${renderIcon('Printer', 'w-4 h-4')} Ver Factura Oficial de Alquiler
       </button>
       <button id="btn-goto-my-rentals" class="w-full bg-slate-100 dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer">

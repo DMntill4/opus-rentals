@@ -6,14 +6,14 @@
 
 :root {
   /* ========================================================================= */
-  /* PALETA CONSTRUCTORA INDUSTRIAL B2B (Centralizada)                         */
+  /* PALETA OPUS RENTALS OFICIAL (Centralizada en Marca Naranja & Carbón)       */
   /* ========================================================================= */
-  --color-primary: #FFB800;          /* Amarillo Industrial CAT */
-  --color-primary-hover: #E5A600;    /* Amarillo Hover */
-  --color-primary-text: #1A1A1A;     /* Máximo contraste accesible sobre amarillo */
+  --color-primary: #FF7A00;          /* Naranja Opus Rentals Oficial */
+  --color-primary-hover: #E56E00;    /* Naranja Hover */
+  --color-primary-text: #FFFFFF;     /* Texto Blanco de Alto Contraste */
   
-  --color-secondary: #FF6B00;        /* Naranja Seguridad Vial */
-  --color-secondary-hover: #E55F00;  /* Naranja Hover */
+  --color-secondary: #FFB800;        /* Amarillo Industrial CAT / Accento */
+  --color-secondary-hover: #E5A600;  /* Amarillo Hover */
   
   --color-dark: #1A1A1A;             /* Gris Carbón / Chasis */
   --color-dark-surface: #2B2B2B;     /* Superficie Oscura */

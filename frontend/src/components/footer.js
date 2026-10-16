@@ -13,13 +13,13 @@ export function renderFooter() {
   const isClient = auth.isClient();
 
   container.innerHTML = `
-    <footer class="border-t-4 border-[#FFB800] bg-[#1A1A1A] text-slate-300 py-12 mt-auto transition-colors duration-200">
+    <footer class="border-t-4 border-[#FF7A00] bg-[#1A1A1A] text-slate-300 py-12 mt-auto transition-colors duration-200">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         <!-- Top Dispatch Ribbon -->
         <div class="mb-10 p-5 rounded-2xl bg-black/60 border border-slate-800 flex flex-col md:flex-row items-center justify-between gap-4">
           <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-[#FFB800] text-black font-black flex items-center justify-center">
+            <div class="w-10 h-10 rounded-xl bg-[#FF7A00] text-white font-black flex items-center justify-center shadow-md">
               ${renderIcon('Truck', 'w-5 h-5')}
             </div>
             <div>
@@ -40,7 +40,7 @@ export function renderFooter() {
           <div class="space-y-4 md:col-span-1">
             <div class="flex items-center gap-2.5">
               ${renderToolRentMark('w-8 h-8')}
-              <span class="font-display font-black text-2xl text-white tracking-tight">OPUS <span class="text-[#FFB800]">RENTALS</span></span>
+              <span class="font-display font-black text-2xl text-white tracking-tight">OPUS <span class="text-[#FF7A00]">RENTALS</span></span>
             </div>
             <p class="text-xs text-slate-400 leading-relaxed">
               ${isEn 
@@ -55,52 +55,52 @@ export function renderFooter() {
 
           <!-- Navegación de Plataforma -->
           <div>
-            <h4 class="text-xs font-black uppercase tracking-widest text-[#FFB800] mb-4 font-display">
+            <h4 class="text-xs font-black uppercase tracking-widest text-[#FF7A00] mb-4 font-display">
               ${isEn ? 'Platform' : 'Plataforma B2B'}
             </h4>
             <ul class="space-y-2.5 text-xs">
-              <li><a href="#/catalog" class="text-slate-300 hover:text-[#FFB800] transition-colors">${isEn ? 'Fleet Catalog' : 'Catálogo de Maquinaria'}</a></li>
+              <li><a href="#/catalog" class="text-slate-300 hover:text-[#FF7A00] transition-colors">${isEn ? 'Fleet Catalog' : 'Catálogo de Maquinaria'}</a></li>
               ${isAuth && (isClient || isAdmin) ? `
-                <li><a href="#/client" class="text-slate-300 hover:text-[#FFB800] transition-colors">${isEn ? 'My Contracts' : 'Mis Contratos de Alquiler'}</a></li>
+                <li><a href="#/client" class="text-slate-300 hover:text-[#FF7A00] transition-colors">${isEn ? 'My Contracts' : 'Mis Contratos de Alquiler'}</a></li>
               ` : ''}
               ${isAuth && (isProvider || isAdmin) ? `
-                <li><a href="#/provider" class="text-slate-300 hover:text-[#FFB800] transition-colors">${isEn ? 'Provider Fleet Portal' : 'Portal de Proveedores'}</a></li>
+                <li><a href="#/provider" class="text-slate-300 hover:text-[#FF7A00] transition-colors">${isEn ? 'Provider Fleet Portal' : 'Portal de Proveedores'}</a></li>
               ` : ''}
               ${isAuth && isAdmin ? `
-                <li><a href="#/admin" class="text-slate-300 hover:text-[#FFB800] transition-colors">${isEn ? 'Admin Console' : 'Consola de Supervisión'}</a></li>
+                <li><a href="#/admin" class="text-slate-300 hover:text-[#FF7A00] transition-colors">${isEn ? 'Admin Console' : 'Consola de Supervisión'}</a></li>
               ` : ''}
             </ul>
           </div>
 
           <!-- Categorías Principales -->
           <div>
-            <h4 class="text-xs font-black uppercase tracking-widest text-[#FFB800] mb-4 font-display">
+            <h4 class="text-xs font-black uppercase tracking-widest text-[#FF7A00] mb-4 font-display">
               ${isEn ? 'Machinery Categories' : 'Líneas de Maquinaria'}
             </h4>
             <ul class="space-y-2.5 text-xs">
-              <li><a href="#/catalog" class="text-slate-300 hover:text-[#FFB800] transition-colors">${isEn ? 'Excavation & Earthmoving' : 'Excavación y Movimiento de Tierras'}</a></li>
-              <li><a href="#/catalog" class="text-slate-300 hover:text-[#FFB800] transition-colors">${isEn ? 'Road Compaction & Paving' : 'Compactación y Asfaltado'}</a></li>
-              <li><a href="#/catalog" class="text-slate-300 hover:text-[#FFB800] transition-colors">${isEn ? 'Lifting & Boom Lifts' : 'Elevación y Grúas Articuladas'}</a></li>
-              <li><a href="#/catalog" class="text-slate-300 hover:text-[#FFB800] transition-colors">${isEn ? 'Heavy Industrial Power' : 'Generación Eléctrica Diésel'}</a></li>
+              <li><a href="#/catalog" class="text-slate-300 hover:text-[#FF7A00] transition-colors">${isEn ? 'Excavation & Earthmoving' : 'Excavación y Movimiento de Tierras'}</a></li>
+              <li><a href="#/catalog" class="text-slate-300 hover:text-[#FF7A00] transition-colors">${isEn ? 'Road Compaction & Paving' : 'Compactación y Asfaltado'}</a></li>
+              <li><a href="#/catalog" class="text-slate-300 hover:text-[#FF7A00] transition-colors">${isEn ? 'Lifting & Boom Lifts' : 'Elevación y Grúas Articuladas'}</a></li>
+              <li><a href="#/catalog" class="text-slate-300 hover:text-[#FF7A00] transition-colors">${isEn ? 'Heavy Industrial Power' : 'Generación Eléctrica Diésel'}</a></li>
             </ul>
           </div>
 
           <!-- Atención y Contacto -->
           <div>
-            <h4 class="text-xs font-black uppercase tracking-widest text-[#FFB800] mb-4 font-display">
+            <h4 class="text-xs font-black uppercase tracking-widest text-[#FF7A00] mb-4 font-display">
               ${isEn ? 'Support & Operations' : 'Sede Principal & Contacto'}
             </h4>
             <ul class="space-y-2.5 text-xs text-slate-400">
               <li class="flex items-center gap-2">
-                ${renderIcon('Phone', 'w-3.5 h-3.5 text-[#FFB800] flex-shrink-0')}
+                ${renderIcon('Phone', 'w-3.5 h-3.5 text-[#FF7A00] flex-shrink-0')}
                 <span class="text-slate-200 font-semibold">+57 (601) 745-9000</span>
               </li>
               <li class="flex items-center gap-2">
-                ${renderIcon('Mail', 'w-3.5 h-3.5 text-[#FFB800] flex-shrink-0')}
+                ${renderIcon('Mail', 'w-3.5 h-3.5 text-[#FF7A00] flex-shrink-0')}
                 <span class="text-slate-200">despachos@opusrentals.com</span>
               </li>
               <li class="flex items-center gap-2">
-                ${renderIcon('MapPin', 'w-3.5 h-3.5 text-[#FFB800] flex-shrink-0')}
+                ${renderIcon('MapPin', 'w-3.5 h-3.5 text-[#FF7A00] flex-shrink-0')}
                 <span class="text-slate-200">${isEn ? 'Bogotá D.C. — Nationwide Coverage' : 'Parque Industrial Celta, Bogotá D.C.'}</span>
               </li>
               <li class="text-[11px] text-slate-500 pt-1">

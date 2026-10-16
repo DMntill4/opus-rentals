@@ -126,7 +126,7 @@ export async function renderCatalogView() {
                 <h4 class="text-xs font-black text-slate-900 uppercase font-mono">Rubro de Trabajo</h4>
                 <div class="space-y-1 max-h-56 overflow-y-auto no-scrollbar pr-1 text-xs">
                   <button 
-                    class="filter-cat-btn w-full text-left px-2.5 py-1.5 rounded-lg flex items-center justify-between transition-colors cursor-pointer ${selectedCategory === 'cat-all' ? 'bg-[#FFB800] text-slate-950 font-black' : 'text-slate-600 hover:bg-slate-100'}"
+                    class="filter-cat-btn w-full text-left px-2.5 py-1.5 rounded-lg flex items-center justify-between transition-colors cursor-pointer ${selectedCategory === 'cat-all' ? 'bg-[#FF7A00] text-white font-black shadow-xs' : 'text-slate-600 hover:bg-slate-100'}"
                     data-cat-id="cat-all"
                   >
                     <span>Toda la flota</span>
@@ -137,7 +137,7 @@ export async function renderCatalogView() {
                     const isSelected = String(selectedCategory) === String(cat.id);
                     return `
                       <button 
-                        class="filter-cat-btn w-full text-left px-2.5 py-1.5 rounded-lg flex items-center justify-between transition-colors cursor-pointer ${isSelected ? 'bg-[#FFB800] text-slate-950 font-black' : 'text-slate-600 hover:bg-slate-100'}"
+                        class="filter-cat-btn w-full text-left px-2.5 py-1.5 rounded-lg flex items-center justify-between transition-colors cursor-pointer ${isSelected ? 'bg-[#FF7A00] text-white font-black shadow-xs' : 'text-slate-600 hover:bg-slate-100'}"
                         data-cat-id="${cat.id}"
                       >
                         <span class="truncate">${cat.name}</span>
@@ -379,9 +379,9 @@ export async function renderCatalogView() {
     btn.addEventListener('click', () => {
       selectedCategory = btn.dataset.catId;
       container.querySelectorAll('.filter-cat-btn').forEach(b => {
-        b.classList.remove('bg-[#FFB800]', 'text-slate-950', 'font-black');
+        b.classList.remove('bg-[#FF7A00]', 'text-white', 'font-black', 'shadow-xs');
       });
-      btn.classList.add('bg-[#FFB800]', 'text-slate-950', 'font-black');
+      btn.classList.add('bg-[#FF7A00]', 'text-white', 'font-black', 'shadow-xs');
       renderCards();
     });
   });

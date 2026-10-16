@@ -57,10 +57,10 @@ export function renderNavbar(activeRoute = 'catalog') {
               />
               <button 
                 type="submit" 
-                class="px-5 py-2.5 bg-[#FFB800] hover:bg-[#E5A600] text-slate-950 font-black text-xs flex items-center justify-center transition-colors cursor-pointer"
+                class="px-5 py-2.5 bg-[#FF7A00] hover:bg-[#E56E00] text-white font-black text-xs flex items-center justify-center transition-colors cursor-pointer"
                 aria-label="Buscar"
               >
-                ${renderIcon('Search', 'w-4 h-4 text-slate-950')}
+                ${renderIcon('Search', 'w-4 h-4 text-white')}
               </button>
             </form>
           </div>
@@ -102,7 +102,7 @@ export function renderNavbar(activeRoute = 'catalog') {
 
               <!-- Authenticated User Dropdown Indicator -->
               <div class="flex items-center gap-2.5 pl-2 sm:pl-3 border-l border-slate-200">
-                <div class="w-8 h-8 rounded-full bg-[#FFB800] text-slate-950 flex items-center justify-center text-xs font-black font-mono shadow-xs">
+                <div class="w-8 h-8 rounded-full bg-[#FF7A00] text-white flex items-center justify-center text-xs font-black font-mono shadow-xs">
                   ${user?.username ? user.username.substring(0, 2).toUpperCase() : 'OP'}
                 </div>
                 <div class="hidden xl:block text-left text-xs">
@@ -140,8 +140,8 @@ export function renderNavbar(activeRoute = 'catalog') {
         <div class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between overflow-x-auto no-scrollbar py-2 gap-4">
           
           <div class="flex items-center gap-1 sm:gap-2 flex-shrink-0">
-            <a href="#/catalog" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-black text-slate-950 bg-[#FFB800] hover:bg-[#E5A600] transition-colors shadow-2xs">
-              ${renderIcon('Menu', 'w-3.5 h-3.5 text-slate-950')}
+            <a href="#/catalog" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-black text-white bg-[#FF7A00] hover:bg-[#E56E00] transition-colors shadow-2xs">
+              ${renderIcon('Menu', 'w-3.5 h-3.5 text-white')}
               <span>Toda la Flota</span>
             </a>
 
