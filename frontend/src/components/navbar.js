@@ -46,28 +46,38 @@ export function renderNavbar(activeRoute = 'catalog') {
             </div>
           </a>
 
-          <!-- Prominent Search Bar (Industrial Style) -->
-          <div class="flex-1 max-w-2xl mx-auto hidden sm:block">
-            <form id="navbar-search-form" class="flex items-center rounded-xl border-2 border-[#1A1A1A] overflow-hidden bg-white shadow-xs focus-within:ring-2 focus-within:ring-[#FFB800]/40">
+          <!-- Prominent Search Bar (Ultra-sleek Industrial Style) -->
+          <div class="flex-1 max-w-2xl mx-auto hidden sm:block px-4">
+            <form id="navbar-search-form" class="relative flex items-center bg-white rounded-2xl border-2 border-slate-300 hover:border-slate-400 focus-within:border-[#FF7A00] focus-within:ring-4 focus-within:ring-[#FF7A00]/20 shadow-xs transition-all p-1">
+              <div class="pl-3 pr-2 text-slate-400 flex items-center pointer-events-none">
+                ${renderIcon('Search', 'w-4 h-4 text-slate-400')}
+              </div>
               <input 
                 type="text" 
                 id="navbar-search-input"
                 placeholder="Buscar excavadora CAT, rodillo, Bobcat, generador diésel..." 
-                class="flex-1 px-4 py-2.5 text-xs sm:text-sm text-slate-900 placeholder-slate-400 bg-transparent focus:outline-none font-medium"
+                class="flex-1 py-1.5 px-1 text-xs sm:text-sm text-slate-900 placeholder-slate-400 bg-transparent focus:outline-none font-medium"
               />
               <button 
                 type="submit" 
-                class="px-5 py-2.5 bg-[#FF7A00] hover:bg-[#E56E00] text-white font-black text-xs flex items-center justify-center transition-colors cursor-pointer"
+                class="px-4 py-2 bg-[#FF7A00] hover:bg-[#E56E00] text-white font-black text-xs rounded-xl flex items-center gap-1.5 shadow-sm transition-all active:scale-95 cursor-pointer"
                 aria-label="Buscar"
               >
-                ${renderIcon('Search', 'w-4 h-4 text-white')}
+                <span>Buscar</span>
               </button>
             </form>
           </div>
 
           <!-- User Actions & Orders -->
-          <div class="flex items-center gap-2 sm:gap-4 flex-shrink-0">
+          <div class="flex items-center gap-2 sm:gap-3 flex-shrink-0">
             
+            ${isAuth && isAdmin ? `
+              <a href="#/admin" class="flex items-center gap-2 px-3 py-2 rounded-xl text-slate-800 hover:text-[#FF7A00] hover:bg-orange-50 text-xs font-black transition-all border border-slate-200">
+                ${renderIcon('ShieldCheck', 'w-4 h-4 text-[#FF7A00]')}
+                <span class="hidden md:inline">Panel Admin</span>
+              </a>
+            ` : ''}
+
             ${isAuth && (isClient || isAdmin) ? `
               <a href="#/client" class="flex items-center gap-2 px-3 py-2 rounded-xl text-slate-700 hover:text-slate-950 hover:bg-slate-100 text-xs font-bold transition-all">
                 ${renderIcon('FileText', 'w-4 h-4 text-amber-600')}

@@ -296,14 +296,16 @@ export async function renderCatalogView() {
     }
 
     productsContainer.innerHTML = `
-      <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-        ${filtered.map(tool => {
+      <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
+        ${filtered.map((tool, idx) => {
           const isAvailable = tool.status === 'AVAILABLE';
           const primaryImg = resolveToolImageUrl(tool);
+          const delayMs = Math.min(idx * 40, 320);
 
           return `
             <div 
-              class="bg-white rounded-xl border border-slate-200 overflow-hidden flex flex-col justify-between hover:shadow-md hover:border-amber-300 transition-all duration-200 cursor-pointer group"
+              class="anim-card-enter bg-white rounded-2xl border-2 border-slate-200 overflow-hidden flex flex-col justify-between hover:shadow-xl hover:border-[#FF7A00]/50 hover:-translate-y-1 transition-all duration-300 cursor-pointer group"
+              style="animation-delay: ${delayMs}ms;"
               onclick="window.location.hash='#/product/${tool.id}'"
             >
               <div>
@@ -312,17 +314,17 @@ export async function renderCatalogView() {
                   <img 
                     src="${primaryImg}" 
                     alt="${tool.name}" 
-                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 select-none" 
+                    class="w-full h-full object-cover group-hover:scale-108 transition-transform duration-500 select-none" 
                     loading="lazy"
                   />
                   
-                  <span class="absolute top-2.5 left-2.5 px-2.5 py-0.5 rounded-md text-[10px] font-black uppercase font-mono ${
+                  <span class="absolute top-2.5 left-2.5 px-2.5 py-0.5 rounded-md text-[10px] font-black uppercase font-mono shadow-sm ${
                     isAvailable ? 'bg-emerald-600 text-white' : 'bg-slate-700 text-white'
                   }">
                     ${isAvailable ? 'Disponible Hoy' : 'En Obra'}
                   </span>
 
-                  <span class="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-md text-[10px] font-mono font-black bg-[#FFB800] text-slate-950">
+                  <span class="absolute top-2.5 right-2.5 px-2.5 py-0.5 rounded-md text-[10px] font-mono font-black bg-[#FF7A00] text-white shadow-xs">
                     ${tool.brand || 'CAT'}
                   </span>
                 </div>
@@ -332,7 +334,7 @@ export async function renderCatalogView() {
                     ${tool.categoryName || 'Construcción'}
                   </div>
 
-                  <h3 class="font-bold text-slate-900 text-sm line-clamp-2 leading-snug group-hover:text-amber-700 transition-colors">
+                  <h3 class="font-bold text-slate-900 text-sm line-clamp-2 leading-snug group-hover:text-[#FF7A00] transition-colors">
                     ${tool.name}
                   </h3>
 
@@ -343,7 +345,7 @@ export async function renderCatalogView() {
               </div>
 
               <!-- Footer: Price & Rent Action -->
-              <div class="p-4 pt-3 border-t border-slate-100 bg-slate-50 flex items-center justify-between">
+              <div class="p-4 pt-3 border-t border-slate-100 bg-slate-50/70 flex items-center justify-between">
                 <div>
                   <div class="text-[9px] text-slate-400 font-bold uppercase font-mono">Tarifa por día</div>
                   <div class="text-base font-black text-slate-900 font-mono">
@@ -351,7 +353,7 @@ export async function renderCatalogView() {
                   </div>
                 </div>
 
-                <button class="btn-primary !px-3.5 !py-2 text-xs font-black shadow-xs">
+                <button class="btn-primary !px-4 !py-2 text-xs font-black shadow-sm group-hover:bg-[#E56E00] transition-colors">
                   ${isAvailable ? 'Alquilar' : 'Ver Ficha'}
                 </button>
               </div>

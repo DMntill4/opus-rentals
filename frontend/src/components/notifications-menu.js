@@ -1,10 +1,11 @@
 /**
  * Opus Rentals Notifications Popover Menu Component
- * Color scheme: Azul Oscuro (#132e4f) + Gris Acero + Blanco
+ * Color scheme: Vibrant Opus Orange (#FF7A00) + Gris Carbón (#1A1A1A) + Blanco
  */
 
 import { renderIcon } from '../utils/icons.js';
 import { notificationsStore } from '../utils/notifications-store.js';
+import auth from '../auth/state.js';
 
 let isOpen = false;
 let currentFilter = 'all'; // 'all' | 'unread'
@@ -28,25 +29,29 @@ export function renderNotificationsMenu() {
 
   container.classList.remove('hidden');
 
+  const isProvider = auth.isProvider();
+  const footerLink = isProvider ? '#/provider' : '#/client';
+  const footerText = isProvider ? 'Gestionar mi flota y despachos' : 'Ver mis contratos de alquiler';
+
   container.innerHTML = `
     <!-- Backdrop for click-outside dismissal -->
-    <div id="notifications-backdrop" class="fixed inset-0 z-40 bg-black/5 backdrop-blur-[0.5px]"></div>
+    <div id="notifications-backdrop" class="fixed inset-0 z-40 bg-black/10 backdrop-blur-[0.5px]"></div>
 
     <!-- Floating Popover Card -->
     <div 
       id="notifications-popover" 
-      class="absolute right-0 top-full mt-2 w-80 sm:w-96 max-w-[calc(100vw-2rem)] bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-2xl shadow-2xl border border-slate-200/90 dark:border-slate-800 z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-150"
+      class="absolute right-0 top-full mt-2 w-80 sm:w-96 max-w-[calc(100vw-2rem)] bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-2xl shadow-2xl border-2 border-slate-200 dark:border-slate-800 z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-150"
       style="transform-origin: top right;"
     >
       <!-- Header -->
-      <div class="p-3.5 px-4 bg-slate-50/90 dark:bg-slate-800/80 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+      <div class="p-3.5 px-4 bg-slate-50 dark:bg-slate-800/80 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
         <div class="flex items-center gap-2">
-          <span class="p-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-[#132e4f] dark:text-blue-400">
+          <span class="p-1.5 rounded-lg bg-orange-100 dark:bg-orange-950/60 text-[#FF7A00]">
             ${renderIcon('Bell', 'w-4 h-4')}
           </span>
-          <h3 class="text-xs font-bold text-slate-900 dark:text-white tracking-tight font-display">Notificaciones</h3>
+          <h3 class="text-xs font-black text-slate-900 dark:text-white tracking-tight font-display">Notificaciones</h3>
           ${unreadCount > 0 ? `
-            <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-[#132e4f] dark:bg-blue-600 text-white">
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-[#FF7A00] text-white shadow-xs">
               ${unreadCount} nueva${unreadCount === 1 ? '' : 's'}
             </span>
           ` : ''}
@@ -56,7 +61,7 @@ export function renderNotificationsMenu() {
           ${unreadCount > 0 ? `
             <button 
               id="btn-mark-all-read" 
-              class="text-[11px] font-semibold text-slate-600 dark:text-slate-300 hover:text-[#132e4f] dark:hover:text-blue-400 hover:bg-white dark:hover:bg-slate-700 px-2 py-1 rounded-lg transition-colors cursor-pointer"
+              class="text-[11px] font-bold text-slate-600 dark:text-slate-300 hover:text-[#FF7A00] hover:bg-orange-50 dark:hover:bg-slate-800 px-2 py-1 rounded-lg transition-colors cursor-pointer"
               title="Marcar todas como leídas"
             >
               Marcar leídas
@@ -73,23 +78,23 @@ export function renderNotificationsMenu() {
       </div>
 
       <!-- Quick Filter Bar -->
-      <div class="px-3.5 py-2 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 flex items-center gap-2 text-xs">
+      <div class="px-3.5 py-2 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center gap-2 text-xs">
         <button 
           id="btn-filter-all" 
-          class="px-2.5 py-1 rounded-lg font-bold text-[11px] transition-all cursor-pointer ${
+          class="px-2.5 py-1 rounded-lg font-black text-[11px] transition-all cursor-pointer ${
             currentFilter === 'all' 
-              ? 'bg-[#132e4f] dark:bg-blue-600 text-white shadow-xs' 
-              : 'text-slate-500 dark:text-slate-400 hover:text-[#132e4f] dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800'
+              ? 'bg-[#FF7A00] text-white shadow-xs' 
+              : 'text-slate-500 dark:text-slate-400 hover:text-[#FF7A00] hover:bg-slate-100 dark:hover:bg-slate-800'
           }"
         >
           Todas (${notifications.length})
         </button>
         <button 
           id="btn-filter-unread" 
-          class="px-2.5 py-1 rounded-lg font-bold text-[11px] transition-all cursor-pointer ${
+          class="px-2.5 py-1 rounded-lg font-black text-[11px] transition-all cursor-pointer ${
             currentFilter === 'unread' 
-              ? 'bg-[#132e4f] dark:bg-blue-600 text-white shadow-xs' 
-              : 'text-slate-500 dark:text-slate-400 hover:text-[#132e4f] dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800'
+              ? 'bg-[#FF7A00] text-white shadow-xs' 
+              : 'text-slate-500 dark:text-slate-400 hover:text-[#FF7A00] hover:bg-slate-100 dark:hover:bg-slate-800'
           }"
         >
           No leídas (${unreadCount})
@@ -103,19 +108,19 @@ export function renderNotificationsMenu() {
             <div class="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 flex items-center justify-center mx-auto">
               ${renderIcon('CheckCircle2', 'w-5 h-5 text-emerald-500')}
             </div>
-            <p class="text-xs font-bold text-slate-800 dark:text-slate-200">¡Estás al día!</p>
-            <p class="text-[11px] text-slate-400 dark:text-slate-500">No tienes notificaciones ${currentFilter === 'unread' ? 'sin leer' : 'registradas'}.</p>
+            <p class="text-xs font-black text-slate-800 dark:text-slate-200">¡Estás al día!</p>
+            <p class="text-[11px] text-slate-400 dark:text-slate-500">No tienes notificaciones ${currentFilter === 'unread' ? 'sin leer' : 'registradas'} para tu cuenta.</p>
           </div>
         ` : filtered.map(item => {
           let icon = 'Info';
-          let badgeBg = 'bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800';
+          let badgeBg = 'bg-orange-50 dark:bg-orange-950/40 text-[#FF7A00] border-orange-200 dark:border-orange-800/60';
 
           if (item.category === 'RENTAL') {
             icon = 'CheckCircle2';
             badgeBg = 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800';
           } else if (item.category === 'PAYMENT') {
             icon = 'Receipt';
-            badgeBg = 'bg-[#132e4f]/10 dark:bg-blue-950/40 text-[#132e4f] dark:text-blue-400 border-blue-200 dark:border-blue-800';
+            badgeBg = 'bg-orange-50 dark:bg-orange-950/40 text-[#FF7A00] border-orange-200 dark:border-orange-800/60';
           } else if (item.category === 'ALERT') {
             icon = 'Clock';
             badgeBg = 'bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-800';
@@ -129,11 +134,11 @@ export function renderNotificationsMenu() {
 
           return `
             <div 
-              class="p-3.5 hover:bg-slate-50/80 dark:hover:bg-slate-800/70 transition-colors flex items-start gap-3 cursor-pointer group notif-item ${
-                !item.read ? 'bg-slate-100/60 dark:bg-slate-800/40' : ''
+              class="p-3.5 hover:bg-slate-50 dark:hover:bg-slate-800/70 transition-colors flex items-start gap-3 cursor-pointer group notif-item ${
+                !item.read ? 'bg-orange-50/40 dark:bg-orange-950/20' : ''
               }"
               data-id="${item.id}"
-              data-link="${item.link || '#/client'}"
+              data-link="${item.link || footerLink}"
             >
               <!-- Category Icon Badge -->
               <div class="w-8 h-8 rounded-xl flex items-center justify-center border flex-shrink-0 mt-0.5 ${badgeBg}">
@@ -143,10 +148,10 @@ export function renderNotificationsMenu() {
               <!-- Message Body -->
               <div class="flex-1 min-w-0 pr-1">
                 <div class="flex items-center justify-between gap-1 mb-0.5">
-                  <h4 class="text-xs font-bold text-slate-900 dark:text-white truncate ${!item.read ? 'text-[#132e4f] dark:text-blue-400 font-black' : ''}">
+                  <h4 class="text-xs font-bold text-slate-900 dark:text-white truncate ${!item.read ? 'text-[#FF7A00] font-black' : ''}">
                     ${item.title}
                   </h4>
-                  <span class="text-[10px] text-slate-400 dark:text-slate-500 font-medium whitespace-nowrap flex-shrink-0">
+                  <span class="text-[10px] text-slate-400 dark:text-slate-500 font-medium whitespace-nowrap flex-shrink-0 font-mono">
                     ${item.timeAgo}
                   </span>
                 </div>
@@ -158,10 +163,10 @@ export function renderNotificationsMenu() {
               <!-- Unread dot & Delete button on hover -->
               <div class="flex items-center gap-1 flex-shrink-0 pt-1">
                 ${!item.read ? `
-                  <span class="w-2 h-2 rounded-full bg-[#132e4f] dark:bg-blue-400 ring-2 ring-blue-200 dark:ring-blue-900" title="No leída"></span>
+                  <span class="w-2 h-2 rounded-full bg-[#FF7A00] ring-2 ring-orange-200 dark:ring-orange-900" title="No leída"></span>
                 ` : ''}
                 <button 
-                  class="btn-delete-notif opacity-0 group-hover:opacity-100 text-slate-300 dark:text-slate-600 hover:text-rose-500 p-1 rounded transition-opacity" 
+                  class="btn-delete-notif opacity-0 group-hover:opacity-100 text-slate-400 hover:text-rose-600 p-1 rounded transition-opacity" 
                   data-id="${item.id}"
                   title="Eliminar"
                 >
@@ -174,13 +179,14 @@ export function renderNotificationsMenu() {
       </div>
 
       <!-- Footer Actions -->
-      <div class="p-2.5 px-4 bg-slate-50 border-t border-slate-100 flex items-center justify-end text-[11px]">
+      <div class="p-2.5 px-4 bg-slate-50 dark:bg-slate-800/80 border-t border-slate-200 dark:border-slate-800 flex items-center justify-end text-[11px]">
         <a 
-          href="#/client" 
+          href="${footerLink}" 
           id="link-go-client-rentals"
-          class="font-bold text-[#132e4f] hover:text-blue-700 transition-colors"
+          class="font-black text-[#FF7A00] hover:text-[#E56E00] flex items-center gap-1 transition-colors"
         >
-          Ver mis alquileres &rarr;
+          <span>${footerText}</span>
+          ${renderIcon('ArrowRight', 'w-3 h-3')}
         </a>
       </div>
     </div>
@@ -202,11 +208,6 @@ export function renderNotificationsMenu() {
 
   container.querySelector('#btn-filter-unread')?.addEventListener('click', () => {
     currentFilter = 'unread';
-    renderNotificationsMenu();
-  });
-
-  container.querySelector('#btn-reset-demo-notifs')?.addEventListener('click', () => {
-    notificationsStore.resetDefaults();
     renderNotificationsMenu();
   });
 

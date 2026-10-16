@@ -214,50 +214,58 @@ export async function renderHomeView() {
       </section>
 
       <!-- ========================================================================= -->
-      <!-- 4. GUÍA Y CATÁLOGO TÉCNICO 2026 (Banner Delgado, Compacto y Elegante)      -->
+      <!-- 4. GUÍA Y CATÁLOGO TÉCNICO 2026 (Banner Proporcionado, Elegante e Impactante) -->
       <!-- ========================================================================= -->
-      <section class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pb-10">
-        <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm grid grid-cols-1 lg:grid-cols-12 items-center">
+      <section class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="bg-white rounded-3xl border-2 border-slate-200 overflow-hidden shadow-lg grid grid-cols-1 lg:grid-cols-12 items-stretch">
           
-          <div class="lg:col-span-7 p-6 sm:p-8 space-y-3">
-            <span class="text-[10px] font-mono uppercase font-black text-amber-700 tracking-wider">
-              Documentación Técnica Oficial
-            </span>
-            <h3 class="text-xl sm:text-2xl font-black text-slate-900 font-display leading-tight">
-              Catálogo de Maquinaria Pesada & Guía de Selección 2026
+          <div class="lg:col-span-7 p-8 sm:p-12 flex flex-col justify-center space-y-4">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-100 text-[#FF7A00] text-[11px] font-mono font-black uppercase tracking-wider w-fit">
+              ${renderIcon('BookOpen', 'w-3.5 h-3.5')}
+              <span>Documentación Técnica Oficial 2026</span>
+            </div>
+            
+            <h3 class="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-900 font-display leading-tight tracking-tight">
+              Catálogo de Maquinaria Pesada & Guía de Selección
             </h3>
-            <p class="text-xs text-slate-600 leading-relaxed font-normal max-w-xl">
-              Optimiza tiempos de ciclo y ahorra hasta un 35% en combustible. Tablas de rendimiento, capacidades de balde, horas de vida útil, potencia diésel y requisitos de transporte.
+            
+            <p class="text-xs sm:text-sm text-slate-600 leading-relaxed font-normal max-w-xl">
+              Optimiza tiempos de ciclo en frente de obra y ahorra hasta un 35% en consumo de combustible diésel. Tablas de rendimiento comparativo, capacidades de balde (m³), horas de vida útil y logística de transporte en cama baja.
             </p>
-            <div class="pt-1 flex flex-wrap items-center gap-2.5">
+            
+            <div class="pt-2 flex flex-wrap items-center gap-3">
               <a 
                 href="#/catalog" 
-                class="btn-primary !py-2 !px-4 text-xs font-black flex items-center justify-center gap-1.5 shadow-sm"
+                class="btn-primary !py-3 !px-6 text-xs font-black flex items-center justify-center gap-2 shadow-md hover:scale-[1.02] transition-transform"
               >
-                ${renderIcon('Download', 'w-3.5 h-3.5')}
+                ${renderIcon('Download', 'w-4 h-4')}
                 <span>Descargar Catálogo (PDF)</span>
               </a>
               <a 
                 href="#/catalog" 
-                class="btn-dark !py-2 !px-4 text-xs font-extrabold flex items-center justify-center gap-1.5"
+                class="btn-dark !py-3 !px-5 text-xs font-black flex items-center justify-center gap-2 hover:bg-slate-800 transition-colors"
               >
                 <span>Explorar Online</span>
-                ${renderIcon('ArrowRight', 'w-3.5 h-3.5')}
+                ${renderIcon('ArrowRight', 'w-4 h-4')}
               </a>
             </div>
           </div>
 
-          <div class="lg:col-span-5 h-48 sm:h-56 lg:h-64 bg-slate-900 relative overflow-hidden">
+          <div class="lg:col-span-5 min-h-[260px] sm:min-h-[320px] lg:min-h-[380px] bg-slate-900 relative overflow-hidden flex items-center">
             <img 
               src="${constructionHeroImage2}" 
-              alt="Excavadora Pesada CAT 320D2" 
-              class="w-full h-full object-cover object-center"
+              alt="Excavadora Pesada CAT 320D2 en Operación" 
+              class="w-full h-full object-cover object-center scale-100 hover:scale-105 transition-transform duration-700"
               loading="lazy"
               onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1581094288338-2314dddb7ece?auto=format&fit=crop&w=1200&q=85';"
             />
-            <div class="absolute bottom-2.5 left-3 right-3 bg-slate-950/85 backdrop-blur-md px-3 py-1.5 rounded-lg text-white flex items-center justify-between text-[11px] border border-white/10 font-mono">
-              <span class="font-bold text-[#FFB800]">Excavadora CAT 320D2</span>
-              <span class="text-slate-300 text-[9px]">Patio Central Bogotá</span>
+            <div class="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent pointer-events-none"></div>
+            <div class="absolute bottom-4 left-4 right-4 bg-slate-950/90 backdrop-blur-md px-4 py-2.5 rounded-xl text-white flex items-center justify-between text-xs border border-white/15 font-mono shadow-xl">
+              <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span class="font-bold text-[#FF7A00]">Excavadora CAT 320D2</span>
+              </div>
+              <span class="text-slate-300 text-[10px] uppercase tracking-wider">Patio Central Bogotá</span>
             </div>
           </div>
 

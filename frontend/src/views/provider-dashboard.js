@@ -10,20 +10,22 @@ import { notificationsStore } from '../utils/notifications-store.js';
 
 export async function renderProviderDashboard() {
   const container = document.getElementById('app-content');
+  if (!container) return;
+
   if (!auth.isAuthenticated()) {
     container.innerHTML = `
       <section class="max-w-4xl mx-auto px-4 py-20 text-center">
-        <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 p-10 max-w-lg mx-auto shadow-sm space-y-4">
-          <div class="w-14 h-14 rounded-2xl bg-[#132e4f]/10 dark:bg-blue-950/40 text-[#132e4f] dark:text-blue-400 border border-[#132e4f]/20 dark:border-blue-900/60 flex items-center justify-center mx-auto">
-            ${renderIcon('Building2', 'w-7 h-7')}
+        <div class="bg-white dark:bg-slate-900 rounded-3xl border-2 border-slate-200 dark:border-slate-800 p-10 max-w-lg mx-auto shadow-xl space-y-4">
+          <div class="w-16 h-16 rounded-2xl bg-orange-100 dark:bg-orange-950/40 text-[#FF7A00] border-2 border-[#FF7A00]/30 flex items-center justify-center mx-auto shadow-md">
+            ${renderIcon('Building2', 'w-8 h-8')}
           </div>
-          <h2 class="text-xl font-bold text-slate-900 dark:text-white font-display">Portal para Proveedores de Maquinaria</h2>
-          <p class="text-xs text-slate-500 dark:text-slate-400">Publica tu flota pesada, administra contratos y gestiona actas de despacho en obra.</p>
-          <div class="flex flex-col sm:flex-row gap-3 pt-2">
-            <button id="btn-demo-provider-login" class="btn-primary flex-1 !py-2.5 text-xs flex items-center justify-center gap-1.5 shadow-sm">
+          <h2 class="text-xl sm:text-2xl font-black text-slate-900 dark:text-white font-display">Portal Oficial para Proveedores de Maquinaria</h2>
+          <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-400">Publica tu flota pesada, administra contratos vigentes en obra y supervisa métricas de facturación.</p>
+          <div class="flex flex-col sm:flex-row gap-3 pt-3">
+            <button id="btn-demo-provider-login" class="btn-primary flex-1 !py-3 text-xs flex items-center justify-center gap-2 shadow-md">
               ${renderIcon('CheckCircle2', 'w-4 h-4')} Entrar como Proveedor (Demo)
             </button>
-            <button id="btn-login-provider" class="btn-secondary flex-1 !py-2.5 text-xs flex items-center justify-center gap-1.5">
+            <button id="btn-login-provider" class="btn-dark flex-1 !py-3 text-xs flex items-center justify-center gap-2">
               ${renderIcon('LogIn', 'w-4 h-4')} Iniciar Sesión
             </button>
           </div>
@@ -35,7 +37,7 @@ export async function renderProviderDashboard() {
         token: 'demo-provider-jwt',
         user: { username: 'caterpillar.equipos', role: 'ROLE_PROVEEDOR', roles: ['ROLE_PROVEEDOR'], profile: { name: 'Caterpillar Equipos SAS', id: 'prov-001' } }
       });
-      showToast('Sesión iniciada como Proveedor', 'success');
+      showToast('Sesión iniciada como Proveedor Oficial', 'success');
       renderProviderDashboard();
     });
     container.querySelector('#btn-login-provider')?.addEventListener('click', () => openAuthModal('login'));
@@ -46,16 +48,30 @@ export async function renderProviderDashboard() {
   const providerId = user?.profile?.id || user?.id || 'prov-001';
 
   // Local state for tabs and filtering
-  let activeTab = 'inventory'; // 'inventory' | 'requests'
+  let activeTab = 'inventory'; // 'inventory' | 'requests' | 'metrics' | 'profile'
   let inventorySearch = '';
   let inventoryCategory = 'ALL';
   let inventoryStatus = 'ALL';
 
   let requestsSearch = '';
-  let requestsStatus = 'ALL';
+  let requestsStatusFilter = 'ALL'; // 'ALL' | 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED'
 
   let toolsList = [];
   let requestsList = [];
+
+  // Provider profile company settings (stored or defaulted)
+  const storedProfile = JSON.parse(localStorage.getItem(`opus_provider_profile_${providerId}`) || '{}');
+  const providerProfile = {
+    companyName: storedProfile.companyName || user?.profile?.companyName || user?.profile?.name || 'Caterpillar Equipos SAS',
+    taxId: storedProfile.taxId || '901.884.219-5',
+    phone: storedProfile.phone || '+57 (1) 745-8900',
+    whatsapp: storedProfile.whatsapp || '573104567890',
+    email: storedProfile.email || user?.email || 'operaciones@caterpillar-colombia.com',
+    yardAddress: storedProfile.yardAddress || 'Parque Industrial Cazucá - Km 4 Autopista Sur',
+    city: storedProfile.city || 'Bogotá D.C. & Sabana',
+    zones: storedProfile.zones || ['Bogotá D.C. y Sabana', 'Cundinamarca Central', 'Antioquia (Medellín)', 'Eje Cafetero'],
+    verified: true
+  };
 
   // Fetch initial data
   try {
@@ -69,22 +85,75 @@ export async function renderProviderDashboard() {
     console.warn('Error loading provider dashboard data', err);
   }
 
+  // Fallback demo requests if empty
+  if (!requestsList || requestsList.length === 0) {
+    requestsList = [
+      {
+        id: '1042',
+        tool: { name: 'Excavadora Hidráulica CAT 320D2', categoryName: 'Excavación' },
+        client: { name: 'Constructora Bolívar S.A.S.', phone: '+57 311 234 5678' },
+        dates: '16 oct - 24 oct 2026',
+        days: 8,
+        total: 5200000,
+        status: 'PENDING'
+      },
+      {
+        id: '1038',
+        tool: { name: 'Rodillo Vibrocompactador CAT CS54B', categoryName: 'Compactación' },
+        client: { name: 'Consorcio Vial Andino', phone: '+57 315 987 6543' },
+        dates: '12 oct - 22 oct 2026',
+        days: 10,
+        total: 4800000,
+        status: 'IN_PROGRESS'
+      },
+      {
+        id: '1029',
+        tool: { name: 'Generador Diésel Cummins 250 kVA', categoryName: 'Energía' },
+        client: { name: 'Concretos Argos Obra Norte', phone: '+57 317 444 3322' },
+        dates: '01 oct - 10 oct 2026',
+        days: 9,
+        total: 3150000,
+        status: 'COMPLETED'
+      },
+      {
+        id: '1015',
+        tool: { name: 'Minicargador Bobcat S570', categoryName: 'Excavación' },
+        client: { name: 'Inversiones Civiles del Sol', phone: '+57 300 112 2334' },
+        dates: '28 sep - 30 sep 2026',
+        days: 2,
+        total: 700000,
+        status: 'CANCELLED'
+      }
+    ];
+  }
+
   function render() {
     // Calculate KPIs
-    const totalTools = toolsList.length || 32;
-    const availableTools = toolsList.filter(t => t.status === 'AVAILABLE').length || 24;
-    const rentedTools = toolsList.filter(t => t.status === 'RENTED').length || 6;
-    const maintenanceTools = toolsList.filter(t => t.status === 'MAINTENANCE').length || 2;
-    const pendingRequests = requestsList.filter(r => r.status === 'PENDING').length || 3;
+    const totalTools = toolsList.length || 18;
+    const availableTools = toolsList.filter(t => t.status === 'AVAILABLE').length || 12;
+    const rentedTools = toolsList.filter(t => t.status === 'RENTED').length || 5;
+    const maintenanceTools = toolsList.filter(t => t.status === 'MAINTENANCE').length || 1;
+    
+    const pendingRequests = requestsList.filter(r => r.status === 'PENDING').length;
+    const activeRentals = requestsList.filter(r => r.status === 'IN_PROGRESS' || r.status === 'APPROVED').length;
+    const completedRentals = requestsList.filter(r => r.status === 'COMPLETED').length;
+    const cancelledRentals = requestsList.filter(r => r.status === 'CANCELLED' || r.status === 'REJECTED').length;
+
+    // Financial calculations
+    const totalRevenue = requestsList
+      .filter(r => r.status !== 'CANCELLED' && r.status !== 'REJECTED')
+      .reduce((acc, curr) => acc + (Number(curr.total) || 0), 0);
+    const avgTicket = requestsList.length ? Math.round(totalRevenue / requestsList.length) : 0;
+    const occupancyRate = Math.round((rentedTools / (totalTools || 1)) * 100);
 
     // Filter tools for inventory tab
     const filteredTools = toolsList.filter(t => {
       const matchSearch = !inventorySearch || 
         t.name?.toLowerCase().includes(inventorySearch.toLowerCase()) ||
-        t.categoryName?.toLowerCase().includes(inventorySearch.toLowerCase());
-      const matchCat = inventoryCategory === 'ALL' || t.categoryId === inventoryCategory || t.categoryName === inventoryCategory;
+        t.categoryName?.toLowerCase().includes(inventorySearch.toLowerCase()) ||
+        t.brand?.toLowerCase().includes(inventorySearch.toLowerCase());
       const matchStatus = inventoryStatus === 'ALL' || t.status === inventoryStatus;
-      return matchSearch && matchCat && matchStatus;
+      return matchSearch && matchStatus;
     });
 
     // Filter requests for requests tab
@@ -93,7 +162,13 @@ export async function renderProviderDashboard() {
         r.client?.name?.toLowerCase().includes(requestsSearch.toLowerCase()) ||
         r.tool?.name?.toLowerCase().includes(requestsSearch.toLowerCase()) ||
         (r.id && r.id.toString().includes(requestsSearch));
-      const matchStatus = requestsStatus === 'ALL' || r.status === requestsStatus;
+      
+      let matchStatus = true;
+      if (requestsStatusFilter === 'PENDING') matchStatus = r.status === 'PENDING';
+      else if (requestsStatusFilter === 'IN_PROGRESS') matchStatus = r.status === 'IN_PROGRESS' || r.status === 'APPROVED';
+      else if (requestsStatusFilter === 'COMPLETED') matchStatus = r.status === 'COMPLETED';
+      else if (requestsStatusFilter === 'CANCELLED') matchStatus = r.status === 'CANCELLED' || r.status === 'REJECTED';
+
       return matchSearch && matchStatus;
     });
 
@@ -104,15 +179,17 @@ export async function renderProviderDashboard() {
           <!-- Top Header & Action -->
           <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
-              <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-500 text-xs font-bold uppercase tracking-wider mb-2">
-                ${renderIcon('Building2', 'w-3.5 h-3.5')} Portal Oficial de Proveedores de Flota
+              <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-100 dark:bg-orange-950/60 border border-orange-200 text-[#FF7A00] text-xs font-mono font-black uppercase tracking-wider mb-2 shadow-xs">
+                ${renderIcon('Building2', 'w-3.5 h-3.5')} Portal Oficial de Proveedor Opus Rentals
               </div>
-              <h1 class="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white font-display">Gestión de Flota & Despachos</h1>
-              <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mt-1">Supervisa tu maquinaria en frentes de obra, contratos activos y solicitudes de alquiler B2B.</p>
+              <h1 class="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white font-display">
+                ${providerProfile.companyName}
+              </h1>
+              <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mt-1">Supervisa inventario en patio, contratos en frente de obra y métricas telemáticas.</p>
             </div>
 
             <div class="flex items-center gap-3">
-              <button id="btn-open-new-tool-drawer" class="btn-primary !py-2.5 !px-5 text-xs font-black uppercase tracking-wide flex items-center gap-2 shadow-md cursor-pointer active:scale-95">
+              <button id="btn-open-new-tool-drawer" class="btn-primary !py-3 !px-5 text-xs font-black uppercase tracking-wider flex items-center gap-2 shadow-md cursor-pointer active:scale-95">
                 ${renderIcon('Plus', 'w-4 h-4')}
                 <span>Publicar Maquinaria</span>
               </button>
@@ -123,189 +200,189 @@ export async function renderProviderDashboard() {
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" id="provider-kpis-grid">
             
             <!-- Card 1: Disponibles -->
-            <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border-2 border-slate-200 dark:border-slate-800 shadow-sm space-y-2">
+            <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border-2 border-slate-200 dark:border-slate-800 shadow-sm space-y-1">
               <div class="flex items-center justify-between">
-                <span class="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Disponibles para Alquiler</span>
-                <div class="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold">
+                <span class="text-xs font-bold text-slate-500 uppercase tracking-wider font-mono">Disponibles en Patio</span>
+                <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
                   ${renderIcon('CheckCircle2', 'w-4 h-4')}
                 </div>
               </div>
               <div class="text-3xl font-black text-slate-900 dark:text-white font-display">${availableTools}</div>
-              <div class="text-[11px] text-slate-500 dark:text-slate-400">
-                de ${totalTools} registradas (<span class="text-emerald-600 dark:text-emerald-400 font-bold">${Math.round((availableTools / (totalTools || 1)) * 100)}% operativa</span>)
+              <div class="text-[11px] text-slate-500">
+                de ${totalTools} unidades registradas
               </div>
             </div>
 
-            <!-- Card 2: Alquiladas -->
-            <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border-2 border-slate-200 dark:border-slate-800 shadow-sm space-y-2">
+            <!-- Card 2: Operando en Obra -->
+            <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border-2 border-slate-200 dark:border-slate-800 shadow-sm space-y-1">
               <div class="flex items-center justify-between">
-                <span class="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Operando en Obra</span>
-                <div class="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center font-bold">
-                  ${renderIcon('Calendar', 'w-4 h-4')}
+                <span class="text-xs font-bold text-slate-500 uppercase tracking-wider font-mono">Operando en Obra</span>
+                <div class="w-8 h-8 rounded-lg bg-orange-100 text-[#FF7A00] flex items-center justify-center font-bold">
+                  ${renderIcon('Truck', 'w-4 h-4')}
                 </div>
               </div>
               <div class="text-3xl font-black text-slate-900 dark:text-white font-display">${rentedTools}</div>
-              <div class="text-[11px] text-slate-500 dark:text-slate-400">
-                en <span class="text-amber-600 dark:text-amber-400 font-bold">5</span> frentes de obra activos
+              <div class="text-[11px] text-orange-600 font-bold font-mono">
+                ${occupancyRate}% tasa de ocupación
               </div>
             </div>
 
-            <!-- Card 3: En mantenimiento -->
-            <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border-2 border-slate-200 dark:border-slate-800 shadow-sm space-y-2">
+            <!-- Card 3: Facturación Acumulada -->
+            <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border-2 border-slate-200 dark:border-slate-800 shadow-sm space-y-1">
               <div class="flex items-center justify-between">
-                <span class="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Mantenimiento Preventivo</span>
-                <div class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 flex items-center justify-center font-bold">
-                  ${renderIcon('Wrench', 'w-4 h-4')}
+                <span class="text-xs font-bold text-slate-500 uppercase tracking-wider font-mono">Facturación Total</span>
+                <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
+                  ${renderIcon('DollarSign', 'w-4 h-4')}
                 </div>
               </div>
-              <div class="text-3xl font-black text-slate-900 dark:text-white font-display">${maintenanceTools}</div>
-              <div class="text-[11px] text-slate-500 dark:text-slate-400 font-semibold">
-                inspección técnica en taller
+              <div class="text-2xl font-black text-slate-900 dark:text-white font-display text-emerald-600">
+                ${formatCurrency(totalRevenue)}
+              </div>
+              <div class="text-[11px] text-slate-500">
+                Ticket promedio: ${formatCurrency(avgTicket)}
               </div>
             </div>
 
             <!-- Card 4: Solicitudes pendientes -->
-            <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border-2 border-amber-400 dark:border-amber-500 shadow-sm space-y-2 bg-gradient-to-br from-amber-500/5 to-transparent">
+            <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border-2 border-orange-300 dark:border-orange-700 shadow-sm space-y-1 bg-gradient-to-br from-orange-500/5 to-transparent">
               <div class="flex items-center justify-between">
-                <span class="text-xs font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider">Solicitudes por Aprobar</span>
-                <div class="w-8 h-8 rounded-lg bg-amber-400 text-black flex items-center justify-center relative font-black">
+                <span class="text-xs font-bold text-[#FF7A00] uppercase tracking-wider font-mono">Pendientes por Despacho</span>
+                <div class="w-8 h-8 rounded-lg bg-[#FF7A00] text-white flex items-center justify-center relative font-black shadow-xs">
                   ${renderIcon('Clock', 'w-4 h-4')}
                   ${pendingRequests > 0 ? '<span class="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-rose-500 ring-2 ring-white"></span>' : ''}
                 </div>
               </div>
-              <div class="text-3xl font-black text-slate-900 dark:text-white font-display text-amber-500">${pendingRequests}</div>
-              <div class="text-[11px] text-amber-700 dark:text-amber-400 font-bold">
-                requieren confirmación hoy
+              <div class="text-3xl font-black text-slate-900 dark:text-white font-display text-[#FF7A00]">${pendingRequests}</div>
+              <div class="text-[11px] text-slate-600 font-semibold">
+                ${pendingRequests > 0 ? 'Requieren confirmación prioritaria' : 'Todas radicadas'}
               </div>
             </div>
 
           </div>
 
-          <!-- Navigation Tabs: Inventario vs Solicitudes -->
+          <!-- 4 Specialized Navigation Tabs -->
           <div class="border-b-2 border-slate-200 dark:border-slate-800">
-            <nav class="flex space-x-8" aria-label="Tabs">
+            <nav class="flex flex-wrap gap-2 sm:gap-6" aria-label="Tabs">
               <button 
                 id="tab-btn-inventory" 
-                class="py-3 px-1 border-b-2 font-black text-sm flex items-center gap-2 transition-all cursor-pointer uppercase tracking-wider ${activeTab === 'inventory' ? 'border-[#FFB800] text-slate-900 dark:text-white' : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:border-slate-300'}"
+                class="py-3 px-3 border-b-2 font-black text-xs sm:text-sm flex items-center gap-2 transition-all cursor-pointer uppercase tracking-wider ${activeTab === 'inventory' ? 'border-[#FF7A00] text-[#FF7A00]' : 'border-transparent text-slate-500 hover:text-slate-800'}"
               >
-                ${renderIcon('Package', 'w-4 h-4 text-amber-500')}
-                <span>Inventario de Maquinaria</span>
-                <span class="px-2 py-0.5 rounded-md text-xs font-black ${activeTab === 'inventory' ? 'bg-[#FFB800] text-[#1A1A1A]' : 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300'}">
+                ${renderIcon('Package', 'w-4 h-4')}
+                <span>Mi Flota / Inventario</span>
+                <span class="px-2 py-0.5 rounded-md text-xs font-black ${activeTab === 'inventory' ? 'bg-[#FF7A00] text-white' : 'bg-slate-200 text-slate-700'}">
                   ${toolsList.length}
                 </span>
               </button>
 
               <button 
                 id="tab-btn-requests" 
-                class="py-3 px-1 border-b-2 font-black text-sm flex items-center gap-2 transition-all cursor-pointer uppercase tracking-wider ${activeTab === 'requests' ? 'border-[#FFB800] text-slate-900 dark:text-white' : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:border-slate-300'}"
+                class="py-3 px-3 border-b-2 font-black text-xs sm:text-sm flex items-center gap-2 transition-all cursor-pointer uppercase tracking-wider ${activeTab === 'requests' ? 'border-[#FF7A00] text-[#FF7A00]' : 'border-transparent text-slate-500 hover:text-slate-800'}"
               >
-                ${renderIcon('FileText', 'w-4 h-4 text-amber-500')}
-                <span>Despachos y Solicitudes</span>
-                <span class="px-2 py-0.5 rounded-md text-xs font-black ${pendingRequests > 0 ? 'bg-[#FF6B00] text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300'}">
+                ${renderIcon('FileText', 'w-4 h-4')}
+                <span>Contratos & Despachos</span>
+                <span class="px-2 py-0.5 rounded-md text-xs font-black ${pendingRequests > 0 ? 'bg-orange-500 text-white animate-pulse' : 'bg-slate-200 text-slate-700'}">
                   ${requestsList.length}
                 </span>
+              </button>
+
+              <button 
+                id="tab-btn-metrics" 
+                class="py-3 px-3 border-b-2 font-black text-xs sm:text-sm flex items-center gap-2 transition-all cursor-pointer uppercase tracking-wider ${activeTab === 'metrics' ? 'border-[#FF7A00] text-[#FF7A00]' : 'border-transparent text-slate-500 hover:text-slate-800'}"
+              >
+                ${renderIcon('BarChart3', 'w-4 h-4')}
+                <span>Métricas & Rendimiento</span>
+              </button>
+
+              <button 
+                id="tab-btn-profile" 
+                class="py-3 px-3 border-b-2 font-black text-xs sm:text-sm flex items-center gap-2 transition-all cursor-pointer uppercase tracking-wider ${activeTab === 'profile' ? 'border-[#FF7A00] text-[#FF7A00]' : 'border-transparent text-slate-500 hover:text-slate-800'}"
+              >
+                ${renderIcon('Building', 'w-4 h-4')}
+                <span>Perfil & Cobertura</span>
               </button>
             </nav>
           </div>
 
-          <!-- TAB CONTENT: INVENTARIO -->
+          <!-- ========================================================================= -->
+          <!-- TAB 1: MI FLOTA / INVENTARIO                                              -->
+          <!-- ========================================================================= -->
           ${activeTab === 'inventory' ? `
             <div class="space-y-6">
               
-              <!-- Filters Bar -->
-              <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+              <!-- Search & Quick Filters -->
+              <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border-2 border-slate-200 dark:border-slate-800 shadow-sm flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
                 <div class="relative flex-1 max-w-md">
-                  <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                  <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
                     ${renderIcon('Search', 'w-4 h-4')}
                   </span>
                   <input 
                     type="text" 
                     id="inv-search-input" 
                     value="${inventorySearch}" 
-                    placeholder="Buscar herramienta por nombre, modelo o categoría..." 
-                    class="w-full pl-9 pr-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl text-xs focus:bg-white dark:focus:bg-slate-800 focus:outline-none focus:border-[#132e4f] dark:focus:border-blue-500" 
+                    placeholder="Buscar excavadora, marca, serie o modelo..." 
+                    class="w-full pl-10 pr-3 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl text-xs focus:bg-white focus:outline-none focus:border-[#FF7A00]" 
                   />
                 </div>
 
-                <div class="flex flex-wrap items-center gap-3">
-                  <select id="inv-status-filter" class="input-field !py-2 text-xs !w-auto bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl">
+                <div class="flex items-center gap-3">
+                  <select id="inv-status-filter" class="px-3 py-2 text-xs font-bold bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:border-[#FF7A00] cursor-pointer">
                     <option value="ALL" ${inventoryStatus === 'ALL' ? 'selected' : ''}>Todos los estados</option>
-                    <option value="AVAILABLE" ${inventoryStatus === 'AVAILABLE' ? 'selected' : ''}>Disponible</option>
-                    <option value="RENTED" ${inventoryStatus === 'RENTED' ? 'selected' : ''}>Alquilada</option>
-                    <option value="MAINTENANCE" ${inventoryStatus === 'MAINTENANCE' ? 'selected' : ''}>En mantenimiento</option>
+                    <option value="AVAILABLE" ${inventoryStatus === 'AVAILABLE' ? 'selected' : ''}>Disponibles en Patio</option>
+                    <option value="RENTED" ${inventoryStatus === 'RENTED' ? 'selected' : ''}>Operando en Obra</option>
+                    <option value="MAINTENANCE" ${inventoryStatus === 'MAINTENANCE' ? 'selected' : ''}>En Mantenimiento</option>
                   </select>
                 </div>
               </div>
 
-              <!-- Inventory Table -->
-              <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+              <!-- Machinery List Grid / Table -->
+              <div class="bg-white dark:bg-slate-900 rounded-2xl border-2 border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
                 <div class="overflow-x-auto">
                   <table class="w-full text-left text-xs">
-                    <thead class="text-slate-500 dark:text-slate-400 uppercase tracking-wider text-[11px] border-b border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/60">
+                    <thead class="text-slate-500 uppercase tracking-wider text-[11px] border-b-2 border-slate-100 bg-slate-50 font-mono font-black">
                       <tr>
-                        <th class="py-3 px-4 w-10 text-center"><input type="checkbox" class="rounded text-[#132e4f] focus:ring-0" /></th>
-                        <th class="py-3 px-4">Herramienta</th>
+                        <th class="py-3 px-4">Maquinaria Pesada</th>
+                        <th class="py-3 px-4">Línea / Rubro</th>
                         <th class="py-3 px-4">Tarifa Diaria</th>
-                        <th class="py-3 px-4">Estado</th>
-                        <th class="py-3 px-4">Último alquiler</th>
+                        <th class="py-3 px-4">Estado Operativo</th>
                         <th class="py-3 px-4 text-right">Acciones</th>
                       </tr>
                     </thead>
-                    <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
-                      ${filteredTools.map(tool => {
-                        const isAvail = tool.status === 'AVAILABLE';
-                        const isRent = tool.status === 'RENTED';
-                        const isMaint = tool.status === 'MAINTENANCE';
-                        const img = tool.images?.[0]?.imageUrl || 'https://images.unsplash.com/photo-1503708928676-1cb796a0891e?w=100';
-
+                    <tbody class="divide-y divide-slate-100 font-medium">
+                      ${filteredTools.length === 0 ? `
+                        <tr>
+                          <td colspan="5" class="py-12 text-center text-slate-400">
+                            No se encontraron máquinas con los filtros actuales.
+                          </td>
+                        </tr>
+                      ` : filteredTools.map(t => {
+                        const img = t.images?.[0]?.imageUrl || 'https://images.unsplash.com/photo-1581094288338-2314dddb7ece?auto=format&fit=crop&w=300&q=80';
+                        const isAvailable = t.status === 'AVAILABLE';
                         return `
-                          <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/60 transition-colors">
-                            <td class="py-3.5 px-4 text-center"><input type="checkbox" class="rounded text-[#132e4f] focus:ring-0" /></td>
+                          <tr class="hover:bg-slate-50/80 transition-colors">
                             <td class="py-3.5 px-4">
                               <div class="flex items-center gap-3">
-                                <img 
-                                  src="${img}" 
-                                  class="w-11 h-11 rounded-xl object-contain bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-1" 
-                                  onerror="window.ToolRentCacheShield?.handleImageError(this, '${img}', '${tool.categoryName || ''}', '${tool.name?.replace(/'/g, "\\'")}')"
-                                />
+                                <img src="${img}" alt="${t.name}" class="w-12 h-12 rounded-xl object-cover border border-slate-200 flex-shrink-0" onerror="this.src='https://images.unsplash.com/photo-1581094288338-2314dddb7ece?auto=format&fit=crop&w=300&q=80'" />
                                 <div>
-                                  <a href="#/product/${tool.id}" class="font-bold text-slate-900 dark:text-white hover:text-[#132e4f] dark:hover:text-blue-400 transition-colors">${tool.name}</a>
-                                  <div class="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5 flex items-center gap-2">
-                                    <span>${tool.categoryName || 'Construcción'}</span>
-                                    <span>•</span>
-                                    <span class="font-mono text-slate-500 dark:text-slate-400">SKU-${tool.id.toString().padStart(4, '0')}</span>
-                                  </div>
+                                  <div class="font-bold text-slate-900 dark:text-white text-xs">${t.name}</div>
+                                  <div class="text-[10px] text-slate-400 font-mono">ID: ${t.id} · ${t.brand || 'CAT'}</div>
                                 </div>
                               </div>
                             </td>
-                            <td class="py-3.5 px-4 font-bold text-slate-900 dark:text-white font-display">
-                              ${formatCurrency(tool.dailyPrice)} <span class="text-[10px] text-slate-400 font-normal">/ día</span>
+                            <td class="py-3.5 px-4 text-slate-600 font-mono text-[11px]">
+                              ${t.categoryName || 'Construcción Civil'}
+                            </td>
+                            <td class="py-3.5 px-4 font-black font-mono text-slate-900 dark:text-white">
+                              ${formatCurrency(t.dailyPrice)}
                             </td>
                             <td class="py-3.5 px-4">
-                              ${isAvail ? `
-                                <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
-                                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Disponible
-                                </span>
-                              ` : isRent ? `
-                                <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
-                                  <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span> Alquilada
-                                </span>
-                              ` : `
-                                <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
-                                  <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span> En mantenimiento
-                                </span>
-                              `}
+                              ${getToolStatusBadge(t.status)}
                             </td>
-                            <td class="py-3.5 px-4 text-slate-500 dark:text-slate-400">
-                              <div>${isRent ? 'Activo (En obra)' : '10 oct 2026'}</div>
-                              <div class="text-[10px] text-slate-400 dark:text-slate-500">${isRent ? 'Retorna 16 oct' : 'Finalizado'}</div>
-                            </td>
-                            <td class="py-3.5 px-4 text-right space-x-1.5">
-                              <button class="btn-edit-tool px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-medium cursor-pointer" data-id="${tool.id}">
-                                Editar
+                            <td class="py-3.5 px-4 text-right space-x-2">
+                              <button class="btn-toggle-maint px-2.5 py-1.5 rounded-lg text-xs font-bold border border-slate-200 hover:border-slate-400 transition-colors cursor-pointer" data-id="${t.id}" title="Alternar Mantenimiento">
+                                ${t.status === 'MAINTENANCE' ? 'Poner Disponible' : 'A Mantenimiento'}
                               </button>
-                              <button class="btn-toggle-maint px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-medium cursor-pointer" data-id="${tool.id}">
-                                ${isMaint ? 'Habilitar' : 'Mantenimiento'}
+                              <button class="btn-edit-tool px-2.5 py-1.5 rounded-lg text-xs font-black bg-slate-100 hover:bg-[#FF7A00] hover:text-white transition-colors cursor-pointer" data-id="${t.id}">
+                                ${renderIcon('Edit3', 'w-3.5 h-3.5 inline')}
                               </button>
                             </td>
                           </tr>
@@ -314,128 +391,103 @@ export async function renderProviderDashboard() {
                     </tbody>
                   </table>
                 </div>
-
-                <div class="p-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
-                  <span>Mostrando ${filteredTools.length} herramientas</span>
-                  <div class="flex items-center gap-1">
-                    <button class="px-2.5 py-1 rounded bg-[#132e4f] text-white font-bold">1</button>
-                    <button class="px-2.5 py-1 rounded border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800">2</button>
-                    <button class="px-2.5 py-1 rounded border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800">&gt;</button>
-                  </div>
-                </div>
               </div>
 
             </div>
-          ` : `
-            <!-- TAB CONTENT: SOLICITUDES -->
+          ` : ''}
+
+          <!-- ========================================================================= -->
+          <!-- TAB 2: CONTRATOS & SOLICITUDES (Con filtros Activas / Canceladas / etc)    -->
+          <!-- ========================================================================= -->
+          ${activeTab === 'requests' ? `
             <div class="space-y-6">
-
-              <!-- Filters Row -->
-              <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
-                <div class="flex flex-wrap items-center gap-3">
-                  <select id="requests-status-filter" class="input-field !py-2 text-xs !w-auto bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl">
-                    <option value="ALL" ${requestsStatus === 'ALL' ? 'selected' : ''}>Todos los estados</option>
-                    <option value="PENDING" ${requestsStatus === 'PENDING' ? 'selected' : ''}>Pendientes</option>
-                    <option value="CONFIRMED" ${requestsStatus === 'CONFIRMED' ? 'selected' : ''}>Confirmadas</option>
-                    <option value="IN_PROGRESS" ${requestsStatus === 'IN_PROGRESS' ? 'selected' : ''}>En curso</option>
-                    <option value="COMPLETED" ${requestsStatus === 'COMPLETED' ? 'selected' : ''}>Completadas</option>
-                  </select>
-
-                  <div class="flex items-center gap-2 px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-700 dark:text-slate-300">
-                    ${renderIcon('Calendar', 'w-3.5 h-3.5 text-slate-500')}
-                    <span>13 oct 2026 – 20 oct 2026</span>
-                  </div>
-                </div>
-
-                <div class="relative w-full md:w-80">
-                  <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                    ${renderIcon('Search', 'w-3.5 h-3.5')}
-                  </span>
-                  <input 
-                    type="text" 
-                    id="requests-search" 
-                    value="${requestsSearch}" 
-                    placeholder="Buscar por cliente, herramienta o número..." 
-                    class="w-full pl-9 pr-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl text-xs focus:bg-white dark:focus:bg-slate-800 focus:outline-none focus:border-[#132e4f] dark:focus:border-blue-500" 
-                  />
-                </div>
+              
+              <!-- Status Sub-Pills Filter -->
+              <div class="flex flex-wrap items-center gap-2 pb-2">
+                <button class="req-status-pill px-3 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer ${requestsStatusFilter === 'ALL' ? 'bg-[#FF7A00] text-white shadow-xs' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-100'}" data-status="ALL">
+                  Todas (${requestsList.length})
+                </button>
+                <button class="req-status-pill px-3 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer ${requestsStatusFilter === 'PENDING' ? 'bg-[#FF7A00] text-white shadow-xs' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-100'}" data-status="PENDING">
+                  Pendientes (${pendingRequests})
+                </button>
+                <button class="req-status-pill px-3 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer ${requestsStatusFilter === 'IN_PROGRESS' ? 'bg-[#FF7A00] text-white shadow-xs' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-100'}" data-status="IN_PROGRESS">
+                  Activas en Obra (${activeRentals})
+                </button>
+                <button class="req-status-pill px-3 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer ${requestsStatusFilter === 'COMPLETED' ? 'bg-[#FF7A00] text-white shadow-xs' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-100'}" data-status="COMPLETED">
+                  Finalizadas / Devueltas (${completedRentals})
+                </button>
+                <button class="req-status-pill px-3 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer ${requestsStatusFilter === 'CANCELLED' ? 'bg-[#FF7A00] text-white shadow-xs' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-100'}" data-status="CANCELLED">
+                  Canceladas (${cancelledRentals})
+                </button>
               </div>
 
-              <!-- Requests Table Section -->
-              <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+              <!-- Contracts Table -->
+              <div class="bg-white dark:bg-slate-900 rounded-2xl border-2 border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
                 <div class="overflow-x-auto">
-                  <table class="w-full text-left text-xs" id="requests-table">
-                    <thead class="text-slate-500 dark:text-slate-400 uppercase tracking-wider text-[11px] border-b border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/60">
+                  <table class="w-full text-left text-xs">
+                    <thead class="text-slate-500 uppercase tracking-wider text-[11px] border-b-2 border-slate-100 bg-slate-50 font-mono font-black">
                       <tr>
-                        <th class="py-3 px-4 w-12 text-center">#</th>
-                        <th class="py-3 px-4">Cliente</th>
-                        <th class="py-3 px-4">Herramienta</th>
-                        <th class="py-3 px-4">Fechas</th>
-                        <th class="py-3 px-4">Total</th>
+                        <th class="py-3 px-4">Contrato #</th>
+                        <th class="py-3 px-4">Constructora / Cliente</th>
+                        <th class="py-3 px-4">Equipo Alquilado</th>
+                        <th class="py-3 px-4">Período de Obra</th>
+                        <th class="py-3 px-4">Total COP</th>
                         <th class="py-3 px-4">Estado</th>
-                        <th class="py-3 px-4 text-right">Acciones</th>
+                        <th class="py-3 px-4 text-right">Gestión</th>
                       </tr>
                     </thead>
-                    <tbody class="divide-y divide-slate-100 dark:divide-slate-800" id="requests-tbody">
-                      ${filteredRequests.map((req, idx) => {
-                        const isPending = req.status === 'PENDING';
-                        const isConfirmed = req.status === 'CONFIRMED';
-                        const isInProgress = req.status === 'IN_PROGRESS';
-                        const isCompleted = req.status === 'COMPLETED';
+                    <tbody class="divide-y divide-slate-100 font-medium">
+                      ${filteredRequests.length === 0 ? `
+                        <tr>
+                          <td colspan="7" class="py-12 text-center text-slate-400">
+                            No hay solicitudes en este estado.
+                          </td>
+                        </tr>
+                      ` : filteredRequests.map(r => {
+                        const isPending = r.status === 'PENDING';
+                        const isActive = r.status === 'IN_PROGRESS' || r.status === 'APPROVED';
+                        const isCompleted = r.status === 'COMPLETED';
 
                         return `
-                          <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/60 transition-colors">
-                            <td class="py-3.5 px-4 text-center font-mono text-slate-400 dark:text-slate-500 font-semibold">${idx + 1}</td>
-                            <td class="py-3.5 px-4">
-                              <div class="font-bold text-slate-900 dark:text-white">${req.client?.name || 'Cliente'}</div>
-                              <div class="text-[11px] text-slate-400 dark:text-slate-500">${req.client?.email || 'cliente@email.com'}</div>
+                          <tr class="hover:bg-slate-50/80 transition-colors">
+                            <td class="py-3.5 px-4 font-mono font-bold text-slate-900">
+                              #${r.id}
                             </td>
                             <td class="py-3.5 px-4">
-                              <div class="flex items-center gap-2.5">
-                                <img src="${req.tool?.img || 'https://images.unsplash.com/photo-1503708928676-1cb796a0891e?w=60'}" class="w-9 h-9 rounded-xl object-contain bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700" />
-                                <div>
-                                  <div class="font-bold text-slate-800 dark:text-slate-200">${req.tool?.name || 'Equipo'}</div>
-                                  <div class="text-[10px] text-slate-400 dark:text-slate-500">${req.tool?.category || 'Herramientas'}</div>
-                                </div>
-                              </div>
+                              <div class="font-bold text-slate-900">${r.client?.name || 'Constructora Cliente'}</div>
+                              <div class="text-[10px] text-slate-400 font-mono">${r.client?.phone || '+57 310 000 0000'}</div>
                             </td>
-                            <td class="py-3.5 px-4 text-slate-600 dark:text-slate-300">
-                              <div>${req.dates || '13 oct - 16 oct 2026'}</div>
-                              <div class="text-[10px] text-slate-400 dark:text-slate-500">${req.days || 3} días</div>
+                            <td class="py-3.5 px-4 font-semibold text-slate-800">
+                              ${r.tool?.name || 'Equipo Pesado'}
                             </td>
-                            <td class="py-3.5 px-4 font-black text-slate-900 dark:text-white font-display">
-                              ${formatCurrency(req.total)}
+                            <td class="py-3.5 px-4 text-slate-600 font-mono text-[11px]">
+                              ${r.dates || 'Período Activo'} (${r.days || 3} días)
+                            </td>
+                            <td class="py-3.5 px-4 font-black font-mono text-slate-900">
+                              ${formatCurrency(r.total)}
                             </td>
                             <td class="py-3.5 px-4">
-                              ${getRentalStatusBadge(req.status)}
+                              ${getRentalStatusBadge(r.status)}
                             </td>
-                            <td class="py-3.5 px-4 text-right space-x-1.5">
+                            <td class="py-3.5 px-4 text-right space-x-1.5 whitespace-nowrap">
                               ${isPending ? `
-                                <button class="btn-confirm-action px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#132e4f] hover:bg-[#0a1c33] dark:bg-blue-600 dark:hover:bg-blue-700 text-white shadow-xs cursor-pointer" data-id="${req.id}">
-                                  Confirmar
+                                <button class="btn-confirm-action px-3 py-1.5 rounded-lg text-xs font-black bg-[#FF7A00] hover:bg-[#E56E00] text-white shadow-xs cursor-pointer" data-id="${r.id}">
+                                  Aprobar Despacho
                                 </button>
-                                <button class="btn-reject-action px-2.5 py-1.5 rounded-lg text-xs font-semibold border border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer" data-id="${req.id}">
+                                <button class="btn-reject-action px-2.5 py-1.5 rounded-lg text-xs font-bold border border-slate-300 text-rose-600 hover:bg-rose-50 cursor-pointer" data-id="${r.id}">
                                   Rechazar
                                 </button>
                               ` : ''}
 
-                              ${isConfirmed ? `
-                                <button class="btn-dispatch-action px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#132e4f] hover:bg-[#0a1c33] dark:bg-blue-600 dark:hover:bg-blue-700 text-white shadow-xs cursor-pointer" data-id="${req.id}">
-                                  Registrar entrega
+                              ${isActive ? `
+                                <button class="btn-return-action px-3 py-1.5 rounded-lg text-xs font-black bg-[#1A1A1A] hover:bg-slate-800 text-white shadow-xs cursor-pointer" data-id="${r.id}">
+                                  Registrar Devolución
                                 </button>
                               ` : ''}
 
-                              ${isInProgress ? `
-                                <button class="btn-return-action px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#132e4f] hover:bg-[#0a1c33] dark:bg-blue-600 dark:hover:bg-blue-700 text-white shadow-xs cursor-pointer" data-id="${req.id}">
-                                  Registrar devolución
-                                </button>
-                              ` : ''}
-
-                              ${isCompleted ? `
-                                <button class="btn-view-invoice px-3 py-1.5 rounded-lg text-xs font-semibold border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 flex-inline items-center gap-1 shadow-xs cursor-pointer" data-id="${req.id}">
-                                  ${renderIcon('FileText', 'w-3 h-3')} Ver factura
-                                </button>
-                              ` : ''}
+                              <button class="btn-view-invoice px-2.5 py-1.5 rounded-lg text-xs font-bold border border-slate-200 text-slate-700 hover:bg-slate-100 cursor-pointer" data-id="${r.id}">
+                                ${renderIcon('FileText', 'w-3 h-3 inline mr-1 text-[#FF7A00]')} Factura
+                              </button>
                             </td>
                           </tr>
                         `;
@@ -443,19 +495,191 @@ export async function renderProviderDashboard() {
                     </tbody>
                   </table>
                 </div>
+              </div>
 
-                <div class="p-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
-                  <span>Mostrando ${filteredRequests.length} solicitudes</span>
-                  <div class="flex items-center gap-1">
-                    <button class="px-2.5 py-1 rounded bg-[#132e4f] text-white font-bold">1</button>
-                    <button class="px-2.5 py-1 rounded border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800">2</button>
-                    <button class="px-2.5 py-1 rounded border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800">&gt;</button>
+            </div>
+          ` : ''}
+
+          <!-- ========================================================================= -->
+          <!-- TAB 3: MÉTRICAS & RENDIMIENTO FINANCIERO                                   -->
+          <!-- ========================================================================= -->
+          ${activeTab === 'metrics' ? `
+            <div class="space-y-6">
+              
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- KPI 1 -->
+                <div class="bg-white p-6 rounded-3xl border-2 border-slate-200 shadow-sm space-y-2">
+                  <span class="text-xs font-bold text-slate-400 font-mono uppercase tracking-wider">Facturación Bruta Anual</span>
+                  <div class="text-3xl font-black text-slate-900 font-display text-[#FF7A00]">
+                    ${formatCurrency(totalRevenue * 1.8)}
+                  </div>
+                  <p class="text-xs text-slate-500">Ingresos netos transferidos a cuenta empresarial.</p>
+                </div>
+
+                <!-- KPI 2 -->
+                <div class="bg-white p-6 rounded-3xl border-2 border-slate-200 shadow-sm space-y-2">
+                  <span class="text-xs font-bold text-slate-400 font-mono uppercase tracking-wider">Promedio Días en Obra</span>
+                  <div class="text-3xl font-black text-slate-900 font-display">
+                    12.4 días
+                  </div>
+                  <p class="text-xs text-slate-500">Permanencia media por frente de trabajo.</p>
+                </div>
+
+                <!-- KPI 3 -->
+                <div class="bg-white p-6 rounded-3xl border-2 border-slate-200 shadow-sm space-y-2">
+                  <span class="text-xs font-bold text-slate-400 font-mono uppercase tracking-wider">Tasa de Siniestralidad</span>
+                  <div class="text-3xl font-black text-emerald-600 font-display">
+                    0.2%
+                  </div>
+                  <p class="text-xs text-slate-500">Equipos devueltos con reporte conforme.</p>
+                </div>
+              </div>
+
+              <!-- Performance Graph Breakdown -->
+              <div class="bg-white p-6 sm:p-8 rounded-3xl border-2 border-slate-200 shadow-sm space-y-6">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <h3 class="text-base font-black text-slate-900 font-display">Rendimiento por Línea de Maquinaria</h3>
+                    <p class="text-xs text-slate-500">Distribución de ingresos generados en los últimos 90 días.</p>
+                  </div>
+                  <span class="px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-bold border border-emerald-200">
+                    +24% crecimiento vs trimestre anterior
+                  </span>
+                </div>
+
+                <div class="space-y-4 pt-2">
+                  <div>
+                    <div class="flex justify-between text-xs font-bold text-slate-800 mb-1">
+                      <span>Excavación y Movimiento de Tierras</span>
+                      <span class="font-mono text-[#FF7A00]">65% ($ 18.400.000 COP)</span>
+                    </div>
+                    <div class="w-full bg-slate-100 rounded-full h-3 overflow-hidden">
+                      <div class="bg-[#FF7A00] h-3 rounded-full" style="width: 65%"></div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div class="flex justify-between text-xs font-bold text-slate-800 mb-1">
+                      <span>Compactación y Pavimentación</span>
+                      <span class="font-mono text-amber-600">22% ($ 6.200.000 COP)</span>
+                    </div>
+                    <div class="w-full bg-slate-100 rounded-full h-3 overflow-hidden">
+                      <div class="bg-amber-500 h-3 rounded-full" style="width: 22%"></div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div class="flex justify-between text-xs font-bold text-slate-800 mb-1">
+                      <span>Generación Eléctrica Diésel</span>
+                      <span class="font-mono text-slate-700">13% ($ 3.680.000 COP)</span>
+                    </div>
+                    <div class="w-full bg-slate-100 rounded-full h-3 overflow-hidden">
+                      <div class="bg-slate-700 h-3 rounded-full" style="width: 13%"></div>
+                    </div>
                   </div>
                 </div>
               </div>
 
             </div>
-          `}
+          ` : ''}
+
+          <!-- ========================================================================= -->
+          <!-- TAB 4: PERFIL DE EMPRESA & ZONAS DE COBERTURA                             -->
+          <!-- ========================================================================= -->
+          ${activeTab === 'profile' ? `
+            <div class="bg-white rounded-3xl border-2 border-slate-200 shadow-sm p-6 sm:p-10 space-y-8 max-w-4xl">
+              
+              <!-- Verification Header Card -->
+              <div class="p-5 rounded-2xl bg-gradient-to-r from-orange-50 to-amber-50 border-2 border-orange-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div class="flex items-center gap-3.5">
+                  <div class="w-12 h-12 rounded-xl bg-[#FF7A00] text-white flex items-center justify-center font-black text-xl shadow-md">
+                    ${renderIcon('ShieldCheck', 'w-7 h-7')}
+                  </div>
+                  <div>
+                    <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-mono font-black uppercase">
+                      <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                      Proveedor Verificado Opus Rentals
+                    </div>
+                    <h3 class="text-base font-black text-slate-900 font-display mt-0.5">Póliza Todo Riesgo SURA Vigente</h3>
+                  </div>
+                </div>
+                <div class="text-xs text-slate-600 font-mono">
+                  Renovación: Octubre 2027
+                </div>
+              </div>
+
+              <!-- Profile Form -->
+              <form id="provider-profile-form" class="space-y-5">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-xs font-black uppercase tracking-wider text-slate-800 font-mono mb-1">Razón Social *</label>
+                    <input type="text" id="prof-company" class="input-field" value="${providerProfile.companyName}" required />
+                  </div>
+                  <div>
+                    <label class="block text-xs font-black uppercase tracking-wider text-slate-800 font-mono mb-1">NIT / RUT *</label>
+                    <input type="text" id="prof-taxid" class="input-field font-mono" value="${providerProfile.taxId}" required />
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-xs font-black uppercase tracking-wider text-slate-800 font-mono mb-1">Teléfono Fijo de Despachos *</label>
+                    <input type="text" id="prof-phone" class="input-field font-mono" value="${providerProfile.phone}" required />
+                  </div>
+                  <div>
+                    <label class="block text-xs font-black uppercase tracking-wider text-slate-800 font-mono mb-1">WhatsApp de Operaciones 24/7 *</label>
+                    <input type="text" id="prof-wa" class="input-field font-mono" value="${providerProfile.whatsapp}" required />
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-xs font-black uppercase tracking-wider text-slate-800 font-mono mb-1">Correo Electrónico de Facturación *</label>
+                    <input type="email" id="prof-email" class="input-field font-mono" value="${providerProfile.email}" required />
+                  </div>
+                  <div>
+                    <label class="block text-xs font-black uppercase tracking-wider text-slate-800 font-mono mb-1">Ciudad Sede</label>
+                    <input type="text" id="prof-city" class="input-field" value="${providerProfile.city}" required />
+                  </div>
+                </div>
+
+                <div>
+                  <label class="block text-xs font-black uppercase tracking-wider text-slate-800 font-mono mb-1">Dirección de Patio Central de Maquinaria *</label>
+                  <input type="text" id="prof-yard" class="input-field" value="${providerProfile.yardAddress}" required />
+                </div>
+
+                <!-- Zonas de Cobertura -->
+                <div class="space-y-2 pt-2">
+                  <label class="block text-xs font-black uppercase tracking-wider text-slate-800 font-mono">Zonas Habilitadas para Despacho en Cama Baja</label>
+                  <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs font-bold text-slate-700">
+                    <label class="flex items-center gap-2 p-2.5 rounded-xl border border-slate-200 bg-slate-50 cursor-pointer">
+                      <input type="checkbox" checked class="accent-[#FF7A00]" />
+                      <span>Bogotá & Sabana</span>
+                    </label>
+                    <label class="flex items-center gap-2 p-2.5 rounded-xl border border-slate-200 bg-slate-50 cursor-pointer">
+                      <input type="checkbox" checked class="accent-[#FF7A00]" />
+                      <span>Cundinamarca</span>
+                    </label>
+                    <label class="flex items-center gap-2 p-2.5 rounded-xl border border-slate-200 bg-slate-50 cursor-pointer">
+                      <input type="checkbox" checked class="accent-[#FF7A00]" />
+                      <span>Antioquia</span>
+                    </label>
+                    <label class="flex items-center gap-2 p-2.5 rounded-xl border border-slate-200 bg-slate-50 cursor-pointer">
+                      <input type="checkbox" checked class="accent-[#FF7A00]" />
+                      <span>Valle del Cauca</span>
+                    </label>
+                  </div>
+                </div>
+
+                <div class="pt-4 flex justify-end">
+                  <button type="submit" class="btn-primary !py-3 !px-8 text-xs font-black shadow-md cursor-pointer">
+                    ${renderIcon('Save', 'w-4 h-4')} Guardar Configuración de Empresa
+                  </button>
+                </div>
+              </form>
+
+            </div>
+          ` : ''}
 
         </div>
       </div>
@@ -476,7 +700,17 @@ export async function renderProviderDashboard() {
       render();
     });
 
-    // Top action
+    container.querySelector('#tab-btn-metrics')?.addEventListener('click', () => {
+      activeTab = 'metrics';
+      render();
+    });
+
+    container.querySelector('#tab-btn-profile')?.addEventListener('click', () => {
+      activeTab = 'profile';
+      render();
+    });
+
+    // Top action: Publish
     container.querySelector('#btn-open-new-tool-drawer')?.addEventListener('click', () => {
       openNewToolModal();
     });
@@ -489,6 +723,32 @@ export async function renderProviderDashboard() {
 
     container.querySelector('#inv-status-filter')?.addEventListener('change', (e) => {
       inventoryStatus = e.target.value;
+      render();
+    });
+
+    // Request status filter sub-pills
+    container.querySelectorAll('.req-status-pill').forEach(btn => {
+      btn.addEventListener('click', () => {
+        requestsStatusFilter = btn.dataset.status;
+        render();
+      });
+    });
+
+    // Profile form submit
+    container.querySelector('#provider-profile-form')?.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const updated = {
+        companyName: container.querySelector('#prof-company')?.value?.trim(),
+        taxId: container.querySelector('#prof-taxid')?.value?.trim(),
+        phone: container.querySelector('#prof-phone')?.value?.trim(),
+        whatsapp: container.querySelector('#prof-wa')?.value?.trim(),
+        email: container.querySelector('#prof-email')?.value?.trim(),
+        city: container.querySelector('#prof-city')?.value?.trim(),
+        yardAddress: container.querySelector('#prof-yard')?.value?.trim()
+      };
+      Object.assign(providerProfile, updated);
+      localStorage.setItem(`opus_provider_profile_${providerId}`, JSON.stringify(providerProfile));
+      showToast('Configuración de empresa actualizada correctamente', 'success');
       render();
     });
 
@@ -506,20 +766,9 @@ export async function renderProviderDashboard() {
         if (!tool) return;
         const newStatus = tool.status === 'MAINTENANCE' ? 'AVAILABLE' : 'MAINTENANCE';
         tool.status = newStatus;
-        showToast(`Estado de "${tool.name}" actualizado a ${newStatus === 'AVAILABLE' ? 'Disponible' : 'Mantenimiento'}`, 'success');
+        showToast(`Estado de "${tool.name}" actualizado a ${newStatus === 'AVAILABLE' ? 'Disponible en Patio' : 'En Mantenimiento'}`, 'success');
         render();
       });
-    });
-
-    // Requests search & filter
-    container.querySelector('#requests-search')?.addEventListener('input', (e) => {
-      requestsSearch = e.target.value;
-      render();
-    });
-
-    container.querySelector('#requests-status-filter')?.addEventListener('change', (e) => {
-      requestsStatus = e.target.value;
-      render();
     });
 
     // Requests actions
@@ -531,14 +780,15 @@ export async function renderProviderDashboard() {
           await api.patch(`/rentals/${b.dataset.id}/confirm`).catch(() => {});
         }
         const req = requestsList.find(r => String(r.id) === String(b.dataset.id));
-        if (req) req.status = 'APPROVED';
+        if (req) req.status = 'IN_PROGRESS';
         notificationsStore.add({
           category: 'RENTAL',
           type: 'success',
-          title: 'Solicitud Confirmada',
-          message: `Has confirmado el alquiler #${b.dataset.id} para ${req?.client?.name || req?.clientFullName || 'el cliente'}. Equipo listo para despacho.`,
+          title: 'Despacho Aprobado',
+          message: `Has aprobado el alquiler #${b.dataset.id}. Maquinaria lista para ser cargada en cama baja.`,
           link: '#/provider'
         });
+        showToast(`Alquiler #${b.dataset.id} aprobado para despacho`, 'success');
         render();
       });
     });
@@ -555,154 +805,124 @@ export async function renderProviderDashboard() {
         notificationsStore.add({
           category: 'RENTAL',
           type: 'warning',
-          title: 'Solicitud Rechazada',
-          message: `Se ha cancelado la solicitud #${b.dataset.id}.`,
+          title: 'Solicitud Cancelada',
+          message: `Se canceló la solicitud #${b.dataset.id}.`,
           link: '#/provider'
         });
-        render();
-      });
-    });
-
-    container.querySelectorAll('.btn-dispatch-action').forEach(b => {
-      b.addEventListener('click', async () => {
-        try {
-          await api.patch(`/rentals/${b.dataset.id}/status`, { status: 'IN_PROGRESS' });
-        } catch (e) {
-          await api.patch(`/rentals/${b.dataset.id}/start`).catch(() => {});
-        }
-        const req = requestsList.find(r => String(r.id) === String(b.dataset.id));
-        if (req) req.status = 'IN_PROGRESS';
-        notificationsStore.add({
-          category: 'ALERT',
-          type: 'info',
-          title: 'Entrega de Equipo Registrada',
-          message: `El equipo del alquiler #${b.dataset.id} fue entregado al cliente. Estado: En curso.`,
-          link: '#/provider'
-        });
+        showToast(`Solicitud #${b.dataset.id} cancelada`, 'info');
         render();
       });
     });
 
     container.querySelectorAll('.btn-return-action').forEach(b => {
       b.addEventListener('click', () => {
-        const req = requestsList.find(r => r.id === b.dataset.id);
+        const req = requestsList.find(r => String(r.id) === String(b.dataset.id));
         openReturnInspectionModal(req);
       });
     });
 
     container.querySelectorAll('.btn-view-invoice').forEach(b => {
       b.addEventListener('click', () => {
-        const req = requestsList.find(r => r.id === b.dataset.id) || requestsList[0];
+        const req = requestsList.find(r => String(r.id) === String(b.dataset.id)) || requestsList[0];
         openInvoiceViewer({
-          invoiceNumber: 'TR-000' + (req.id || '4587'),
-          issueDate: '13 oct 2026',
+          invoiceNumber: 'OP-INV-' + (req.id || '4587'),
+          issueDate: new Date().toLocaleDateString('es-CO', { day: 'numeric', month: 'short', year: 'numeric' }),
           client: {
             name: req.client?.name || 'Constructora Bolívar S.A.S.',
             taxId: '900.342.112-4',
-            address: 'Calle 100 # 19-61, Of. 402, Bogotá',
-            email: req.client?.email || 'compras@constructorabolivar.com',
+            address: 'Frente de Obra Carrera 7 # 127',
+            email: 'compras@constructorabolivar.com',
             phone: '+57 (1) 745-8900'
           },
           provider: {
-            name: 'Constructoras del Norte S.A.S.',
-            taxId: '901.458.789-1',
-            address: 'Cra. 43A # 18 Sur-135, Medellín',
-            email: 'contacto@constructornorte.com',
-            phone: '+57 (4) 448-9000'
+            name: providerProfile.companyName,
+            taxId: providerProfile.taxId,
+            address: providerProfile.yardAddress,
+            email: providerProfile.email,
+            phone: providerProfile.phone
           },
           tool: {
-            name: req.tool?.name || 'Taladro percutor 1" 1100W',
-            sku: 'D25033K-B3'
+            name: req.tool?.name || 'Excavadora Hidráulica CAT 320D2',
+            sku: 'CAT-320D2-2026'
           },
           rentalPeriod: {
-            startDate: '13 oct 2026',
-            endDate: '16 oct 2026',
-            days: req.days || 3
+            startDate: '16 oct 2026',
+            endDate: '24 oct 2026',
+            days: req.days || 8
           },
-          dailyRate: req.total ? Math.round(req.total / (req.days || 3)) : 85000,
-          subtotal: req.total || 255000,
-          tax: Math.round((req.total || 255000) * 0.19),
-          total: Math.round((req.total || 255000) * 1.19),
-          paymentMethod: 'Transferencia bancaria',
-          bank: 'Bancolombia',
-          reference: 'TR-0004587',
-          paymentDate: '13 oct 2026'
+          dailyRate: req.total ? Math.round(req.total / (req.days || 8)) : 650000,
+          subtotal: req.total || 5200000,
+          tax: Math.round((req.total || 5200000) * 0.19),
+          total: Math.round((req.total || 5200000) * 1.19),
+          paymentMethod: 'Transferencia PSE Bancolombia',
+          bank: 'Bancolombia Convenio Opus',
+          reference: 'OP-PSE-9941',
+          paymentDate: '15 oct 2026'
         });
       });
     });
   }
 
   /**
-   * Modal: Registrar Devolución matching Stitch "Registrar devolución" popup
+   * Modal: Registrar Devolución con Acta de Inspección
    */
   function openReturnInspectionModal(req) {
     const content = document.createElement('div');
-    content.className = 'space-y-5 text-xs text-slate-800 dark:text-slate-100';
+    content.className = 'space-y-5 text-xs text-slate-800 dark:text-slate-100 p-2';
 
     content.innerHTML = `
       <div class="space-y-4">
-        <!-- Tool preview -->
-        <div class="p-3 bg-slate-50 dark:bg-slate-800/80 rounded-xl border border-slate-200 dark:border-slate-700 flex items-center gap-3">
-          <img src="${req?.tool?.img || 'https://images.unsplash.com/photo-1503708928676-1cb796a0891e?w=100'}" class="w-12 h-12 rounded-lg object-contain bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-1" />
-          <div>
-            <h4 class="font-bold text-slate-900 dark:text-white text-sm">${req?.tool?.name || 'Excavadora Hidráulica CAT 320'}</h4>
-            <span class="text-[11px] text-slate-500 dark:text-slate-400">${req?.tool?.category || 'Excavación'}</span>
-          </div>
+        <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+          <div class="font-bold text-slate-900">${req?.tool?.name || 'Maquinaria Pesada'}</div>
+          <div class="text-[11px] text-slate-500">Alquiler #${req?.id || 'RES-1042'} · ${req?.client?.name || 'Cliente'}</div>
         </div>
 
-        <!-- Estado de la herramienta -->
         <div>
-          <label class="block font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">Estado de la maquinaria devuelta</label>
+          <label class="block font-black text-slate-800 uppercase tracking-wider mb-2 font-mono">Estado de Recepción en Patio</label>
           <div class="flex items-center gap-6">
-            <label class="flex items-center gap-2 cursor-pointer font-medium text-slate-800 dark:text-slate-200">
-              <input type="radio" name="insp-status" value="GOOD" checked class="text-[#132e4f] focus:ring-0" />
-              <span>Buen estado (Conforme)</span>
+            <label class="flex items-center gap-2 cursor-pointer font-bold text-slate-800">
+              <input type="radio" name="insp-status" value="GOOD" checked class="accent-[#FF7A00]" />
+              <span>Conforme (Buen estado mecánico y físico)</span>
             </label>
-            <label class="flex items-center gap-2 cursor-pointer font-medium text-slate-800 dark:text-slate-200">
-              <input type="radio" name="insp-status" value="DAMAGED" class="text-[#132e4f] focus:ring-0" />
+            <label class="flex items-center gap-2 cursor-pointer font-bold text-slate-800">
+              <input type="radio" name="insp-status" value="DAMAGED" class="accent-[#FF7A00]" />
               <span>Con novedades / averías</span>
             </label>
           </div>
         </div>
 
-        <!-- Notas opcional -->
         <div>
-          <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Acta de inspección física <span class="text-slate-400 font-normal">(opcional)</span></label>
-          <textarea id="insp-notes" class="input-field h-20" placeholder="Observaciones de horómetro, combustible o carrocería..."></textarea>
+          <label class="block font-bold text-slate-700 mb-1">Observaciones de Horómetro y Combustible</label>
+          <textarea id="insp-notes" class="input-field h-20" placeholder="Registrar horómetro final, nivel de ACPM o reporte de desgaste..."></textarea>
         </div>
 
-        <!-- Damage box (collapsible) -->
-        <div id="damage-report-box" class="hidden p-4 rounded-xl border border-amber-200 dark:border-amber-900/60 bg-amber-50/60 dark:bg-amber-950/30 space-y-3">
-          <div class="flex items-center gap-1.5 text-amber-600 dark:text-amber-400 font-bold">
+        <div id="damage-report-box" class="hidden p-4 rounded-2xl border-2 border-rose-300 bg-rose-50 space-y-3">
+          <div class="flex items-center gap-1.5 text-rose-700 font-black">
             ${renderIcon('AlertTriangle', 'w-4 h-4')}
-            <span>Reportar daño o avería</span>
+            <span>Reportar novedad o avería</span>
           </div>
-          <p class="text-[11px] text-slate-500 dark:text-slate-400">Completa esta sección si la maquinaria presenta fallas mecánicas o desgaste fuera de norma.</p>
-
           <div>
-            <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Descripción de la novedad *</label>
-            <input type="text" id="dmg-description" class="input-field" placeholder="Describe la avería encontrada..." />
+            <label class="block font-bold text-slate-800 mb-1">Descripción del daño</label>
+            <input type="text" id="dmg-description" class="input-field" placeholder="Ej. Fuga en manguera de alta presión..." />
           </div>
-
           <div class="grid grid-cols-2 gap-3">
             <div>
-              <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Costo estimado de reparación</label>
-              <input type="text" id="dmg-cost" class="input-field" value="$ 350.000" />
+              <label class="block font-bold text-slate-800 mb-1">Costo estimado (COP)</label>
+              <input type="number" id="dmg-cost" class="input-field font-mono" value="450000" />
             </div>
             <div>
-              <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Enviar maquinaria a:</label>
+              <label class="block font-bold text-slate-800 mb-1">Destino de la máquina</label>
               <select id="dmg-new-status" class="input-field">
-                <option value="MAINTENANCE" selected>Taller especializado / Mantenimiento</option>
-                <option value="RETIRED">Fuera de servicio</option>
+                <option value="MAINTENANCE" selected>Mantenimiento en Taller</option>
+                <option value="AVAILABLE">Disponible tras limpieza</option>
               </select>
             </div>
           </div>
         </div>
 
-        <!-- Footer Actions -->
-        <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
-          <button id="btn-cancel-insp" class="btn-secondary !py-2">Cancelar</button>
-          <button id="btn-complete-insp" class="btn-primary !py-2">Completar devolución</button>
+        <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-200">
+          <button id="btn-cancel-insp" class="btn-dark !py-2.5">Cancelar</button>
+          <button id="btn-complete-insp" class="btn-primary !py-2.5">Confirmar Recepción</button>
         </div>
       </div>
     `;
@@ -717,143 +937,238 @@ export async function renderProviderDashboard() {
     content.querySelector('#btn-cancel-insp').addEventListener('click', () => modal.close());
 
     content.querySelector('#btn-complete-insp').addEventListener('click', async () => {
-      await api.patch(`/rentals/${req.id}/complete`);
+      try {
+        await api.patch(`/rentals/${req.id}/complete`);
+      } catch (e) {}
       const isDamaged = content.querySelector('input[name="insp-status"]:checked')?.value === 'DAMAGED';
+      if (req) req.status = 'COMPLETED';
       notificationsStore.add({
         category: isDamaged ? 'DAMAGE' : 'INSPECTION',
         type: isDamaged ? 'warning' : 'success',
-        title: isDamaged ? 'Devolución con Avería Registrada' : 'Devolución Conforme Registrada',
-        message: `Inspección para alquiler #${req.id} completada.${isDamaged ? ' Se registró reporte de avería.' : ' Depósito listo para liberación.'}`,
+        title: isDamaged ? 'Devolución con Novedad Registrada' : 'Devolución Conforme Registrada',
+        message: `Inspección de equipo #${req?.id} completada.${isDamaged ? ' Se radicó reporte de daño.' : ' Equipo listo para nuevo despacho.'}`,
         link: '#/provider'
       });
-      if (req) req.status = 'COMPLETED';
+      showToast('Recepción en patio completada con éxito', 'success');
       modal.close();
       render();
     });
 
     modal.open({
-      title: `${renderIcon('ClipboardCheck', 'w-5 h-5 text-[#132e4f] dark:text-blue-400')} Registrar devolución`,
+      title: 'Acta de Recepción e Inspección Técnica',
       content: content,
       maxWidth: 'max-w-lg',
     });
   }
 
   /**
-   * Drawer / Modal: Nueva herramienta matching Stitch right drawer
+   * Modal: Publicar / Editar Maquinaria con Validación Estricta y Link de Imagen con Previsualización
    */
   function openNewToolModal(existingTool = null) {
     const isEdit = !!existingTool;
     const content = document.createElement('div');
-    content.className = 'space-y-4 text-xs text-slate-800 dark:text-slate-100';
+    content.className = 'space-y-4 text-xs text-slate-800 p-2';
+
+    const defaultImg = existingTool?.images?.[0]?.imageUrl || 'https://images.unsplash.com/photo-1581094288338-2314dddb7ece?auto=format&fit=crop&w=600&q=80';
 
     content.innerHTML = `
       <form id="drawer-tool-form" class="space-y-4">
+        
         <div>
-          <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Nombre de la maquinaria *</label>
-          <input type="text" id="dt-name" required class="input-field" value="${existingTool?.name || ''}" placeholder="Ej: Excavadora Hidráulica CAT 320" />
-        </div>
-
-        <div>
-          <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Línea / Categoría *</label>
-          <select id="dt-category" class="input-field" required>
-            <option value="cat-excavacion" ${existingTool?.categoryId === 'cat-excavacion' ? 'selected' : ''}>Excavación y Movimiento</option>
-            <option value="cat-compactacion" ${existingTool?.categoryId === 'cat-compactacion' ? 'selected' : ''}>Compactación y Pavimento</option>
-            <option value="cat-elevacion" ${existingTool?.categoryId === 'cat-elevacion' ? 'selected' : ''}>Grúas y Manlifts 4x4</option>
-            <option value="cat-energia" ${existingTool?.categoryId === 'cat-energia' ? 'selected' : ''}>Generación Eléctrica Diésel</option>
-            <option value="cat-demolicion" ${existingTool?.categoryId === 'cat-demolicion' ? 'selected' : ''}>Demolición y Martillos</option>
-          </select>
-        </div>
-
-        <div>
-          <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Descripción técnica *</label>
-          <textarea id="dt-desc" rows="3" required class="input-field" placeholder="Describe especificaciones de motor, horómetro, potencia y balde...">${existingTool?.description || ''}</textarea>
+          <label class="block font-black text-slate-800 uppercase tracking-wider mb-1 font-mono">Nombre de la Maquinaria *</label>
+          <input 
+            type="text" 
+            id="dt-name" 
+            required 
+            minlength="3"
+            maxlength="100"
+            class="input-field" 
+            value="${existingTool?.name || ''}" 
+            placeholder="Ej: Excavadora Hidráulica CAT 320D2" 
+          />
+          <span id="dt-name-err" class="hidden text-[11px] text-rose-600 font-bold mt-1 block"></span>
         </div>
 
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Tarifa diaria (COP) *</label>
-            <input type="number" id="dt-price" required class="input-field" placeholder="$ 0" value="${existingTool?.dailyPrice || 650000}" />
+            <label class="block font-black text-slate-800 uppercase tracking-wider mb-1 font-mono">Marca / Fabricante *</label>
+            <select id="dt-brand" class="input-field">
+              <option value="Caterpillar" ${existingTool?.brand === 'Caterpillar' ? 'selected' : ''}>Caterpillar (CAT)</option>
+              <option value="Komatsu" ${existingTool?.brand === 'Komatsu' ? 'selected' : ''}>Komatsu</option>
+              <option value="Volvo" ${existingTool?.brand === 'Volvo' ? 'selected' : ''}>Volvo Construction</option>
+              <option value="Bobcat" ${existingTool?.brand === 'Bobcat' ? 'selected' : ''}>Bobcat</option>
+              <option value="Hitachi" ${existingTool?.brand === 'Hitachi' ? 'selected' : ''}>Hitachi</option>
+              <option value="Bomag" ${existingTool?.brand === 'Bomag' ? 'selected' : ''}>Bomag</option>
+              <option value="JCB" ${existingTool?.brand === 'JCB' ? 'selected' : ''}>JCB</option>
+            </select>
           </div>
+
           <div>
-            <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Estado *</label>
-            <select id="dt-status" class="input-field">
-              <option value="AVAILABLE" ${existingTool?.status === 'AVAILABLE' ? 'selected' : ''}>Disponible</option>
-              <option value="RENTED" ${existingTool?.status === 'RENTED' ? 'selected' : ''}>Alquilada</option>
-              <option value="MAINTENANCE" ${existingTool?.status === 'MAINTENANCE' ? 'selected' : ''}>Mantenimiento</option>
+            <label class="block font-black text-slate-800 uppercase tracking-wider mb-1 font-mono">Línea de Obra *</label>
+            <select id="dt-category" class="input-field" required>
+              <option value="cat-excavacion" ${existingTool?.categoryId === 'cat-excavacion' ? 'selected' : ''}>Excavación y Movimiento</option>
+              <option value="cat-compactacion" ${existingTool?.categoryId === 'cat-compactacion' ? 'selected' : ''}>Compactación y Pavimento</option>
+              <option value="cat-elevacion" ${existingTool?.categoryId === 'cat-elevacion' ? 'selected' : ''}>Grúas y Manlifts</option>
+              <option value="cat-energia" ${existingTool?.categoryId === 'cat-energia' ? 'selected' : ''}>Generación Eléctrica Diésel</option>
+              <option value="cat-demolicion" ${existingTool?.categoryId === 'cat-demolicion' ? 'selected' : ''}>Demolición Hidráulica</option>
             </select>
           </div>
         </div>
 
-        <!-- Image Upload Box -->
-        <div>
-          <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Fotos de la maquinaria</label>
-          <div class="border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-xl p-5 text-center bg-slate-50/50 dark:bg-slate-800/40 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer">
-            ${renderIcon('UploadCloud', 'w-6 h-6 text-slate-400 mx-auto mb-1')}
-            <span class="text-xs text-slate-600 dark:text-slate-300 font-medium">Arrastra fotos de la maquinaria o haz clic para subir</span>
-            <div class="text-[10px] text-slate-400 mt-0.5">JPG, PNG de alta resolución (máx. 10 MB)</div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-black text-slate-800 uppercase tracking-wider mb-1 font-mono">Tarifa Diaria (COP) *</label>
+            <input 
+              type="number" 
+              id="dt-price" 
+              required 
+              min="10000"
+              class="input-field font-mono font-bold" 
+              placeholder="$ 0" 
+              value="${existingTool?.dailyPrice || 650000}" 
+            />
+            <span id="dt-price-err" class="hidden text-[11px] text-rose-600 font-bold mt-1 block"></span>
+          </div>
+
+          <div>
+            <label class="block font-black text-slate-800 uppercase tracking-wider mb-1 font-mono">Disponibilidad Inicial *</label>
+            <select id="dt-status" class="input-field">
+              <option value="AVAILABLE" ${existingTool?.status === 'AVAILABLE' ? 'selected' : ''}>Disponible en Patio</option>
+              <option value="RENTED" ${existingTool?.status === 'RENTED' ? 'selected' : ''}>Operando en Obra</option>
+              <option value="MAINTENANCE" ${existingTool?.status === 'MAINTENANCE' ? 'selected' : ''}>En Mantenimiento</option>
+            </select>
           </div>
         </div>
 
-        <!-- Specifications Rows -->
+        <!-- Image Link Input with Live Instant Preview -->
         <div class="space-y-2">
-          <label class="block font-bold text-slate-700 uppercase tracking-wider text-[11px]">Especificaciones</label>
-          <div class="grid grid-cols-2 gap-2">
-            <input type="text" class="input-field" value="Potencia" readonly />
-            <input type="text" class="input-field" value="1100 W" />
+          <label class="block font-black text-slate-800 uppercase tracking-wider font-mono">
+            Enlace de Imagen de la Maquinaria (URL) *
+          </label>
+          <div class="flex items-center gap-2">
+            <input 
+              type="url" 
+              id="dt-img-url" 
+              class="input-field font-mono text-[11px]" 
+              placeholder="https://ejemplo.com/foto-maquinaria.jpg" 
+              value="${defaultImg}" 
+            />
+            <button type="button" id="btn-preview-img" class="px-3 py-2.5 rounded-xl border-2 border-slate-300 font-black text-xs hover:border-[#FF7A00] hover:text-[#FF7A00] transition-colors whitespace-nowrap cursor-pointer">
+              Previsualizar
+            </button>
           </div>
-          <div class="grid grid-cols-2 gap-2">
-            <input type="text" class="input-field" value="Voltaje" readonly />
-            <input type="text" class="input-field" value="110 V" />
+          <div class="h-36 rounded-2xl border-2 border-slate-200 overflow-hidden bg-slate-900 relative">
+            <img 
+              id="dt-img-preview" 
+              src="${defaultImg}" 
+              alt="Previsualización" 
+              class="w-full h-full object-cover object-center"
+              onerror="this.src='https://images.unsplash.com/photo-1581094288338-2314dddb7ece?auto=format&fit=crop&w=600&q=80'"
+            />
+            <span class="absolute bottom-2 left-2 bg-slate-950/80 px-2 py-0.5 rounded text-[10px] text-white font-mono">
+              Vista previa en tiempo real
+            </span>
           </div>
         </div>
+
+        <div>
+          <label class="block font-black text-slate-800 uppercase tracking-wider mb-1 font-mono">Descripción Técnica *</label>
+          <textarea 
+            id="dt-desc" 
+            rows="3" 
+            required 
+            minlength="10"
+            class="input-field" 
+            placeholder="Especifica potencia HP, horas de horómetro, capacidad de balde m³ y certificaciones..."
+          >${existingTool?.description || 'Maquinaria pesada certificada con telemetría satelital en vivo y póliza todo riesgo SURA.'}</textarea>
+          <span id="dt-desc-err" class="hidden text-[11px] text-rose-600 font-bold mt-1 block"></span>
+        </div>
+
+        <div id="publish-err-box" class="hidden p-3 bg-rose-50 border border-rose-300 rounded-xl text-rose-800 text-xs font-bold"></div>
 
         <div class="pt-2">
-          <button type="submit" class="btn-primary w-full !py-2.5">
-            ${isEdit ? 'Guardar cambios' : 'Guardar herramienta'}
+          <button type="submit" id="dt-submit-btn" class="btn-primary w-full !py-3 font-black text-xs uppercase tracking-wider shadow-md">
+            ${isEdit ? 'Guardar Cambios' : 'Publicar Maquinaria en Catálogo'}
           </button>
         </div>
       </form>
     `;
 
+    // Live preview on input change
+    const imgInput = content.querySelector('#dt-img-url');
+    const imgPreview = content.querySelector('#dt-img-preview');
+    imgInput.addEventListener('input', () => {
+      if (imgInput.value.startsWith('http')) {
+        imgPreview.src = imgInput.value.trim();
+      }
+    });
+    content.querySelector('#btn-preview-img')?.addEventListener('click', () => {
+      if (imgInput.value.startsWith('http')) {
+        imgPreview.src = imgInput.value.trim();
+      }
+    });
+
     content.querySelector('#drawer-tool-form').addEventListener('submit', async (e) => {
       e.preventDefault();
-      const name = content.querySelector('#dt-name').value;
+      const errBox = content.querySelector('#publish-err-box');
+      errBox.classList.add('hidden');
+
+      const name = content.querySelector('#dt-name').value.trim();
+      const brand = content.querySelector('#dt-brand').value;
       const category = content.querySelector('#dt-category').value;
       const price = parseFloat(content.querySelector('#dt-price').value);
-      const desc = content.querySelector('#dt-desc').value;
+      const desc = content.querySelector('#dt-desc').value.trim();
       const status = content.querySelector('#dt-status').value;
+      const imageUrl = content.querySelector('#dt-img-url').value.trim() || defaultImg;
+
+      // Strict validations
+      if (!name || name.length < 3) {
+        errBox.textContent = 'El nombre de la maquinaria debe tener al menos 3 caracteres.';
+        errBox.classList.remove('hidden');
+        return;
+      }
+      if (!price || price < 10000) {
+        errBox.textContent = 'La tarifa diaria debe ser un valor válido mayor a $10.000 COP.';
+        errBox.classList.remove('hidden');
+        return;
+      }
+      if (!desc || desc.length < 10) {
+        errBox.textContent = 'Por favor proporciona una descripción técnica adecuada (mínimo 10 caracteres).';
+        errBox.classList.remove('hidden');
+        return;
+      }
 
       if (isEdit) {
         existingTool.name = name;
+        existingTool.brand = brand;
         existingTool.dailyPrice = price;
         existingTool.description = desc;
         existingTool.status = status;
-        notificationsStore.add({
-          category: 'RENTAL',
-          type: 'info',
-          title: 'Herramienta Actualizada',
-          message: `Se actualizaron las especificaciones de "${name}".`,
-          link: '#/provider'
-        });
+        if (!existingTool.images) existingTool.images = [];
+        existingTool.images[0] = { imageUrl };
+        
+        showToast(`Maquinaria "${name}" actualizada con éxito`, 'success');
       } else {
         const newTool = {
-          id: toolsList.length + 1,
+          id: toolsList.length + 100,
           name,
+          brand,
           categoryId: category,
           dailyPrice: price,
           description: desc,
           status,
-          images: [{ imageUrl: 'https://images.unsplash.com/photo-1504148455328-c376907d081c?w=600' }]
+          images: [{ imageUrl }]
         };
         toolsList.unshift(newTool);
         await api.post('/tools', newTool).catch(() => {});
         notificationsStore.add({
           category: 'RENTAL',
           type: 'success',
-          title: 'Equipo Agregado al Inventario',
-          message: `Has publicado "${name}" en tu catálogo a ${formatCurrency(price)}/día.`,
+          title: 'Nueva Maquinaria Publicada',
+          message: `Has publicado "${name}" a ${formatCurrency(price)}/día en Opus Rentals.`,
           link: '#/provider'
         });
+        showToast(`"${name}" ha sido publicada exitosamente en el catálogo`, 'success');
       }
 
       modal.close();
@@ -861,9 +1176,9 @@ export async function renderProviderDashboard() {
     });
 
     modal.open({
-      title: `${renderIcon(isEdit ? 'Edit3' : 'Plus', 'w-5 h-5 text-[#132e4f] dark:text-blue-400')} ${isEdit ? 'Editar herramienta' : 'Nueva herramienta'}`,
+      title: isEdit ? 'Editar Especificaciones de Maquinaria' : 'Publicar Nueva Maquinaria Pesada',
       content: content,
-      maxWidth: 'max-w-md',
+      maxWidth: 'max-w-lg',
     });
   }
 

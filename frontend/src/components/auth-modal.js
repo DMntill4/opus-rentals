@@ -1,7 +1,7 @@
 import auth from '../auth/state.js';
 import modal from './modal.js';
 import showToast from './toast.js';
-import { renderIcon, renderToolRentMark } from '../utils/icons.js';
+import { renderIcon } from '../utils/icons.js';
 import { loginConstructionImage } from '../utils/tool-images.js';
 
 export function openAuthModal(initialTab = 'login') {
@@ -11,6 +11,21 @@ export function openAuthModal(initialTab = 'login') {
 
   const content = document.createElement('div');
   content.className = 'w-full';
+
+  function validateEmail(email) {
+    if (!email) return false;
+    const re = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    return re.test(String(email).trim());
+  }
+
+  function validateName(name) {
+    if (!name) return false;
+    const trimmed = String(name).trim();
+    if (trimmed.length < 3 || trimmed.length > 80) return false;
+    // Disallow pure symbols, script tags or strange characters
+    const validPattern = /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ0-9\s.,&'-]+$/;
+    return validPattern.test(trimmed);
+  }
 
   function renderView() {
     content.innerHTML = `
@@ -32,20 +47,20 @@ export function openAuthModal(initialTab = 'login') {
                   <span class="block text-[11px] font-mono text-slate-500 font-bold uppercase tracking-wider">Portal Constructor B2B</span>
                 </div>
               </div>
-              <span class="px-3 py-1 rounded-full bg-amber-100 text-amber-900 text-xs font-mono font-black uppercase tracking-wider border border-amber-300">
+              <span class="px-3 py-1 rounded-full bg-orange-50 text-[#FF7A00] text-xs font-mono font-black uppercase tracking-wider border border-orange-200">
                 Seguridad SSL
               </span>
             </div>
 
             <!-- Tab Switcher (Iniciar Sesión / Registrarse) -->
-            <div class="flex p-1.5 bg-slate-100 rounded-2xl my-6 border border-slate-300">
+            <div class="flex p-1.5 bg-slate-100 rounded-2xl my-6 border border-slate-200">
               <button id="auth-tab-login" class="flex-1 py-3 text-sm font-black rounded-xl transition-all cursor-pointer uppercase tracking-wider ${
-                currentTab === 'login' ? 'bg-[#FFB800] text-[#1A1A1A] shadow-md' : 'text-slate-600 hover:text-slate-900'
+                currentTab === 'login' ? 'bg-[#FF7A00] text-white shadow-md' : 'text-slate-600 hover:text-slate-900'
               }">
                 Iniciar Sesión
               </button>
               <button id="auth-tab-register" class="flex-1 py-3 text-sm font-black rounded-xl transition-all cursor-pointer uppercase tracking-wider ${
-                currentTab === 'register' ? 'bg-[#FFB800] text-[#1A1A1A] shadow-md' : 'text-slate-600 hover:text-slate-900'
+                currentTab === 'register' ? 'bg-[#FF7A00] text-white shadow-md' : 'text-slate-600 hover:text-slate-900'
               }">
                 Crear Cuenta
               </button>
@@ -59,7 +74,7 @@ export function openAuthModal(initialTab = 'login') {
               <p class="text-sm text-slate-600 leading-relaxed font-normal">
                 ${currentTab === 'login' 
                   ? 'Supervisa equipos activos en obra, contratos vigentes y facturación oficial DIAN.' 
-                  : 'Ingresa para cotizar maquinaria con seguro todo riesgo SURA o gestionar tu flota.'}
+                  : 'Ingresa para cotizar maquinaria con seguro todo riesgo SURA o publicar tu flota.'}
               </p>
             </div>
 
@@ -78,15 +93,15 @@ export function openAuthModal(initialTab = 'login') {
                       id="role-btn-cliente" 
                       class="p-3.5 rounded-2xl border-2 text-left transition-all cursor-pointer ${
                         selectedRole === 'ROLE_CLIENTE' 
-                          ? 'border-[#FFB800] bg-amber-50 ring-2 ring-[#FFB800]/40' 
+                          ? 'border-[#FF7A00] bg-orange-50/70 ring-2 ring-[#FF7A00]/40' 
                           : 'border-slate-200 bg-slate-50 hover:bg-slate-100'
                       }"
                     >
                       <div class="flex items-center gap-2 font-black text-sm text-slate-950">
-                        ${renderIcon('UserCheck', 'w-5 h-5 text-amber-600')}
+                        ${renderIcon('UserCheck', 'w-5 h-5 text-[#FF7A00]')}
                         <span>Cliente / Constructora</span>
                       </div>
-                      <p class="text-xs text-slate-600 mt-1 leading-snug">Alquila maquinaria para tus obras y proyectos civiles</p>
+                      <p class="text-xs text-slate-600 mt-1 leading-snug">Alquila maquinaria pesada para frentes de obra civil</p>
                     </button>
 
                     <button 
@@ -94,12 +109,12 @@ export function openAuthModal(initialTab = 'login') {
                       id="role-btn-proveedor" 
                       class="p-3.5 rounded-2xl border-2 text-left transition-all cursor-pointer ${
                         selectedRole === 'ROLE_PROVEEDOR' 
-                          ? 'border-[#FFB800] bg-amber-50 ring-2 ring-[#FFB800]/40' 
+                          ? 'border-[#FF7A00] bg-orange-50/70 ring-2 ring-[#FF7A00]/40' 
                           : 'border-slate-200 bg-slate-50 hover:bg-slate-100'
                       }"
                     >
                       <div class="flex items-center gap-2 font-black text-sm text-slate-950">
-                        ${renderIcon('Truck', 'w-5 h-5 text-amber-600')}
+                        ${renderIcon('Truck', 'w-5 h-5 text-[#FF7A00]')}
                         <span>Proveedor de Maquinaria</span>
                       </div>
                       <p class="text-xs text-slate-600 mt-1 leading-snug">Publica y rentabiliza tu flota pesada en patio</p>
@@ -109,22 +124,23 @@ export function openAuthModal(initialTab = 'login') {
 
                 <div>
                   <label class="block text-xs font-black text-slate-800 font-mono uppercase tracking-wider mb-1.5">
-                    ${selectedRole === 'ROLE_CLIENTE' ? 'Nombre Completo o Empresa' : 'Razón Social de la Empresa'}
+                    ${selectedRole === 'ROLE_CLIENTE' ? 'Nombre Completo o Razón Social *' : 'Razón Social de la Empresa *'}
                   </label>
                   <input 
                     type="text" 
                     id="reg-name" 
                     required 
-                    placeholder="${selectedRole === 'ROLE_CLIENTE' ? 'Ej. Juan Rodríguez o Constructora Bolívar' : 'Ej. Maquinarias Andinas SAS'}" 
-                    class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl text-sm font-semibold text-slate-950 placeholder-slate-400 focus:outline-none focus:border-[#FFB800] focus:ring-2 focus:ring-[#FFB800]/30 transition-all" 
+                    placeholder="${selectedRole === 'ROLE_CLIENTE' ? 'Ej. Ing. Carlos Mendoza o Constructora Bolívar SAS' : 'Ej. Maquinarias del Norte SAS'}" 
+                    class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl text-sm font-semibold text-slate-950 placeholder-slate-400 focus:outline-none focus:border-[#FF7A00] focus:ring-2 focus:ring-[#FF7A00]/20 transition-all" 
                   />
+                  <span id="name-error" class="hidden text-[11px] text-rose-600 font-bold mt-1 block"></span>
                 </div>
               ` : ''}
 
-              <!-- Username / Email -->
+              <!-- Email / Username -->
               <div>
                 <label class="block text-xs font-black text-slate-800 font-mono uppercase tracking-wider mb-1.5">
-                  Correo Electrónico o Usuario
+                  ${currentTab === 'register' ? 'Correo Electrónico Corporativo *' : 'Correo Electrónico o Usuario *'}
                 </label>
                 <div class="relative">
                   <span class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-500">
@@ -134,19 +150,20 @@ export function openAuthModal(initialTab = 'login') {
                     type="text" 
                     id="auth-username" 
                     required 
-                    placeholder="usuario@constructora.com" 
-                    class="w-full pl-12 pr-4 py-3 bg-white border-2 border-slate-300 rounded-xl text-sm font-semibold text-slate-950 placeholder-slate-400 focus:outline-none focus:border-[#FFB800] focus:ring-2 focus:ring-[#FFB800]/30 transition-all" 
+                    placeholder="${currentTab === 'register' ? 'usuario@empresa.com o tu_nombre@gmail.com' : 'usuario@constructora.com'}" 
+                    class="w-full pl-12 pr-4 py-3 bg-white border-2 border-slate-300 rounded-xl text-sm font-semibold text-slate-950 placeholder-slate-400 focus:outline-none focus:border-[#FF7A00] focus:ring-2 focus:ring-[#FF7A00]/20 transition-all" 
                   />
                 </div>
+                <span id="email-error" class="hidden text-[11px] text-rose-600 font-bold mt-1 block"></span>
               </div>
 
               <!-- Password with Show/Hide toggle -->
               <div>
                 <div class="flex items-center justify-between mb-1.5">
                   <label class="text-xs font-black text-slate-800 font-mono uppercase tracking-wider">
-                    Contraseña
+                    Contraseña *
                   </label>
-                  <button type="button" id="btn-toggle-password" class="text-xs text-amber-700 hover:text-amber-900 font-bold font-mono underline cursor-pointer">
+                  <button type="button" id="btn-toggle-password" class="text-xs text-[#FF7A00] hover:text-[#E56E00] font-bold font-mono underline cursor-pointer">
                     ${showPassword ? 'Ocultar' : 'Mostrar contraseña'}
                   </button>
                 </div>
@@ -158,10 +175,12 @@ export function openAuthModal(initialTab = 'login') {
                     type="${showPassword ? 'text' : 'password'}" 
                     id="auth-password" 
                     required 
-                    placeholder="••••••••" 
-                    class="w-full pl-12 pr-4 py-3 bg-white border-2 border-slate-300 rounded-xl text-sm font-semibold text-slate-950 placeholder-slate-400 focus:outline-none focus:border-[#FFB800] focus:ring-2 focus:ring-[#FFB800]/30 transition-all" 
+                    minlength="6"
+                    placeholder="Mínimo 6 caracteres" 
+                    class="w-full pl-12 pr-4 py-3 bg-white border-2 border-slate-300 rounded-xl text-sm font-semibold text-slate-950 placeholder-slate-400 focus:outline-none focus:border-[#FF7A00] focus:ring-2 focus:ring-[#FF7A00]/20 transition-all" 
                   />
                 </div>
+                <span id="password-error" class="hidden text-[11px] text-rose-600 font-bold mt-1 block"></span>
               </div>
 
               <!-- Error Alert -->
@@ -175,7 +194,7 @@ export function openAuthModal(initialTab = 'login') {
                 <button 
                   type="submit" 
                   id="auth-submit-btn" 
-                  class="w-full py-3.5 px-6 rounded-xl font-black text-sm uppercase tracking-wider text-[#1A1A1A] bg-[#FFB800] hover:bg-[#E5A600] active:scale-98 shadow-md transition-all cursor-pointer flex items-center justify-center gap-2"
+                  class="w-full py-3.5 px-6 rounded-xl font-black text-sm uppercase tracking-wider text-white bg-[#FF7A00] hover:bg-[#E56E00] active:scale-98 shadow-md transition-all cursor-pointer flex items-center justify-center gap-2"
                 >
                   <span id="auth-submit-text">
                     ${currentTab === 'login' ? 'Ingresar al Sistema' : 'Crear Cuenta Empresarial'}
@@ -190,11 +209,11 @@ export function openAuthModal(initialTab = 'login') {
             <div class="mt-6 pt-4 border-t border-slate-200 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-600 font-mono">
               <span class="font-bold">Accesos directos (Demo):</span>
               <div class="flex items-center gap-3">
-                <button type="button" id="fill-demo-client" class="text-amber-700 font-bold hover:underline cursor-pointer">Cliente</button>
+                <button type="button" id="fill-demo-client" class="text-[#FF7A00] font-bold hover:underline cursor-pointer">Cliente</button>
                 <span>·</span>
-                <button type="button" id="fill-demo-provider" class="text-amber-700 font-bold hover:underline cursor-pointer">Proveedor</button>
+                <button type="button" id="fill-demo-provider" class="text-[#FF7A00] font-bold hover:underline cursor-pointer">Proveedor</button>
                 <span>·</span>
-                <button type="button" id="fill-demo-admin" class="text-amber-700 font-bold hover:underline cursor-pointer">Admin</button>
+                <button type="button" id="fill-demo-admin" class="text-[#FF7A00] font-bold hover:underline cursor-pointer">Admin</button>
               </div>
             </div>
 
@@ -287,7 +306,7 @@ export function openAuthModal(initialTab = 'login') {
       const passInput = content.querySelector('#auth-password');
       if (passInput) passInput.type = showPassword ? 'text' : 'password';
       const toggleBtn = content.querySelector('#btn-toggle-password');
-      if (toggleBtn) toggleBtn.textContent = showPassword ? 'Ocultar' : 'Mostrar';
+      if (toggleBtn) toggleBtn.textContent = showPassword ? 'Ocultar' : 'Mostrar contraseña';
     });
 
     // Demo Fillers
@@ -309,49 +328,97 @@ export function openAuthModal(initialTab = 'login') {
       if (u && p) { u.value = 'admin@opusrentals.com'; p.value = 'password123'; }
     });
 
-    // Form Submission
+    // Form Submission & Rigorous Validations
     content.querySelector('#toolrent-auth-form')?.addEventListener('submit', async (e) => {
       e.preventDefault();
       const usernameInput = content.querySelector('#auth-username');
       const passwordInput = content.querySelector('#auth-password');
+      const nameInput = content.querySelector('#reg-name');
       const errorBox = content.querySelector('#auth-error-box');
       const errorMsg = content.querySelector('#auth-error-msg');
       const submitBtn = content.querySelector('#auth-submit-btn');
       const submitText = content.querySelector('#auth-submit-text');
 
       errorBox?.classList.add('hidden');
-      if (submitBtn) submitBtn.disabled = true;
-      if (submitText) submitText.textContent = 'Verificando con servidor...';
 
-      const username = usernameInput?.value?.trim();
-      const password = passwordInput?.value;
+      const username = usernameInput?.value?.trim() || '';
+      const password = passwordInput?.value || '';
 
-      try {
-        if (currentTab === 'login') {
+      // 1. Password length check
+      if (password.length < 6) {
+        if (errorBox && errorMsg) {
+          errorMsg.textContent = 'La contraseña debe tener al menos 6 caracteres.';
+          errorBox.classList.remove('hidden');
+        }
+        passwordInput?.focus();
+        return;
+      }
+
+      // 2. Register specific strict validations
+      if (currentTab === 'register') {
+        const fullName = nameInput?.value?.trim() || '';
+        
+        // Strict Name Validation
+        if (!validateName(fullName)) {
+          if (errorBox && errorMsg) {
+            errorMsg.textContent = 'Por favor ingresa un nombre o razón social válido (entre 3 y 80 caracteres, sin símbolos especiales no permitidos).';
+            errorBox.classList.remove('hidden');
+          }
+          nameInput?.focus();
+          return;
+        }
+
+        // Strict Email Validation (requires real @domain.com)
+        if (!validateEmail(username)) {
+          if (errorBox && errorMsg) {
+            errorMsg.textContent = 'Por favor ingresa un correo electrónico corporativo válido (debe incluir @ y dominio, ej. usuario@gmail.com o contacto@empresa.com).';
+            errorBox.classList.remove('hidden');
+          }
+          usernameInput?.focus();
+          return;
+        }
+
+        if (submitBtn) submitBtn.disabled = true;
+        if (submitText) submitText.textContent = 'Creando cuenta...';
+
+        try {
+          await auth.register({
+            username: username.split('@')[0],
+            email: username,
+            password,
+            role: selectedRole,
+            fullName
+          });
+          showToast('Cuenta creada con éxito. ¡Bienvenido a Opus Rentals!', 'success');
+          modal.close();
+          window.location.reload();
+        } catch (err) {
+          if (errorBox && errorMsg) {
+            errorMsg.textContent = err.message || 'Error al registrar la cuenta. Verifica que el correo no esté en uso.';
+            errorBox.classList.remove('hidden');
+          }
+          if (submitBtn) submitBtn.disabled = false;
+          if (submitText) submitText.textContent = 'Crear Cuenta';
+        }
+
+      } else {
+        // Login Flow
+        if (submitBtn) submitBtn.disabled = true;
+        if (submitText) submitText.textContent = 'Verificando con servidor...';
+
+        try {
           await auth.login(username, password);
           showToast(`Bienvenido al sistema, ${username}`, 'success');
           modal.close();
           window.location.reload();
-        } else {
-          const fullName = content.querySelector('#reg-name')?.value?.trim();
-          await auth.register({
-            username,
-            password,
-            email: username.includes('@') ? username : `${username}@constructora.com`,
-            role: selectedRole,
-            fullName: fullName || username
-          });
-          showToast('Cuenta creada con éxito. Iniciando sesión...', 'success');
-          modal.close();
-          window.location.reload();
+        } catch (err) {
+          if (errorBox && errorMsg) {
+            errorMsg.textContent = err.message || 'Credenciales incorrectas. Verifica tu correo y contraseña.';
+            errorBox.classList.remove('hidden');
+          }
+          if (submitBtn) submitBtn.disabled = false;
+          if (submitText) submitText.textContent = 'Ingresar al Sistema';
         }
-      } catch (err) {
-        if (errorBox && errorMsg) {
-          errorMsg.textContent = err.message || 'Error de autenticación. Verifica tus datos.';
-          errorBox.classList.remove('hidden');
-        }
-        if (submitBtn) submitBtn.disabled = false;
-        if (submitText) submitText.textContent = currentTab === 'login' ? 'Ingresar al Sistema' : 'Crear Cuenta';
       }
     });
   }
@@ -359,9 +426,8 @@ export function openAuthModal(initialTab = 'login') {
   renderView();
   modal.open({
     title: '',
-    content,
-    hideHeader: true,
-    maxWidth: 'max-w-5xl'
+    content: content,
+    maxWidth: 'max-w-5xl',
   });
 }
 
