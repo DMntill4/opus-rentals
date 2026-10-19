@@ -25,6 +25,8 @@ public class ToolResponse {
     private String model;
     private BigDecimal dailyPrice;
     private BigDecimal depositAmount;
+    private Integer totalQuantity;
+    private Integer availableQuantity;
     private String status;
     private LocalDateTime createdAt;
     private String coverImageUrl;

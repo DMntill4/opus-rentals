@@ -221,6 +221,8 @@ public class ToolService {
                 .model(tool.getModel())
                 .dailyPrice(tool.getDailyPrice())
                 .depositAmount(tool.getDepositAmount())
+                .totalQuantity(tool.getTotalQuantity() != null ? tool.getTotalQuantity() : 5)
+                .availableQuantity(tool.getAvailableQuantity() != null ? tool.getAvailableQuantity() : 5)
                 .status(tool.getStatus())
                 .createdAt(tool.getCreatedAt())
                 .coverImageUrl(coverUrl)

@@ -108,7 +108,7 @@ class RentalServiceUnitTest {
         when(userRepository.findByEmail("cliente@test.com")).thenReturn(Optional.of(user));
         when(clientRepository.findByUser(user)).thenReturn(Optional.of(client));
         when(toolRepository.findById(10L)).thenReturn(Optional.of(tool));
-        when(rentalRepository.hasOverlappingRentals(10L, start, end)).thenReturn(false);
+        when(rentalRepository.sumRentedQuantityInPeriod(10L, start, end)).thenReturn(0);
 
         Rental savedRental = Rental.builder()
                 .id(100L)
@@ -117,6 +117,7 @@ class RentalServiceUnitTest {
                 .startDate(start)
                 .endDate(end)
                 .totalDays(3)
+                .quantity(1)
                 .dailyRate(new BigDecimal("85000.00"))
                 .subtotal(new BigDecimal("255000.00"))
                 .depositAmount(new BigDecimal("400000.00"))
@@ -148,12 +149,13 @@ class RentalServiceUnitTest {
                 .toolId(10L)
                 .startDate(start)
                 .endDate(end)
+                .quantity(1)
                 .build();
 
         when(userRepository.findByEmail("cliente@test.com")).thenReturn(Optional.of(user));
         when(clientRepository.findByUser(user)).thenReturn(Optional.of(client));
         when(toolRepository.findById(10L)).thenReturn(Optional.of(tool));
-        when(rentalRepository.hasOverlappingRentals(10L, start, end)).thenReturn(true);
+        when(rentalRepository.sumRentedQuantityInPeriod(10L, start, end)).thenReturn(5);
 
         assertThrows(ConflictException.class, () -> rentalService.createRental("cliente@test.com", request));
         verify(rentalRepository, never()).save(any(Rental.class));

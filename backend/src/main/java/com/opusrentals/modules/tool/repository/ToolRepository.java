@@ -13,6 +13,8 @@ public interface ToolRepository extends JpaRepository<Tool, Long> {
 
     List<Tool> findByProviderId(Long providerId);
 
+    long countByProviderId(Long providerId);
+
     List<Tool> findByStatus(String status);
 
     List<Tool> findByCategoryId(Long categoryId);

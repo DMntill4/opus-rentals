@@ -25,5 +25,8 @@ public class CreateRentalRequest {
     @NotNull(message = "La fecha de fin es obligatoria")
     private LocalDate endDate;
 
+    @Builder.Default
+    private Integer quantity = 1;
+
     private String notes;
 }

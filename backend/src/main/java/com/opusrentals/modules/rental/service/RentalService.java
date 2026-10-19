@@ -64,16 +64,21 @@ public class RentalService {
             throw new BadRequestException("La herramienta no está disponible actualmente para alquiler (Estado: " + tool.getStatus() + ")");
         }
 
-        // Check date collisions (no-overlap rule)
-        boolean hasConflict = rentalRepository.hasOverlappingRentals(tool.getId(), request.getStartDate(), request.getEndDate());
-        if (hasConflict) {
-            throw new ConflictException("La herramienta seleccionada ya cuenta con una reserva activa o confirmada en ese rango de fechas");
+        // Check date collisions taking into account units/quantity
+        int requestedQty = (request.getQuantity() != null && request.getQuantity() > 0) ? request.getQuantity() : 1;
+        int totalUnits = (tool.getTotalQuantity() != null && tool.getTotalQuantity() > 0) ? tool.getTotalQuantity() : 5;
+        
+        int rentedUnitsInPeriod = rentalRepository.sumRentedQuantityInPeriod(tool.getId(), request.getStartDate(), request.getEndDate());
+        if (rentedUnitsInPeriod + requestedQty > totalUnits) {
+            int availableUnits = Math.max(0, totalUnits - rentedUnitsInPeriod);
+            throw new ConflictException("Solo hay " + availableUnits + " unidades disponibles para ese rango de fechas (solicitadas: " + requestedQty + ")");
         }
 
         int totalDays = (int) ChronoUnit.DAYS.between(request.getStartDate(), request.getEndDate()) + 1;
         if (totalDays <= 0) totalDays = 1;
 
-        BigDecimal subtotal = tool.getDailyPrice().multiply(BigDecimal.valueOf(totalDays));
+        BigDecimal subtotal = tool.getDailyPrice().multiply(BigDecimal.valueOf(totalDays)).multiply(BigDecimal.valueOf(requestedQty));
+        BigDecimal depositAmount = tool.getDepositAmount().multiply(BigDecimal.valueOf(requestedQty));
 
         Rental rental = Rental.builder()
                 .client(client)
@@ -81,9 +86,10 @@ public class RentalService {
                 .startDate(request.getStartDate())
                 .endDate(request.getEndDate())
                 .totalDays(totalDays)
+                .quantity(requestedQty)
                 .dailyRate(tool.getDailyPrice())
                 .subtotal(subtotal)
-                .depositAmount(tool.getDepositAmount())
+                .depositAmount(depositAmount)
                 .status("PENDING")
                 .notes(request.getNotes())
                 .build();
@@ -230,6 +236,7 @@ public class RentalService {
                 .startDate(rental.getStartDate())
                 .endDate(rental.getEndDate())
                 .totalDays(rental.getTotalDays())
+                .quantity(rental.getQuantity() != null ? rental.getQuantity() : 1)
                 .dailyRate(rental.getDailyRate())
                 .subtotal(rental.getSubtotal())
                 .depositAmount(rental.getDepositAmount())

@@ -47,6 +47,14 @@ public class Tool {
     private BigDecimal depositAmount;
 
     @Builder.Default
+    @Column(name = "total_quantity", nullable = false)
+    private Integer totalQuantity = 5;
+
+    @Builder.Default
+    @Column(name = "available_quantity", nullable = false)
+    private Integer availableQuantity = 5;
+
+    @Builder.Default
     @Column(nullable = false, length = 30)
     private String status = "AVAILABLE"; // AVAILABLE, RENTED, MAINTENANCE, RETIRED
 

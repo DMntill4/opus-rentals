@@ -43,6 +43,10 @@ public class Rental {
     @Column(name = "daily_rate", nullable = false, precision = 12, scale = 2)
     private BigDecimal dailyRate;
 
+    @Builder.Default
+    @Column(nullable = false)
+    private Integer quantity = 1;
+
     @Column(nullable = false, precision = 12, scale = 2)
     private BigDecimal subtotal;
 

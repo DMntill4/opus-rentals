@@ -30,6 +30,7 @@ public class RentalResponse {
     private LocalDate startDate;
     private LocalDate endDate;
     private Integer totalDays;
+    private Integer quantity;
     private BigDecimal dailyRate;
     private BigDecimal subtotal;
     private BigDecimal depositAmount;

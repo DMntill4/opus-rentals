@@ -26,6 +26,17 @@ public interface RentalRepository extends JpaRepository<Rental, Long> {
                                   @Param("startDate") LocalDate startDate,
                                   @Param("endDate") LocalDate endDate);
 
+    @Query("SELECT COALESCE(SUM(r.quantity), 0) FROM Rental r WHERE r.tool.id = :toolId " +
+           "AND r.status NOT IN ('CANCELLED', 'RETURNED') " +
+           "AND r.startDate <= :endDate AND r.endDate >= :startDate")
+    int sumRentedQuantityInPeriod(@Param("toolId") Long toolId,
+                                  @Param("startDate") LocalDate startDate,
+                                  @Param("endDate") LocalDate endDate);
+
     @Query("SELECT r FROM Rental r WHERE r.tool.id = :toolId AND r.status NOT IN ('CANCELLED', 'REJECTED')")
     List<Rental> findActiveRentalsByToolId(@Param("toolId") Long toolId);
+
+    long countByToolProviderId(Long providerId);
+
+    long countByToolProviderIdAndStatus(Long providerId, String status);
 }
