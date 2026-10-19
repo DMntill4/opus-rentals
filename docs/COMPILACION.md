@@ -66,9 +66,11 @@ mvn test
 ```bash
 mvn package -DskipTests
 ```
+*(On Windows using wrapper: `.\mvnw.cmd package -DskipTests`)*
+
 This generates the packaged artifact in the `backend/target/` directory:
-- Executable JAR: `backend/target/opus-rentals-backend-1.0.0.jar`
-- Dual deployment WAR: Suitable for standalone execution via `java -jar` or deployment in Apache Tomcat 10.1+.
+- Executable artifact: `backend/target/opus-rentals.war`
+- Dual deployment: Configured via Spring Boot 3 `SpringBootServletInitializer` for standalone execution via `java -jar opus-rentals.war` or deployment in Apache Tomcat 10.1+.
 
 ---
 

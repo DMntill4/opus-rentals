@@ -39,7 +39,7 @@
 - **Relational Database**: MySQL 8.0+ with InnoDB engine and explicit UTF-8 mb4 encoding
 - **Bean Validation**: Jakarta Bean Validation API with Hibernate Validator (`org.springframework.boot:spring-boot-starter-validation`)
 - **API Documentation**: SpringDoc OpenAPI 3.0 / Swagger UI (`org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0`)
-- **Code Generation & Boilerplate Reduction**: Project Lombok 1.18.34
+- **Code Generation & Boilerplate Reduction**: Project Lombok 1.18.36
 - **Build & Packaging**: Apache Maven 3.8+ (Autonomous Executable JAR & Apache Tomcat 10.1+ Native WAR dual target)
 
 ### Frontend Ecosystem
@@ -89,6 +89,14 @@ com.opusrentals/
 ---
 
 ## 3. RELATIONAL SCHEMA & FOURTH NORMAL FORM (4NF)
+
+<div align="center">
+
+![Opus Rentals Relational Diagram 4NF](./docs/diagrama_relacional_bd.svg)
+
+*Figura 1: Diagrama Entidad-Relación de Opus Rentals en Cuarta Forma Normal (4NF) — 16 Tablas Normalizadas.*
+
+</div>
 
 ### Theoretical Justification of 4NF
 A relation $R$ is in **Fourth Normal Form (4NF)** if and only if, for every non-trivial Multivalued Dependency (MVD) $X \twoheadrightarrow Y$, $X$ is a superkey of $R$.
@@ -233,6 +241,18 @@ docker compose up -d --build
 }
 ```
 
+### Clients Management (`/api/v1/clients`)
+- `GET /api/v1/clients`: List all registered clients (Admin only).
+- `GET /api/v1/clients/{id}`: Detailed client profile by ID.
+- `PUT /api/v1/clients/{id}`: Update client profile (Client Owner or Admin).
+- `DELETE /api/v1/clients/{id}`: Delete or soft-deactivate client depending on rental history.
+
+### Providers Management (`/api/v1/providers`)
+- `GET /api/v1/providers`: List all machinery providers with contacts and coverage zones (Public).
+- `GET /api/v1/providers/{id}`: Detailed provider corporate sheet by ID (Public).
+- `PUT /api/v1/providers/{id}`: Update corporate data, contact channels, and service coverage zones (Provider Owner or Admin).
+- `DELETE /api/v1/providers/{id}`: Delete or soft-deactivate provider depending on fleet catalog history.
+
 ### Equipment Catalog (`/api/v1/tools`)
 - `GET /api/v1/tools`: List all tools with optional category, status, and keyword filters.
 - `GET /api/v1/tools/{id}`: Detailed specification sheet, images, and provider info.
@@ -269,20 +289,33 @@ docker compose up -d --build
 ```
 - `GET /api/v1/rentals/my-rentals`: Current user's rental history.
 - `GET /api/v1/rentals/provider-requests`: Incoming rental requests for provider inventory.
+- `GET /api/v1/rentals/tool/{toolId}/booked-dates`: Public query for currently booked or pending date ranges (used by interactive calendars to highlight unavailable periods in red).
 - `PATCH /api/v1/rentals/{id}/status`: Transition booking state (`APPROVED`, `IN_PROGRESS`, `CANCELLED`).
+- `POST /api/v1/rentals/{id}/cancel` & `PATCH /api/v1/rentals/{id}/cancel`: User cancellation endpoint.
 
 ### Invoices & Payments (`/api/v1/invoices`, `/api/v1/payments`)
+- `GET /api/v1/invoices/my-invoices`: Retrieve user invoices.
 - `GET /api/v1/invoices/rental/{rentalId}`: Retrieve official fiscal invoice breakdown.
+- `GET /api/v1/payments`: List all payments across platform (Admin only).
+- `GET /api/v1/payments/{id}`: Detailed payment record by ID.
 - `POST /api/v1/payments`: Register payment against an issued invoice.
+- `PATCH /api/v1/payments/{id}/refund`: Refund payment transaction and revert invoice to ISSUED (Admin only).
+- `DELETE /api/v1/payments/{id}`: Void payment record and revert invoice (Admin only).
 
 ### Returns & Physical Inspection (`/api/v1/returns`)
 - `POST /api/v1/returns/rental/{rentalId}`: Process equipment check-in with optional damage items (4NF).
+
+### Admin Reports & Analytics (`/api/v1/admin/reports`)
+- `GET /api/v1/admin/reports/dashboard`: Executive metrics, revenue trend by month, and top rented equipment.
+- `GET /api/v1/admin/reports/top-tools`: Ranking of most rented machinery and generated revenues.
+- `GET /api/v1/admin/reports/frequent-clients`: Ranking of frequent clients, active reservations, and total spend.
+- `GET /api/v1/admin/reports/fleet-status`: Fleet availability breakdown (available, rented, maintenance, retired) and utilization metrics per category.
 
 ---
 
 ## 7. POSTMAN TEST COLLECTION
 
-The project includes an official Postman collection preconfigured with automated JWT token handling, environment variables, and realistic request payloads for all 5 business modules:
+The project includes an official Postman collection preconfigured with automated JWT token handling, environment variables, and realistic request payloads for all business modules:
 
 - **Collection File**: [`docs/OpusRentals.postman_collection.json`](./docs/OpusRentals.postman_collection.json)
 - **Import Instructions**:
@@ -291,27 +324,32 @@ The project includes an official Postman collection preconfigured with automated
   3. Drag and drop or select `docs/OpusRentals.postman_collection.json`.
   4. The collection variable `{{baseUrl}}` is preset to `http://localhost:8080/api/v1`.
 - **Preconfigured Request Folders**:
-  1. `1. Authentication`: Login as Admin, Provider, Client, and Register Client (automatically extracts and sets `{{token}}` in collection variables).
-  2. `2. Tools & Catalog`: Public catalog query, search by keyword, filter by ID, categories, and Provider tool creation (POST).
-  3. `3. Rentals & Returns`: Client rental creation with dates, rental history, provider requests, status transitions (PATCH), and return inspections with 4NF damage items.
-  4. `4. Billing & Payments`: Payment methods query, user invoices, and checkout payment processing.
-  5. `5. Admin Reports & Analytics`: Platform KPI metrics dashboard and user directory administration.
+  1. `1. Authentication`: Login as Admin, Provider, Client, and Register Client & Provider.
+  2. `2. Clients Management`: Get All Clients, Get by ID, Update Profile, Delete/Deactivate Client.
+  3. `3. Providers Management`: Get All Providers, Get by ID, Update Provider, Delete/Deactivate Provider.
+  4. `4. Tools & Catalog`: Public catalog query, search by keyword, filter by ID, categories, and Provider tool creation (POST).
+  5. `5. Rentals & Returns`: Client rental creation with dates, rental history, provider requests, status transitions (PATCH), and return inspections with 4NF damage items.
+  6. `6. Billing & Payments`: Payment methods query, user invoices, global payment audits, checkout processing, and payment refunds.
+  7. `7. Admin Reports & Analytics`: Platform KPI dashboard, most rented tools, frequent clients ranking, fleet status/availability, and user directory administration.
 
 ---
 
 ## 8. AUTOMATED TESTING GUIDE
 
-The project includes unit and integration tests executing under the `test` profile:
+The project includes comprehensive unit and integration tests executing under the `test` profile:
 
 ### Execute Backend Tests
 ```bash
 cd backend
 ./mvnw test
 ```
-*(On Windows: `.\mvnw.cmd test`)*
+*(Or via Docker: `docker run --rm -v "${PWD}:/app" -w /app maven:3.9.6-eclipse-temurin-21-alpine mvn test`)*
 
 ### Test Coverage Highlights
 - `RentalServiceUnitTest`: Validates the date collision engine, subtotal and VAT calculations, and prevents overbooking conflicts.
+- `UserServiceUnitTest`: Validates full CRUD operations for Clients and Providers, owner vs admin authorization, and 4NF transactional integrity with soft-deactivation when historical dependencies exist.
+- `PaymentServiceUnitTest`: Validates checkout processing, status transitions, idempotent payment rejection, and refund mechanisms with automatic invoice status rollback.
+- `ReportServiceUnitTest`: Validates dashboard metric calculations, frequent client aggregations, and fleet utilization breakdowns.
 - `OpusRentalsApplicationTests`: Verifies Spring context loading and security filter chain initialization.
 
 ---

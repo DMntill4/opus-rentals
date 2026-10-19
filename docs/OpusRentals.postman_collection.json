@@ -48,6 +48,20 @@
         },
         {
           "name": "Login - Provider",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.data && jsonData.data.token) {",
+                  "    pm.collectionVariables.set('token', jsonData.data.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "method": "POST",
             "header": [{"key": "Content-Type", "value": "application/json"}],
@@ -60,6 +74,20 @@
         },
         {
           "name": "Login - Client",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.data && jsonData.data.token) {",
+                  "    pm.collectionVariables.set('token', jsonData.data.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "method": "POST",
             "header": [{"key": "Content-Type", "value": "application/json"}],
@@ -81,11 +109,109 @@
             },
             "url": {"raw": "{{baseUrl}}/auth/register/client", "host": ["{{baseUrl}}"], "path": ["auth", "register", "client"]}
           }
+        },
+        {
+          "name": "Register Provider",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"contacto@rentamaq.co\",\n  \"password\": \"password123\",\n  \"companyName\": \"Rentamaq Andina S.A.S.\",\n  \"taxId\": \"901.445.678-2\",\n  \"address\": \"Zona Franca del Pacífico, Cali\",\n  \"phone\": \"+57 318 4001122\",\n  \"coverageZones\": [\n    {\n      \"state\": \"Valle del Cauca\",\n      \"city\": \"Cali\"\n    }\n  ]\n}"
+            },
+            "url": {"raw": "{{baseUrl}}/auth/register/provider", "host": ["{{baseUrl}}"], "path": ["auth", "register", "provider"]}
+          }
         }
       ]
     },
     {
-      "name": "2. Tools & Catalog",
+      "name": "2. Clients Management",
+      "item": [
+        {
+          "name": "Get All Clients (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": {"raw": "{{baseUrl}}/clients", "host": ["{{baseUrl}}"], "path": ["clients"]}
+          }
+        },
+        {
+          "name": "Get Client by ID",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": {"raw": "{{baseUrl}}/clients/1", "host": ["{{baseUrl}}"], "path": ["clients", "1"]}
+          }
+        },
+        {
+          "name": "Update Client",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{token}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Carlos Eduardo\",\n  \"lastName\": \"Mendoza Herrera\",\n  \"phone\": \"+57 300 9876543\",\n  \"address\": \"Calle 127 #15-30 Oficina 402, Bogota\"\n}"
+            },
+            "url": {"raw": "{{baseUrl}}/clients/1", "host": ["{{baseUrl}}"], "path": ["clients", "1"]}
+          }
+        },
+        {
+          "name": "Delete / Deactivate Client (Admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": {"raw": "{{baseUrl}}/clients/1", "host": ["{{baseUrl}}"], "path": ["clients", "1"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Providers Management",
+      "item": [
+        {
+          "name": "Get All Providers (Public)",
+          "request": {
+            "method": "GET",
+            "url": {"raw": "{{baseUrl}}/providers", "host": ["{{baseUrl}}"], "path": ["providers"]}
+          }
+        },
+        {
+          "name": "Get Provider by ID",
+          "request": {
+            "method": "GET",
+            "url": {"raw": "{{baseUrl}}/providers/1", "host": ["{{baseUrl}}"], "path": ["providers", "1"]}
+          }
+        },
+        {
+          "name": "Update Provider",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{token}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"companyName\": \"Caterpillar Equipos Andinos S.A.S.\",\n  \"taxId\": \"900.123.456-7\",\n  \"address\": \"Autopista Norte Km 19, Chia, Cundinamarca\",\n  \"contacts\": [\n    {\n      \"type\": \"PHONE\",\n      \"value\": \"+57 310 1234567\"\n    },\n    {\n      \"type\": \"EMAIL\",\n      \"value\": \"soporte@caterpillar-andina.com\"\n    }\n  ],\n  \"coverageZones\": [\n    {\n      \"state\": \"Cundinamarca\",\n      \"city\": \"Bogota\"\n    }\n  ]\n}"
+            },
+            "url": {"raw": "{{baseUrl}}/providers/1", "host": ["{{baseUrl}}"], "path": ["providers", "1"]}
+          }
+        },
+        {
+          "name": "Delete / Deactivate Provider (Admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": {"raw": "{{baseUrl}}/providers/1", "host": ["{{baseUrl}}"], "path": ["providers", "1"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Tools & Catalog",
       "item": [
         {
           "name": "Get Tools (Public)",
@@ -138,7 +264,7 @@
       ]
     },
     {
-      "name": "3. Rentals & Returns",
+      "name": "5. Rentals & Returns",
       "item": [
         {
           "name": "Create Rental (Client)",
@@ -204,7 +330,7 @@
       ]
     },
     {
-      "name": "4. Billing & Payments",
+      "name": "6. Billing & Payments",
       "item": [
         {
           "name": "Get Payment Methods",
@@ -222,6 +348,22 @@
           }
         },
         {
+          "name": "Get All Payments (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": {"raw": "{{baseUrl}}/payments", "host": ["{{baseUrl}}"], "path": ["payments"]}
+          }
+        },
+        {
+          "name": "Get Payment by ID",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": {"raw": "{{baseUrl}}/payments/1", "host": ["{{baseUrl}}"], "path": ["payments", "1"]}
+          }
+        },
+        {
           "name": "Process Payment",
           "request": {
             "method": "POST",
@@ -235,11 +377,34 @@
             },
             "url": {"raw": "{{baseUrl}}/payments", "host": ["{{baseUrl}}"], "path": ["payments"]}
           }
+        },
+        {
+          "name": "Refund Payment (Admin)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{token}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Cancelación autorizada y devolución de depósito\"\n}"
+            },
+            "url": {"raw": "{{baseUrl}}/payments/1/refund", "host": ["{{baseUrl}}"], "path": ["payments", "1", "refund"]}
+          }
+        },
+        {
+          "name": "Delete / Void Payment (Admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": {"raw": "{{baseUrl}}/payments/1", "host": ["{{baseUrl}}"], "path": ["payments", "1"]}
+          }
         }
       ]
     },
     {
-      "name": "5. Admin Reports & Analytics",
+      "name": "7. Admin Reports & Analytics",
       "item": [
         {
           "name": "Get Dashboard Metrics (Admin)",
@@ -247,6 +412,30 @@
             "method": "GET",
             "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
             "url": {"raw": "{{baseUrl}}/admin/reports/dashboard", "host": ["{{baseUrl}}"], "path": ["admin", "reports", "dashboard"]}
+          }
+        },
+        {
+          "name": "Get Top Rented Tools (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": {"raw": "{{baseUrl}}/admin/reports/top-tools", "host": ["{{baseUrl}}"], "path": ["admin", "reports", "top-tools"]}
+          }
+        },
+        {
+          "name": "Get Frequent Clients Report (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": {"raw": "{{baseUrl}}/admin/reports/frequent-clients", "host": ["{{baseUrl}}"], "path": ["admin", "reports", "frequent-clients"]}
+          }
+        },
+        {
+          "name": "Get Fleet Status & Availability (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": {"raw": "{{baseUrl}}/admin/reports/fleet-status", "host": ["{{baseUrl}}"], "path": ["admin", "reports", "fleet-status"]}
           }
         },
         {

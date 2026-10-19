@@ -1,0 +1,459 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1280" width="100%" height="100%" style="background:#090d16; font-family: 'Segoe UI', Inter, -apple-system, sans-serif;">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0b1120"/>
+      <stop offset="100%" stop-color="#050811"/>
+    </linearGradient>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#000000" flood-opacity="0.6"/>
+    </filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#38bdf8"/>
+    </marker>
+    <marker id="arrowAmber" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#f59e0b"/>
+    </marker>
+    <marker id="arrowEmerald" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#10b981"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1920" height="1280" fill="url(#bgGrad)"/>
+  
+  <!-- Subtle Grid Pattern -->
+  <g opacity="0.04" stroke="#ffffff" stroke-width="1">
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40"/>
+    </pattern>
+    <rect width="1920" height="1280" fill="url(#grid)"/>
+  </g>
+
+  <!-- Header -->
+  <g transform="translate(60, 50)">
+    <rect x="0" y="0" width="6" height="48" fill="#f59e0b" rx="3"/>
+    <text x="24" y="30" fill="#ffffff" font-size="28" font-weight="700" letter-spacing="0.5">OPUS RENTALS — DIAGRAMA ENTIDAD-RELACIÓN (4FN)</text>
+    <text x="24" y="50" fill="#94a3b8" font-size="14">Arquitectura Relacional Normalizada en Cuarta Forma Normal (4NF) • 16 Entidades • MySQL 8.0</text>
+    
+    <g transform="translate(1380, 5)">
+      <rect x="0" y="0" width="420" height="40" rx="8" fill="#1e293b" opacity="0.8"/>
+      <circle cx="20" cy="20" r="6" fill="#10b981"/>
+      <text x="36" y="24" fill="#cbd5e1" font-size="12" font-weight="600">PK: Primary Key</text>
+      <circle cx="160" cy="20" r="6" fill="#38bdf8"/>
+      <text x="176" y="24" fill="#cbd5e1" font-size="12" font-weight="600">FK: Foreign Key</text>
+      <circle cx="290" cy="20" r="6" fill="#f59e0b"/>
+      <text x="306" y="24" fill="#cbd5e1" font-size="12" font-weight="600">4NF: Desacoplada</text>
+    </g>
+  </g>
+
+  <!-- ==================== CONNECTING LINES ==================== -->
+  <!-- users -> roles -->
+  <path d="M 230 330 L 230 250" fill="none" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow)"/>
+  <!-- providers -> users -->
+  <path d="M 390 410 L 460 410" fill="none" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow)"/>
+  <!-- clients -> users -->
+  <path d="M 390 470 L 460 590" fill="none" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow)"/>
+  <!-- provider_contacts -> providers -->
+  <path d="M 680 340 L 750 340" fill="none" stroke="#f59e0b" stroke-width="2" marker-end="url(#arrowAmber)"/>
+  <!-- provider_coverage_zones -> providers -->
+  <path d="M 680 440 L 750 440" fill="none" stroke="#f59e0b" stroke-width="2" marker-end="url(#arrowAmber)"/>
+  <!-- tools -> providers -->
+  <path d="M 1030 440 L 680 410" fill="none" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow)"/>
+  <!-- tools -> tool_categories -->
+  <path d="M 1140 330 L 1140 250" fill="none" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow)"/>
+  <!-- tool_images -> tools -->
+  <path d="M 1370 360 L 1250 360" fill="none" stroke="#f59e0b" stroke-width="2" marker-end="url(#arrowAmber)"/>
+  <!-- tool_specifications -> tools -->
+  <path d="M 1370 470 L 1250 470" fill="none" stroke="#f59e0b" stroke-width="2" marker-end="url(#arrowAmber)"/>
+  <!-- rentals -> clients -->
+  <path d="M 970 870 L 680 660" fill="none" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow)"/>
+  <!-- rentals -> tools -->
+  <path d="M 1120 740 L 1120 590" fill="none" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow)"/>
+  <!-- invoices -> rentals -->
+  <path d="M 690 920 L 970 920" fill="none" stroke="#10b981" stroke-width="2" marker-end="url(#arrowEmerald)"/>
+  <!-- payments -> invoices -->
+  <path d="M 390 920 L 470 920" fill="none" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow)"/>
+  <!-- payments -> payment_methods -->
+  <path d="M 270 1030 L 270 1090" fill="none" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow)"/>
+  <!-- rental_returns -> rentals -->
+  <path d="M 1270 870 L 1370 870" fill="none" stroke="#10b981" stroke-width="2" marker-end="url(#arrowEmerald)"/>
+  <!-- rental_damages -> rental_returns -->
+  <path d="M 1580 870 L 1640 870" fill="none" stroke="#f59e0b" stroke-width="2" marker-end="url(#arrowAmber)"/>
+
+  <!-- ==================== TABLES ==================== -->
+
+  <!-- TABLE: ROLES -->
+  <g transform="translate(120, 130)" filter="url(#shadow)">
+    <rect width="220" height="120" rx="8" fill="#0f172a" stroke="#334155" stroke-width="1.5"/>
+    <rect width="220" height="32" rx="8" fill="#1e293b"/>
+    <text x="16" y="21" fill="#38bdf8" font-size="13" font-weight="700">roles</text>
+    <text x="16" y="55" fill="#10b981" font-size="11" font-weight="700">PK</text>
+    <text x="42" y="55" fill="#f8fafc" font-size="12">id</text>
+    <text x="150" y="55" fill="#64748b" font-size="11">BIGINT</text>
+    <text x="16" y="75" fill="#94a3b8" font-size="11">●</text>
+    <text x="42" y="75" fill="#f8fafc" font-size="12">name</text>
+    <text x="140" y="75" fill="#64748b" font-size="11">VARCHAR(50)</text>
+    <text x="16" y="95" fill="#94a3b8" font-size="11">●</text>
+    <text x="42" y="95" fill="#cbd5e1" font-size="12">description</text>
+    <text x="140" y="95" fill="#64748b" font-size="11">VARCHAR(255)</text>
+  </g>
+
+  <!-- TABLE: USERS -->
+  <g transform="translate(120, 330)" filter="url(#shadow)">
+    <rect width="270" height="160" rx="8" fill="#0f172a" stroke="#334155" stroke-width="1.5"/>
+    <rect width="270" height="32" rx="8" fill="#1e293b"/>
+    <text x="16" y="21" fill="#38bdf8" font-size="13" font-weight="700">users</text>
+    <text x="16" y="55" fill="#10b981" font-size="11" font-weight="700">PK</text>
+    <text x="42" y="55" fill="#f8fafc" font-size="12">id</text>
+    <text x="190" y="55" fill="#64748b" font-size="11">BIGINT</text>
+    <text x="16" y="75" fill="#94a3b8" font-size="11">●</text>
+    <text x="42" y="75" fill="#f8fafc" font-size="12">email (UQ)</text>
+    <text x="180" y="75" fill="#64748b" font-size="11">VARCHAR(150)</text>
+    <text x="16" y="95" fill="#94a3b8" font-size="11">●</text>
+    <text x="42" y="95" fill="#cbd5e1" font-size="12">password_hash</text>
+    <text x="180" y="95" fill="#64748b" font-size="11">VARCHAR(255)</text>
+    <text x="16" y="115" fill="#38bdf8" font-size="11" font-weight="700">FK</text>
+    <text x="42" y="115" fill="#f8fafc" font-size="12">role_id</text>
+    <text x="190" y="115" fill="#64748b" font-size="11">BIGINT</text>
+    <text x="16" y="135" fill="#94a3b8" font-size="11">●</text>
+    <text x="42" y="135" fill="#cbd5e1" font-size="12">is_active</text>
+    <text x="190" y="135" fill="#64748b" font-size="11">BOOLEAN</text>
+  </g>
+
+  <!-- TABLE: PROVIDERS -->
+  <g transform="translate(460, 310)" filter="url(#shadow)">
+    <rect width="220" height="180" rx="8" fill="#0f172a" stroke="#334155" stroke-width="1.5"/>
+    <rect width="220" height="32" rx="8" fill="#1e293b"/>
+    <text x="16" y="21" fill="#38bdf8" font-size="13" font-weight="700">providers</text>
+    <text x="16" y="55" fill="#10b981" font-size="11" font-weight="700">PK</text>
+    <text x="42" y="55" fill="#f8fafc" font-size="12">id</text>
+    <text x="150" y="55" fill="#64748b" font-size="11">BIGINT</text>
+    <text x="16" y="75" fill="#38bdf8" font-size="11" font-weight="700">FK</text>
+    <text x="42" y="75" fill="#f8fafc" font-size="12">user_id (UQ)</text>
+    <text x="150" y="75" fill="#64748b" font-size="11">BIGINT</text>
+    <text x="16" y="95" fill="#94a3b8" font-size="11">●</text>
+    <text x="42" y="95" fill="#f8fafc" font-size="12">company_name</text>
+    <text x="140" y="95" fill="#64748b" font-size="11">VARCHAR(150)</text>
+    <text x="16" y="115" fill="#94a3b8" font-size="11">●</text>
+    <text x="42" y="115" fill="#cbd5e1" font-size="12">tax_id (NIT)</text>
+    <text x="150" y="115" fill="#64748b" font-size="11">VARCHAR(50)</text>
+    <text x="16" y="135" fill="#94a3b8" font-size="11">●</text>
+    <text x="42" y="135" fill="#cbd5e1" font-size="12">address</text>
+    <text x="140" y="135" fill="#64748b" font-size="11">VARCHAR(255)</text>
+    <text x="16" y="155" fill="#94a3b8" font-size="11">●</text>
+    <text x="42" y="155" fill="#cbd5e1" font-size="12">rating</text>
+    <text x="150" y="155" fill="#64748b" font-size="11">DECIMAL</text>
+  </g>
+
+  <!-- TABLE: CLIENTS -->
+  <g transform="translate(460, 560)" filter="url(#shadow)">
+    <rect width="220" height="200" rx="8" fill="#0f172a" stroke="#334155" stroke-width="1.5"/>
+    <rect width="220" height="32" rx="8" fill="#1e293b"/>
+    <text x="16" y="21" fill="#38bdf8" font-size="13" font-weight="700">clients</text>
+    <text x="16" y="55" fill="#10b981" font-size="11" font-weight="700">PK</text>
+    <text x="42" y="55" fill="#f8fafc" font-size="12">id</text>
+    <text x="150" y="55" fill="#64748b" font-size="11">BIGINT</text>
+    <text x="16" y="75" fill="#38bdf8" font-size="11" font-weight="700">FK</text>
+    <text x="42" y="75" fill="#f8fafc" font-size="12">user_id (UQ)</text>
+    <text x="150" y="75" fill="#64748b" font-size="11">BIGINT</text>
+    <text x="16" y="95" fill="#94a3b8" font-size="11">●</text>
+    <text x="42" y="95" fill="#f8fafc" font-size="12">first_name</text>
+    <text x="140" y="95" fill="#64748b" font-size="11">VARCHAR(100)</text>
+    <text x="16" y="115" fill="#94a3b8" font-size="11">●</text>
+    <text x="42" y="115" fill="#f8fafc" font-size="12">last_name</text>
+    <text x="140" y="115" fill="#64748b" font-size="11">VARCHAR(100)</text>
+    <text x="16" y="135" fill="#94a3b8" font-size="11">●</text>
+    <text x="42" y="135" fill="#cbd5e1" font-size="12">document_number</text>
+    <text x="145" y="135" fill="#64748b" font-size="11">VARCHAR(50)</text>
+    <text x="16" y="155" fill="#94a3b8" font-size="11">●</text>
+    <text x="42" y="155" fill="#cbd5e1" font-size="12">phone</text>
+    <text x="150" y="155" fill="#64748b" font-size="11">VARCHAR(30)</text>
+    <text x="16" y="175" fill="#94a3b8" font-size="11">●</text>
+    <text x="42" y="175" fill="#cbd5e1" font-size="12">address</text>
+    <text x="140" y="175" fill="#64748b" font-size="11">VARCHAR(255)</text>
+  </g>
+
+  <!-- TABLE: PROVIDER CONTACTS (4NF) -->
+  <g transform="translate(750, 270)" filter="url(#shadow)">
+    <rect width="210" height="130" rx="8" fill="#0f172a" stroke="#f59e0b" stroke-width="1.5"/>
+    <rect width="210" height="32" rx="8" fill="#1e293b"/>
+    <text x="16" y="21" fill="#f59e0b" font-size="13" font-weight="700">provider_contacts [4NF]</text>
+    <text x="16" y="55" fill="#10b981" font-size="11" font-weight="700">PK</text>
+    <text x="42" y="55" fill="#f8fafc" font-size="12">id</text>
+    <text x="140" y="55" fill="#64748b" font-size="11">BIGINT</text>
+    <text x="16" y="75" fill="#38bdf8" font-size="11" font-weight="700">FK</text>
+    <text x="42" y="75" fill="#f8fafc" font-size="12">provider_id</text>
+    <text x="140" y="75" fill="#64748b" font-size="11">BIGINT</text>
+    <text x="16" y="95" fill="#94a3b8" font-size="11">●</text>
+    <text x="42" y="95" fill="#cbd5e1" font-size="12">contact_type</text>
+    <text x="135" y="95" fill="#64748b" font-size="11">VARCHAR(30)</text>
+    <text x="16" y="115" fill="#94a3b8" font-size="11">●</text>
+    <text x="42" y="115" fill="#cbd5e1" font-size="12">contact_value</text>
+    <text x="135" y="115" fill="#64748b" font-size="11">VARCHAR(100)</text>
+  </g>
+
+  <!-- TABLE: PROVIDER COVERAGE ZONES (4NF) -->
+  <g transform="translate(750, 420)" filter="url(#shadow)">
+    <rect width="210" height="130" rx="8" fill="#0f172a" stroke="#f59e0b" stroke-width="1.5"/>
+    <rect width="210" height="32" rx="8" fill="#1e293b"/>
+    <text x="16" y="21" fill="#f59e0b" font-size="13" font-weight="700">provider_zones [4NF]</text>
+    <text x="16" y="55" fill="#10b981" font-size="11" font-weight="700">PK</text>
+    <text x="42" y="55" fill="#f8fafc" font-size="12">id</text>
+    <text x="140" y="55" fill="#64748b" font-size="11">BIGINT</text>
+    <text x="16" y="75" fill="#38bdf8" font-size="11" font-weight="700">FK</text>
+    <text x="42" y="75" fill="#f8fafc" font-size="12">provider_id</text>
+    <text x="140" y="75" fill="#64748b" font-size="11">BIGINT</text>
+    <text x="16" y="95" fill="#94a3b8" font-size="11">●</text>
+    <text x="42" y="95" fill="#cbd5e1" font-size="12">state (Depto)</text>
+    <text x="135" y="95" fill="#64748b" font-size="11">VARCHAR(100)</text>
+    <text x="16" y="115" fill="#94a3b8" font-size="11">●</text>
+    <text x="42" y="115" fill="#cbd5e1" font-size="12">city (Ciudad)</text>
+    <text x="135" y="115" fill="#64748b" font-size="11">VARCHAR(100)</text>
+  </g>
+
+  <!-- TABLE: TOOL CATEGORIES -->
+  <g transform="translate(1030, 130)" filter="url(#shadow)">
+    <rect width="220" height="120" rx="8" fill="#0f172a" stroke="#334155" stroke-width="1.5"/>
+    <rect width="220" height="32" rx="8" fill="#1e293b"/>
+    <text x="16" y="21" fill="#38bdf8" font-size="13" font-weight="700">tool_categories</text>
+    <text x="16" y="55" fill="#10b981" font-size="11" font-weight="700">PK</text>
+    <text x="42" y="55" fill="#f8fafc" font-size="12">id</text>
+    <text x="150" y="55" fill="#64748b" font-size="11">BIGINT</text>
+    <text x="16" y="75" fill="#94a3b8" font-size="11">●</text>
+    <text x="42" y="75" fill="#f8fafc" font-size="12">name</text>
+    <text x="140" y="75" fill="#64748b" font-size="11">VARCHAR(100)</text>
+    <text x="16" y="95" fill="#94a3b8" font-size="11">●</text>
+    <text x="42" y="95" fill="#cbd5e1" font-size="12">icon</text>
+    <text x="150" y="95" fill="#64748b" font-size="11">VARCHAR(50)</text>
+  </g>
+
+  <!-- TABLE: TOOLS -->
+  <g transform="translate(1030, 330)" filter="url(#shadow)">
+    <rect width="220" height="260" rx="8" fill="#0f172a" stroke="#38bdf8" stroke-width="2"/>
+    <rect width="220" height="32" rx="8" fill="#1e293b"/>
+    <text x="16" y="21" fill="#38bdf8" font-size="13" font-weight="700">tools [CATÁLOGO]</text>
+    <text x="16" y="55" fill="#10b981" font-size="11" font-weight="700">PK</text>
+    <text x="42" y="55" fill="#f8fafc" font-size="12">id</text>
+    <text x="150" y="55" fill="#64748b" font-size="11">BIGINT</text>
+    <text x="16" y="75" fill="#38bdf8" font-size="11" font-weight="700">FK</text>
+    <text x="42" y="75" fill="#f8fafc" font-size="12">provider_id</text>
+    <text x="150" y="75" fill="#64748b" font-size="11">BIGINT</text>
+    <text x="16" y="95" fill="#38bdf8" font-size="11" font-weight="700">FK</text>
+    <text x="42" y="95" fill="#f8fafc" font-size="12">category_id</text>
+    <text x="150" y="95" fill="#64748b" font-size="11">BIGINT</text>
+    <text x="16" y="115" fill="#94a3b8" font-size="11">●</text>
+    <text x="42" y="115" fill="#f8fafc" font-size="12">name</text>
+    <text x="140" y="115" fill="#64748b" font-size="11">VARCHAR(150)</text>
+    <text x="16" y="135" fill="#94a3b8" font-size="11">●</text>
+    <text x="42" y="135" fill="#cbd5e1" font-size="12">brand</text>
+    <text x="140" y="135" fill="#64748b" font-size="11">VARCHAR(100)</text>
+    <text x="16" y="155" fill="#94a3b8" font-size="11">●</text>
+    <text x="42" y="155" fill="#cbd5e1" font-size="12">model</text>
+    <text x="140" y="155" fill="#64748b" font-size="11">VARCHAR(100)</text>
+    <text x="16" y="175" fill="#94a3b8" font-size="11">●</text>
+    <text x="42" y="175" fill="#f8fafc" font-size="12">daily_price</text>
+    <text x="140" y="175" fill="#64748b" font-size="11">DECIMAL</text>
+    <text x="16" y="195" fill="#94a3b8" font-size="11">●</text>
+    <text x="42" y="195" fill="#cbd5e1" font-size="12">deposit_amount</text>
+    <text x="140" y="195" fill="#64748b" font-size="11">DECIMAL</text>
+    <text x="16" y="215" fill="#94a3b8" font-size="11">●</text>
+    <text x="42" y="215" fill="#cbd5e1" font-size="12">status</text>
+    <text x="140" y="215" fill="#64748b" font-size="11">VARCHAR(30)</text>
+  </g>
+
+  <!-- TABLE: TOOL IMAGES (4NF) -->
+  <g transform="translate(1370, 310)" filter="url(#shadow)">
+    <rect width="210" height="130" rx="8" fill="#0f172a" stroke="#f59e0b" stroke-width="1.5"/>
+    <rect width="210" height="32" rx="8" fill="#1e293b"/>
+    <text x="16" y="21" fill="#f59e0b" font-size="13" font-weight="700">tool_images [4NF]</text>
+    <text x="16" y="55" fill="#10b981" font-size="11" font-weight="700">PK</text>
+    <text x="42" y="55" fill="#f8fafc" font-size="12">id</text>
+    <text x="140" y="55" fill="#64748b" font-size="11">BIGINT</text>
+    <text x="16" y="75" fill="#38bdf8" font-size="11" font-weight="700">FK</text>
+    <text x="42" y="75" fill="#f8fafc" font-size="12">tool_id</text>
+    <text x="140" y="75" fill="#64748b" font-size="11">BIGINT</text>
+    <text x="16" y="95" fill="#94a3b8" font-size="11">●</text>
+    <text x="42" y="95" fill="#cbd5e1" font-size="12">image_url</text>
+    <text x="135" y="95" fill="#64748b" font-size="11">VARCHAR(500)</text>
+    <text x="16" y="115" fill="#94a3b8" font-size="11">●</text>
+    <text x="42" y="115" fill="#cbd5e1" font-size="12">is_cover</text>
+    <text x="140" y="115" fill="#64748b" font-size="11">BOOLEAN</text>
+  </g>
+
+  <!-- TABLE: TOOL SPECIFICATIONS (4NF) -->
+  <g transform="translate(1370, 460)" filter="url(#shadow)">
+    <rect width="210" height="130" rx="8" fill="#0f172a" stroke="#f59e0b" stroke-width="1.5"/>
+    <rect width="210" height="32" rx="8" fill="#1e293b"/>
+    <text x="16" y="21" fill="#f59e0b" font-size="13" font-weight="700">tool_specifications [4NF]</text>
+    <text x="16" y="55" fill="#10b981" font-size="11" font-weight="700">PK</text>
+    <text x="42" y="55" fill="#f8fafc" font-size="12">id</text>
+    <text x="140" y="55" fill="#64748b" font-size="11">BIGINT</text>
+    <text x="16" y="75" fill="#38bdf8" font-size="11" font-weight="700">FK</text>
+    <text x="42" y="75" fill="#f8fafc" font-size="12">tool_id</text>
+    <text x="140" y="75" fill="#64748b" font-size="11">BIGINT</text>
+    <text x="16" y="95" fill="#94a3b8" font-size="11">●</text>
+    <text x="42" y="95" fill="#cbd5e1" font-size="12">spec_key</text>
+    <text x="135" y="95" fill="#64748b" font-size="11">VARCHAR(100)</text>
+    <text x="16" y="115" fill="#94a3b8" font-size="11">●</text>
+    <text x="42" y="115" fill="#cbd5e1" font-size="12">spec_value</text>
+    <text x="135" y="115" fill="#64748b" font-size="11">VARCHAR(255)</text>
+  </g>
+
+  <!-- TABLE: RENTALS -->
+  <g transform="translate(970, 740)" filter="url(#shadow)">
+    <rect width="300" height="260" rx="8" fill="#0f172a" stroke="#38bdf8" stroke-width="2"/>
+    <rect width="300" height="32" rx="8" fill="#1e293b"/>
+    <text x="16" y="21" fill="#38bdf8" font-size="13" font-weight="700">rentals [RESERVAS &amp; ALQUILERES]</text>
+    <text x="16" y="55" fill="#10b981" font-size="11" font-weight="700">PK</text>
+    <text x="42" y="55" fill="#f8fafc" font-size="12">id</text>
+    <text x="220" y="55" fill="#64748b" font-size="11">BIGINT</text>
+    <text x="16" y="75" fill="#38bdf8" font-size="11" font-weight="700">FK</text>
+    <text x="42" y="75" fill="#f8fafc" font-size="12">client_id</text>
+    <text x="220" y="75" fill="#64748b" font-size="11">BIGINT</text>
+    <text x="16" y="95" fill="#38bdf8" font-size="11" font-weight="700">FK</text>
+    <text x="42" y="95" fill="#f8fafc" font-size="12">tool_id</text>
+    <text x="220" y="95" fill="#64748b" font-size="11">BIGINT</text>
+    <text x="16" y="115" fill="#94a3b8" font-size="11">●</text>
+    <text x="42" y="115" fill="#f8fafc" font-size="12">start_date</text>
+    <text x="220" y="115" fill="#64748b" font-size="11">DATE</text>
+    <text x="16" y="135" fill="#94a3b8" font-size="11">●</text>
+    <text x="42" y="135" fill="#f8fafc" font-size="12">end_date</text>
+    <text x="220" y="135" fill="#64748b" font-size="11">DATE</text>
+    <text x="16" y="155" fill="#94a3b8" font-size="11">●</text>
+    <text x="42" y="155" fill="#cbd5e1" font-size="12">total_days</text>
+    <text x="220" y="155" fill="#64748b" font-size="11">INT</text>
+    <text x="16" y="175" fill="#94a3b8" font-size="11">●</text>
+    <text x="42" y="175" fill="#cbd5e1" font-size="12">daily_rate</text>
+    <text x="210" y="175" fill="#64748b" font-size="11">DECIMAL</text>
+    <text x="16" y="195" fill="#94a3b8" font-size="11">●</text>
+    <text x="42" y="195" fill="#f8fafc" font-size="12">subtotal</text>
+    <text x="210" y="195" fill="#64748b" font-size="11">DECIMAL</text>
+    <text x="16" y="215" fill="#94a3b8" font-size="11">●</text>
+    <text x="42" y="215" fill="#f8fafc" font-size="12">status</text>
+    <text x="210" y="215" fill="#64748b" font-size="11">VARCHAR(30)</text>
+    <text x="16" y="235" fill="#94a3b8" font-size="11">●</text>
+    <text x="42" y="235" fill="#cbd5e1" font-size="12">deposit_amount</text>
+    <text x="210" y="235" fill="#64748b" font-size="11">DECIMAL</text>
+  </g>
+
+  <!-- TABLE: INVOICES -->
+  <g transform="translate(470, 830)" filter="url(#shadow)">
+    <rect width="220" height="200" rx="8" fill="#0f172a" stroke="#10b981" stroke-width="1.5"/>
+    <rect width="220" height="32" rx="8" fill="#1e293b"/>
+    <text x="16" y="21" fill="#10b981" font-size="13" font-weight="700">invoices [FACTURAS]</text>
+    <text x="16" y="55" fill="#10b981" font-size="11" font-weight="700">PK</text>
+    <text x="42" y="55" fill="#f8fafc" font-size="12">id</text>
+    <text x="150" y="55" fill="#64748b" font-size="11">BIGINT</text>
+    <text x="16" y="75" fill="#38bdf8" font-size="11" font-weight="700">FK</text>
+    <text x="42" y="75" fill="#f8fafc" font-size="12">rental_id (UQ)</text>
+    <text x="150" y="75" fill="#64748b" font-size="11">BIGINT</text>
+    <text x="16" y="95" fill="#94a3b8" font-size="11">●</text>
+    <text x="42" y="95" fill="#f8fafc" font-size="12">invoice_number (UQ)</text>
+    <text x="150" y="95" fill="#64748b" font-size="11">VARCHAR(50)</text>
+    <text x="16" y="115" fill="#94a3b8" font-size="11">●</text>
+    <text x="42" y="115" fill="#cbd5e1" font-size="12">issue_date</text>
+    <text x="150" y="115" fill="#64748b" font-size="11">DATE</text>
+    <text x="16" y="135" fill="#94a3b8" font-size="11">●</text>
+    <text x="42" y="135" fill="#cbd5e1" font-size="12">subtotal</text>
+    <text x="150" y="135" fill="#64748b" font-size="11">DECIMAL</text>
+    <text x="16" y="155" fill="#94a3b8" font-size="11">●</text>
+    <text x="42" y="155" fill="#cbd5e1" font-size="12">tax_amount (19%)</text>
+    <text x="150" y="155" fill="#64748b" font-size="11">DECIMAL</text>
+    <text x="16" y="175" fill="#94a3b8" font-size="11">●</text>
+    <text x="42" y="175" fill="#10b981" font-size="12" font-weight="700">total_amount</text>
+    <text x="150" y="175" fill="#64748b" font-size="11">DECIMAL</text>
+  </g>
+
+  <!-- TABLE: PAYMENTS -->
+  <g transform="translate(170, 830)" filter="url(#shadow)">
+    <rect width="220" height="200" rx="8" fill="#0f172a" stroke="#334155" stroke-width="1.5"/>
+    <rect width="220" height="32" rx="8" fill="#1e293b"/>
+    <text x="16" y="21" fill="#38bdf8" font-size="13" font-weight="700">payments [PAGOS]</text>
+    <text x="16" y="55" fill="#10b981" font-size="11" font-weight="700">PK</text>
+    <text x="42" y="55" fill="#f8fafc" font-size="12">id</text>
+    <text x="150" y="55" fill="#64748b" font-size="11">BIGINT</text>
+    <text x="16" y="75" fill="#38bdf8" font-size="11" font-weight="700">FK</text>
+    <text x="42" y="75" fill="#f8fafc" font-size="12">invoice_id</text>
+    <text x="150" y="75" fill="#64748b" font-size="11">BIGINT</text>
+    <text x="16" y="95" fill="#38bdf8" font-size="11" font-weight="700">FK</text>
+    <text x="42" y="95" fill="#f8fafc" font-size="12">payment_method_id</text>
+    <text x="150" y="95" fill="#64748b" font-size="11">BIGINT</text>
+    <text x="16" y="115" fill="#94a3b8" font-size="11">●</text>
+    <text x="42" y="115" fill="#f8fafc" font-size="12">transaction_ref (UQ)</text>
+    <text x="150" y="115" fill="#64748b" font-size="11">VARCHAR(100)</text>
+    <text x="16" y="135" fill="#94a3b8" font-size="11">●</text>
+    <text x="42" y="135" fill="#cbd5e1" font-size="12">amount</text>
+    <text x="150" y="135" fill="#64748b" font-size="11">DECIMAL</text>
+    <text x="16" y="155" fill="#94a3b8" font-size="11">●</text>
+    <text x="42" y="155" fill="#cbd5e1" font-size="12">payment_date</text>
+    <text x="150" y="155" fill="#64748b" font-size="11">TIMESTAMP</text>
+    <text x="16" y="175" fill="#94a3b8" font-size="11">●</text>
+    <text x="42" y="175" fill="#10b981" font-size="12">payment_status</text>
+    <text x="150" y="175" fill="#64748b" font-size="11">VARCHAR(30)</text>
+  </g>
+
+  <!-- TABLE: PAYMENT METHODS -->
+  <g transform="translate(170, 1090)" filter="url(#shadow)">
+    <rect width="220" height="120" rx="8" fill="#0f172a" stroke="#334155" stroke-width="1.5"/>
+    <rect width="220" height="32" rx="8" fill="#1e293b"/>
+    <text x="16" y="21" fill="#38bdf8" font-size="13" font-weight="700">payment_methods</text>
+    <text x="16" y="55" fill="#10b981" font-size="11" font-weight="700">PK</text>
+    <text x="42" y="55" fill="#f8fafc" font-size="12">id</text>
+    <text x="150" y="55" fill="#64748b" font-size="11">BIGINT</text>
+    <text x="16" y="75" fill="#94a3b8" font-size="11">●</text>
+    <text x="42" y="75" fill="#f8fafc" font-size="12">code (UQ)</text>
+    <text x="145" y="75" fill="#64748b" font-size="11">VARCHAR(50)</text>
+    <text x="16" y="95" fill="#94a3b8" font-size="11">●</text>
+    <text x="42" y="95" fill="#cbd5e1" font-size="12">name</text>
+    <text x="140" y="95" fill="#64748b" font-size="11">VARCHAR(100)</text>
+  </g>
+
+  <!-- TABLE: RENTAL RETURNS -->
+  <g transform="translate(1370, 800)" filter="url(#shadow)">
+    <rect width="210" height="170" rx="8" fill="#0f172a" stroke="#10b981" stroke-width="1.5"/>
+    <rect width="210" height="32" rx="8" fill="#1e293b"/>
+    <text x="16" y="21" fill="#10b981" font-size="13" font-weight="700">rental_returns [4NF]</text>
+    <text x="16" y="55" fill="#10b981" font-size="11" font-weight="700">PK</text>
+    <text x="42" y="55" fill="#f8fafc" font-size="12">id</text>
+    <text x="140" y="55" fill="#64748b" font-size="11">BIGINT</text>
+    <text x="16" y="75" fill="#38bdf8" font-size="11" font-weight="700">FK</text>
+    <text x="42" y="75" fill="#f8fafc" font-size="12">rental_id (UQ)</text>
+    <text x="140" y="75" fill="#64748b" font-size="11">BIGINT</text>
+    <text x="16" y="95" fill="#94a3b8" font-size="11">●</text>
+    <text x="42" y="95" fill="#cbd5e1" font-size="12">return_date</text>
+    <text x="140" y="95" fill="#64748b" font-size="11">DATE</text>
+    <text x="16" y="115" fill="#94a3b8" font-size="11">●</text>
+    <text x="42" y="115" fill="#cbd5e1" font-size="12">status</text>
+    <text x="135" y="115" fill="#64748b" font-size="11">VARCHAR(30)</text>
+    <text x="16" y="135" fill="#94a3b8" font-size="11">●</text>
+    <text x="42" y="135" fill="#cbd5e1" font-size="12">inspector_notes</text>
+    <text x="140" y="135" fill="#64748b" font-size="11">TEXT</text>
+  </g>
+
+  <!-- TABLE: RENTAL DAMAGES (4NF) -->
+  <g transform="translate(1640, 800)" filter="url(#shadow)">
+    <rect width="220" height="170" rx="8" fill="#0f172a" stroke="#f59e0b" stroke-width="1.5"/>
+    <rect width="220" height="32" rx="8" fill="#1e293b"/>
+    <text x="16" y="21" fill="#f59e0b" font-size="13" font-weight="700">rental_damages [4NF]</text>
+    <text x="16" y="55" fill="#10b981" font-size="11" font-weight="700">PK</text>
+    <text x="42" y="55" fill="#f8fafc" font-size="12">id</text>
+    <text x="140" y="55" fill="#64748b" font-size="11">BIGINT</text>
+    <text x="16" y="75" fill="#38bdf8" font-size="11" font-weight="700">FK</text>
+    <text x="42" y="75" fill="#f8fafc" font-size="12">return_id</text>
+    <text x="140" y="75" fill="#64748b" font-size="11">BIGINT</text>
+    <text x="16" y="95" fill="#94a3b8" font-size="11">●</text>
+    <text x="42" y="95" fill="#cbd5e1" font-size="12">description</text>
+    <text x="140" y="95" fill="#64748b" font-size="11">VARCHAR(255)</text>
+    <text x="16" y="115" fill="#94a3b8" font-size="11">●</text>
+    <text x="42" y="115" fill="#cbd5e1" font-size="12">severity</text>
+    <text x="140" y="115" fill="#64748b" font-size="11">VARCHAR(30)</text>
+    <text x="16" y="135" fill="#94a3b8" font-size="11">●</text>
+    <text x="42" y="135" fill="#f59e0b" font-size="12" font-weight="700">penalty_amount</text>
+    <text x="140" y="135" fill="#64748b" font-size="11">DECIMAL</text>
+  </g>
+
+  <!-- Footer / System Note -->
+  <g transform="translate(60, 1220)">
+    <text x="0" y="20" fill="#64748b" font-size="13">Opus Rentals B2B Platform • Normalización 4FN: Eliminación completa de Dependencias Multivaluadas (MVDs) entre Imágenes, Especificaciones, Cobertura y Daños Físicos.</text>
+  </g>
+</svg>

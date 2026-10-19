@@ -70,10 +70,12 @@ docker compose down -v
 cd backend
 mvn clean package -DskipTests
 ```
-The file `target/opus-rentals-backend-1.0.0.war` is generated.
+*(On Windows using wrapper: `.\mvnw.cmd clean package -DskipTests`)*
+
+The file `target/opus-rentals.war` is generated.
 
 ### Step 2: Deploy to Tomcat
-1. Copy `target/opus-rentals-backend-1.0.0.war` to `$CATALINA_HOME/webapps/ROOT.war` (or your chosen context path).
+1. Copy `target/opus-rentals.war` to `$CATALINA_HOME/webapps/ROOT.war` (or your chosen context path).
 2. Set JVM database and JWT environment variables in `$CATALINA_HOME/bin/setenv.sh` (or `setenv.bat`).
 3. Start Tomcat:
    ```bash
