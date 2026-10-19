@@ -10,6 +10,7 @@ import com.opusrentals.modules.user.entity.Client;
 import com.opusrentals.modules.user.entity.Provider;
 import com.opusrentals.modules.user.entity.User;
 import com.opusrentals.modules.user.repository.ClientRepository;
+import com.opusrentals.modules.user.repository.ProviderRepository;
 import com.opusrentals.modules.user.repository.UserRepository;
 import com.opusrentals.modules.billing.repository.InvoiceRepository;
 import com.opusrentals.modules.billing.service.InvoiceService;
@@ -46,12 +47,12 @@ class RentalServiceUnitTest {
     private ClientRepository clientRepository;
 
     @Mock
-    private InvoiceRepository invoiceRepository;
+    private ProviderRepository providerRepository;
 
     @Mock
-    private InvoiceService invoiceService;
+    private InvoiceRepository invoiceRepository;
 
-    @InjectMocks
+    private InvoiceService invoiceService;
     private RentalService rentalService;
 
     private User user;
@@ -60,6 +61,9 @@ class RentalServiceUnitTest {
 
     @BeforeEach
     void setUp() {
+        invoiceService = new InvoiceService(invoiceRepository);
+        rentalService = new RentalService(rentalRepository, toolRepository, userRepository, clientRepository, providerRepository, invoiceRepository, invoiceService);
+
         user = User.builder()
                 .id(1L)
                 .email("cliente@test.com")
@@ -120,6 +124,9 @@ class RentalServiceUnitTest {
                 .build();
 
         when(rentalRepository.save(any(Rental.class))).thenReturn(savedRental);
+        when(invoiceRepository.findByRentalId(100L)).thenReturn(Optional.empty());
+        when(invoiceRepository.save(any(com.opusrentals.modules.billing.entity.Invoice.class)))
+                .thenAnswer(inv -> inv.getArgument(0));
 
         RentalResponse response = rentalService.createRental("cliente@test.com", request);
 
@@ -128,7 +135,7 @@ class RentalServiceUnitTest {
         assertEquals(3, response.getTotalDays());
         assertEquals(new BigDecimal("255000.00"), response.getSubtotal());
         verify(rentalRepository, times(1)).save(any(Rental.class));
-        verify(invoiceService, times(1)).createInvoiceForRental(savedRental);
+        verify(invoiceRepository, times(1)).save(any(com.opusrentals.modules.billing.entity.Invoice.class));
     }
 
     @Test
