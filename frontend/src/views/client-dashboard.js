@@ -110,87 +110,270 @@ export async function renderClientDashboard() {
         return;
       }
 
+function renderOrderTimeline(rental) {
+  if (rental.status === 'CANCELLED') {
+    return `
+      <div class="mt-4 p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900 text-xs text-rose-700 dark:text-rose-400 flex items-center gap-2">
+        ${renderIcon('XCircle', 'w-4 h-4 flex-shrink-0')}
+        <span><strong>Orden Cancelada:</strong> Esta reserva fue anulada y el inventario de maquinaria ha sido liberado para otros frentes de obra.</span>
+      </div>
+    `;
+  }
+
+  let activeStep = 1;
+  if (rental.status === 'APPROVED') activeStep = 2;
+  else if (rental.status === 'IN_PROGRESS' || rental.status === 'ACTIVE') activeStep = 4;
+  else if (rental.status === 'RETURNED' || rental.status === 'COMPLETED') activeStep = 5;
+
+  const steps = [
+    { num: 1, label: 'Radicado & Pago', sub: 'Confirmado' },
+    { num: 2, label: 'Aprobado Proveedor', sub: 'Alistamiento' },
+    { num: 3, label: 'Cama Baja', sub: 'En tránsito' },
+    { num: 4, label: 'En Frente de Obra', sub: 'Operativo' },
+    { num: 5, label: 'Devolución', sub: 'Inspección Final' }
+  ];
+
+  return `
+    <div class="mt-4 pt-3.5 border-t border-slate-100 dark:border-slate-800">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-[10px] font-mono font-black uppercase tracking-wider text-slate-500">
+          Seguimiento de Despacho & Obra (Tiempo Real)
+        </span>
+        <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full ${activeStep >= 4 ? 'bg-emerald-100 text-emerald-800' : 'bg-orange-100 text-[#FF7A00]'}">
+          ${activeStep === 5 ? 'Contrato Finalizado' : (activeStep >= 4 ? 'En Operación en Obra' : (activeStep >= 2 ? 'En Alistamiento / Ruta' : 'En Espera de Proveedor'))}
+        </span>
+      </div>
+
+      <!-- Modern Temu / Amazon Stepper -->
+      <div class="relative flex items-center justify-between w-full pt-2 pb-1">
+        <!-- Progress Bar Background Line -->
+        <div class="absolute left-6 right-6 top-5 h-1 bg-slate-200 dark:bg-slate-700 -z-0"></div>
+        <!-- Active Progress Line -->
+        <div class="absolute left-6 top-5 h-1 bg-gradient-to-r from-emerald-500 via-[#FF7A00] to-orange-500 -z-0 transition-all duration-500" style="width: ${((activeStep - 1) / (steps.length - 1)) * 88}%"></div>
+
+        ${steps.map((st) => {
+          const isDone = st.num < activeStep;
+          const isCurrent = st.num === activeStep;
+
+          let circleClass = 'bg-slate-200 dark:bg-slate-700 text-slate-500 border-2 border-slate-300 dark:border-slate-600';
+          if (isDone) {
+            circleClass = 'bg-emerald-500 text-white border-2 border-emerald-400 shadow-sm';
+          } else if (isCurrent) {
+            circleClass = 'bg-[#FF7A00] text-white border-2 border-white dark:border-slate-900 ring-4 ring-[#FF7A00]/30 shadow-md animate-pulse';
+          }
+
+          return `
+            <div class="relative z-10 flex flex-col items-center text-center">
+              <div class="w-8 h-8 rounded-full ${circleClass} flex items-center justify-center text-xs font-black transition-all">
+                ${isDone ? renderIcon('Check', 'w-4 h-4 stroke-[3]') : st.num}
+              </div>
+              <span class="text-[10px] font-bold mt-1.5 leading-tight ${isCurrent ? 'text-slate-900 dark:text-white font-black' : (isDone ? 'text-slate-700 dark:text-slate-300' : 'text-slate-400')}">
+                ${st.label}
+              </span>
+              <span class="text-[9px] font-mono text-slate-400 mt-0.5 hidden sm:block">
+                ${st.sub}
+              </span>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function openClaimModal(rental, onSubmitted) {
+  const content = document.createElement('div');
+  content.className = 'p-6 space-y-4 text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-900';
+
+  const toolName = rental.toolName || rental.items?.[0]?.toolName || 'Equipo';
+
+  content.innerHTML = `
+    <div class="space-y-4">
+      <div class="p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-xl text-xs space-y-1">
+        <div class="font-bold text-amber-900 dark:text-amber-300">Orden #${rental.id} · ${toolName}</div>
+        <div class="text-[11px] text-amber-800 dark:text-amber-400">Proveedor: <strong>${rental.providerCompanyName || 'Proveedor Opus'}</strong></div>
+      </div>
+
+      <div>
+        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Tipo de Solicitud / Novedad</label>
+        <select id="claim-type" class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 font-bold focus:outline-none focus:ring-2 focus:ring-[#FF7A00]">
+          <option value="WARRANTY_REPLACEMENT">Garantía Técnica - Falla en Obra / Solicitud de Reemplazo</option>
+          <option value="DAMAGE_REPORT">Reporte de Siniestro o Avería de la Maquinaria</option>
+          <option value="REFUND_REQUEST">Solicitud de Reembolso Parcial o Total</option>
+        </select>
+      </div>
+
+      <div id="refund-amount-group" class="hidden">
+        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Monto de Reembolso Solicitado (COP)</label>
+        <input type="number" id="claim-amount" class="w-full text-xs px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 font-mono font-bold" placeholder="Ej: 500000" />
+      </div>
+
+      <div>
+        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Descripción Detallada de los Hechos en Obra</label>
+        <textarea id="claim-desc" rows="4" class="w-full text-xs p-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-[#FF7A00]" placeholder="Describe qué ocurrió con la maquinaria en el frente de obra, horómetro de falla o motivo de la reclamación..."></textarea>
+      </div>
+
+      <div id="claim-error" class="hidden text-xs text-rose-600 bg-rose-50 p-2.5 rounded-lg border border-rose-200"></div>
+
+      <div class="flex gap-2 pt-2">
+        <button id="btn-submit-claim" class="btn-primary flex-1 !py-2.5 text-xs font-black flex items-center justify-center gap-2 cursor-pointer">
+          ${renderIcon('CheckCircle2', 'w-4 h-4')} Radicar Solicitud Oficial
+        </button>
+      </div>
+    </div>
+  `;
+
+  const typeSelect = content.querySelector('#claim-type');
+  const amountGroup = content.querySelector('#refund-amount-group');
+  typeSelect?.addEventListener('change', () => {
+    if (typeSelect.value === 'REFUND_REQUEST') {
+      amountGroup?.classList.remove('hidden');
+    } else {
+      amountGroup?.classList.add('hidden');
+    }
+  });
+
+  content.querySelector('#btn-submit-claim')?.addEventListener('click', async () => {
+    const claimType = typeSelect?.value;
+    const description = content.querySelector('#claim-desc')?.value?.trim();
+    const amountVal = content.querySelector('#claim-amount')?.value;
+    const errBox = content.querySelector('#claim-error');
+    errBox.classList.add('hidden');
+
+    if (!description || description.length < 10) {
+      errBox.textContent = 'Ingresa una descripción de al menos 10 caracteres explicando los hechos.';
+      errBox.classList.remove('hidden');
+      return;
+    }
+
+    const payload = {
+      claimType,
+      description,
+      requestedAmount: claimType === 'REFUND_REQUEST' ? (parseFloat(amountVal) || null) : null
+    };
+
+    try {
+      await api.post(`/rentals/${rental.id}/claims`, payload);
+      showToast('Novedad radicada exitosamente. El equipo de soporte y el proveedor la revisarán.', 'success');
+      modal.close();
+      if (onSubmitted) onSubmitted();
+    } catch (err) {
+      errBox.textContent = err.message || 'Error al radicar la reclamación.';
+      errBox.classList.remove('hidden');
+    }
+  });
+
+  modal.open({
+    title: `Radicar Novedad / Garantía: Orden #${rental.id}`,
+    content,
+    maxWidth: 'max-w-md'
+  });
+}
+
       rentalsContainer.innerHTML = rentals.map(rental => {
         const isPending = rental.status === 'PENDING';
+        const isCancelled = rental.status === 'CANCELLED';
         const toolName = rental.toolName || rental.items?.[0]?.toolName || 'Maquinaria Pesada';
         const dailyRate = rental.dailyRate || rental.items?.[0]?.dailyPrice || 0;
         const days = rental.totalDays || 1;
-        const baseSubtotal = rental.subtotal || (days * dailyRate);
+        const units = rental.quantity || 1;
+        const baseSubtotal = rental.subtotal || (days * dailyRate * units);
         const total = Math.round(baseSubtotal * 1.19);
 
         return `
           <!-- Order Card with Industrial Yellow & Slate Accents -->
-          <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs flex flex-col md:flex-row justify-between gap-5 items-start md:items-center">
+          <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-xs flex flex-col gap-4">
             
-            <div class="space-y-2 flex-1">
-              <div class="flex flex-wrap items-center gap-2.5 text-xs">
-                <span class="font-mono font-black text-slate-900 bg-slate-100 px-2.5 py-0.5 rounded border border-slate-200">
-                  Orden #${rental.id}
-                </span>
-                ${getRentalStatusBadge(rental.status)}
-                ${getPaymentStatusBadge(rental.invoiceStatus || (rental.status === 'APPROVED' ? 'PAID' : 'PENDING'))}
-                <span class="text-slate-400 font-mono text-[11px]">
-                  Fecha: ${formatDate(rental.createdAt ? String(rental.createdAt).split('T')[0] : '2026-10-14')}
-                </span>
-              </div>
-
-              <div class="flex items-center gap-3 pt-1">
-                <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center flex-shrink-0 border border-amber-200">
-                  ${renderIcon('Truck', 'w-6 h-6')}
+            <div class="flex flex-col md:flex-row justify-between gap-5 items-start md:items-center">
+              <div class="space-y-2 flex-1">
+                <div class="flex flex-wrap items-center gap-2.5 text-xs">
+                  <span class="font-mono font-black text-slate-900 dark:text-white bg-slate-100 dark:bg-slate-800 px-2.5 py-0.5 rounded border border-slate-200 dark:border-slate-700">
+                    Orden #${rental.id}
+                  </span>
+                  ${getRentalStatusBadge(rental.status)}
+                  ${getPaymentStatusBadge(rental.invoiceStatus || (rental.status === 'APPROVED' ? 'PAID' : 'PENDING'))}
+                  <span class="text-slate-400 font-mono text-[11px]">
+                    Fecha: ${formatDate(rental.createdAt ? String(rental.createdAt).split('T')[0] : '2026-10-14')}
+                  </span>
                 </div>
-                <div>
-                  <h3 class="text-sm font-black text-slate-900 leading-tight">
-                    ${toolName}
-                  </h3>
-                  <div class="text-xs text-slate-500 font-mono mt-0.5 font-medium">
-                    Tarifa: ${formatCurrency(dailyRate)}/día · Duración: ${days} día${days > 1 ? 's' : ''}
+
+                <div class="flex items-center gap-3 pt-1">
+                  <div class="w-12 h-12 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 flex items-center justify-center flex-shrink-0 border border-amber-200 dark:border-amber-800">
+                    ${renderIcon('Truck', 'w-6 h-6')}
+                  </div>
+                  <div>
+                    <h3 class="text-sm font-black text-slate-900 dark:text-white leading-tight">
+                      ${toolName}
+                    </h3>
+                    <div class="text-xs text-slate-500 font-mono mt-0.5 font-medium">
+                      Unidades: <strong class="text-slate-900 dark:text-slate-200">${units}</strong> · Tarifa: ${formatCurrency(dailyRate)}/día · Duración: ${days} día${days > 1 ? 's' : ''}
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div class="text-xs text-slate-600 pt-1 flex flex-wrap gap-4 font-normal">
-                <span>Vigencia en obra: <strong>${formatDate(rental.startDate)}</strong> hasta <strong>${formatDate(rental.endDate)}</strong></span>
-                ${rental.providerCompanyName ? `<span>Proveedor: <strong>${rental.providerCompanyName}</strong></span>` : ''}
-              </div>
-
-              ${isPending ? `
-                <div class="text-[11px] text-amber-800 bg-amber-50 px-3 py-1.5 rounded-lg border border-amber-200 flex items-center gap-1.5 font-medium mt-1">
-                  ${renderIcon('Clock', 'w-3.5 h-3.5 text-amber-600 flex-shrink-0')} 
-                  Pago recibido. En espera de confirmación y despacho por parte de <strong>${rental.providerCompanyName || 'el proveedor'}</strong>.
+                <div class="text-xs text-slate-600 dark:text-slate-400 pt-1 flex flex-wrap gap-4 font-normal">
+                  <span>Vigencia en obra: <strong>${formatDate(rental.startDate)}</strong> hasta <strong>${formatDate(rental.endDate)}</strong></span>
+                  ${rental.providerCompanyName ? `<span>Proveedor: <strong>${rental.providerCompanyName}</strong></span>` : ''}
                 </div>
-              ` : (rental.status === 'APPROVED' ? `
-                <div class="text-[11px] text-emerald-800 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-200 flex items-center gap-1.5 font-medium mt-1">
-                  ${renderIcon('CheckCircle2', 'w-3.5 h-3.5 text-emerald-600 flex-shrink-0')} 
-                  ¡Reserva confirmada por el proveedor! Maquinaria programada para entrega en obra.
-                </div>
-              ` : '')}
-            </div>
-
-            <!-- Right: Exact Total & Actions -->
-            <div class="flex flex-row md:flex-col items-end justify-between w-full md:w-auto gap-3 pt-3 md:pt-0 border-t md:border-t-0 border-slate-100">
-              <div class="text-left md:text-right">
-                <div class="text-[9px] text-slate-400 uppercase font-black font-mono">Total Liquidado (IVA 19%)</div>
-                <div class="text-xl font-black text-slate-900 font-mono">
-                  ${formatCurrency(total)}
-                </div>
-              </div>
-
-              <div class="flex items-center gap-2">
-                <button class="btn-check-invoice btn-dark !py-2 !px-3 text-xs flex items-center gap-1.5" data-rental-id="${rental.id}">
-                  ${renderIcon('FileText', 'w-3.5 h-3.5 text-[#FFB800]')} Ver Factura Oficial
-                </button>
 
                 ${isPending ? `
-                  <button class="btn-cancel-rental px-3 py-2 bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-bold rounded-xl flex items-center gap-1 cursor-pointer border border-rose-200" data-rental-id="${rental.id}">
-                    ${renderIcon('XCircle', 'w-3.5 h-3.5')} Cancelar
+                  <div class="text-[11px] text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 px-3 py-1.5 rounded-lg border border-amber-200 dark:border-amber-800 flex items-center gap-1.5 font-medium mt-1">
+                    ${renderIcon('Clock', 'w-3.5 h-3.5 text-amber-600 flex-shrink-0')} 
+                    Pago recibido. En espera de confirmación y despacho por parte de <strong>${rental.providerCompanyName || 'el proveedor'}</strong>.
+                  </div>
+                ` : (rental.status === 'APPROVED' ? `
+                  <div class="text-[11px] text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 px-3 py-1.5 rounded-lg border border-emerald-200 dark:border-emerald-800 flex items-center gap-1.5 font-medium mt-1">
+                    ${renderIcon('CheckCircle2', 'w-3.5 h-3.5 text-emerald-600 flex-shrink-0')} 
+                    ¡Reserva confirmada por el proveedor! Maquinaria programada para entrega en obra.
+                  </div>
+                ` : '')}
+              </div>
+
+              <!-- Right: Exact Total & Actions -->
+              <div class="flex flex-row md:flex-col items-end justify-between w-full md:w-auto gap-3 pt-3 md:pt-0 border-t md:border-t-0 border-slate-100 dark:border-slate-800">
+                <div class="text-left md:text-right">
+                  <div class="text-[9px] text-slate-400 uppercase font-black font-mono">Total Liquidado (IVA 19%)</div>
+                  <div class="text-xl font-black text-slate-900 dark:text-white font-mono">
+                    ${formatCurrency(total)}
+                  </div>
+                </div>
+
+                <div class="flex flex-wrap items-center gap-2">
+                  <button class="btn-check-invoice btn-dark !py-2 !px-3 text-xs flex items-center gap-1.5 cursor-pointer" data-rental-id="${rental.id}">
+                    ${renderIcon('FileText', 'w-3.5 h-3.5 text-[#FFB800]')} Ver Factura Oficial
                   </button>
-                ` : ''}
+
+                  ${!isCancelled ? `
+                    <button class="btn-open-claim px-3 py-2 bg-amber-50 hover:bg-amber-100 text-amber-900 dark:bg-amber-950/40 dark:hover:bg-amber-900/50 dark:text-amber-300 text-xs font-bold rounded-xl flex items-center gap-1.5 cursor-pointer border border-amber-200 dark:border-amber-800 transition-colors" data-rental-id="${rental.id}">
+                      ${renderIcon('AlertTriangle', 'w-3.5 h-3.5 text-amber-600')} Novedad / Garantía
+                    </button>
+                  ` : ''}
+
+                  ${isPending ? `
+                    <button class="btn-cancel-rental px-3 py-2 bg-rose-50 hover:bg-rose-100 text-rose-600 dark:bg-rose-950/40 dark:text-rose-400 text-xs font-bold rounded-xl flex items-center gap-1 cursor-pointer border border-rose-200 dark:border-rose-900" data-rental-id="${rental.id}">
+                      ${renderIcon('XCircle', 'w-3.5 h-3.5')} Cancelar
+                    </button>
+                  ` : ''}
+                </div>
               </div>
             </div>
+
+            <!-- Temu / Amazon Style Order Tracking Stepper -->
+            ${renderOrderTimeline(rental)}
 
           </div>
         `;
       }).join('');
+
+      rentalsContainer.querySelectorAll('.btn-open-claim').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const rentalId = btn.dataset.rentalId;
+          const currentRental = rentals.find(r => String(r.id) === String(rentalId));
+          if (currentRental) {
+            openClaimModal(currentRental, loadClientRentals);
+          }
+        });
+      });
 
       rentalsContainer.querySelectorAll('.btn-check-invoice').forEach(btn => {
         btn.addEventListener('click', async () => {

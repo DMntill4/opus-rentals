@@ -56,6 +56,7 @@ export async function renderAdminDashboard() {
   let clientSearchQuery = '';
   let rentalSearchQuery = '';
   let toolSearchQuery = '';
+  let qualityProviderFilter = 'ALL';
   let dbDiagnosticResult = null;
   let isTestingDb = false;
 
@@ -84,10 +85,11 @@ export async function renderAdminDashboard() {
   let fleetStatus = null;
   let frequentClients = [];
   let topToolsReport = [];
+  let providerQualityReport = [];
 
   async function loadAllData() {
     try {
-      const [statsRes, usersRes, rentalsRes, toolsRes, clientsRes, fleetStatusRes, frequentClientsRes, topToolsRes] = await Promise.allSettled([
+      const [statsRes, usersRes, rentalsRes, toolsRes, clientsRes, fleetStatusRes, frequentClientsRes, topToolsRes, qualityRes] = await Promise.allSettled([
         api.get('/admin/reports/dashboard'),
         api.get('/admin/users'),
         api.get('/rentals'),
@@ -95,7 +97,8 @@ export async function renderAdminDashboard() {
         api.get('/clients'),
         api.get('/admin/reports/fleet-status'),
         api.get('/admin/reports/frequent-clients'),
-        api.get('/admin/reports/top-tools')
+        api.get('/admin/reports/top-tools'),
+        api.get('/admin/reports/provider-quality')
       ]);
 
       dashboardStats = statsRes.status === 'fulfilled' ? statsRes.value : null;
@@ -106,6 +109,7 @@ export async function renderAdminDashboard() {
       fleetStatus = fleetStatusRes.status === 'fulfilled' ? fleetStatusRes.value : null;
       frequentClients = frequentClientsRes.status === 'fulfilled' && Array.isArray(frequentClientsRes.value) ? frequentClientsRes.value : [];
       topToolsReport = topToolsRes.status === 'fulfilled' && Array.isArray(topToolsRes.value) ? topToolsRes.value : [];
+      providerQualityReport = qualityRes.status === 'fulfilled' && Array.isArray(qualityRes.value) ? qualityRes.value : [];
     } catch (err) {
       console.warn('Error loading admin dashboard datasets', err);
     }
@@ -228,6 +232,11 @@ export async function renderAdminDashboard() {
     const filteredClients = rawClients.filter(c => {
       const full = `${c.firstName || ''} ${c.lastName || ''} ${c.email || ''} ${c.documentNumber || ''} ${c.phone || ''}`.toLowerCase();
       return !clientSearchQuery || full.includes(clientSearchQuery.toLowerCase());
+    });
+
+    const filteredQualityList = providerQualityReport.filter(pq => {
+      if (qualityProviderFilter === 'ALL') return true;
+      return String(pq.providerId) === String(qualityProviderFilter);
     });
 
     const gmvTotal = dashboardStats?.totalRevenue ?? rentalsList.reduce((acc, r) => acc + (r.total || 0), 0);
@@ -924,6 +933,95 @@ export async function renderAdminDashboard() {
                   </div>
                 </div>
               </div>
+
+              <!-- Provider Quality, Return Rates, Damages and Refunds Audit -->
+              <div class="bg-white dark:bg-slate-900 rounded-3xl border-2 border-slate-200 dark:border-slate-800 p-6 space-y-4 shadow-sm">
+                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-3 border-b border-slate-200 dark:border-slate-800">
+                  <div>
+                    <h3 class="text-base font-black text-slate-900 dark:text-white font-display">Auditoría de Calidad, Siniestralidad y Devoluciones por Proveedor</h3>
+                    <p class="text-xs text-slate-500">Supervisión de tasas de retorno (%), reportes de avería en obra, garantías y reembolsos autorizados.</p>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <select id="select-filter-quality-provider" class="text-xs px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 font-bold focus:outline-none focus:ring-2 focus:ring-[#FF7A00]">
+                      <option value="ALL">Todos los proveedores</option>
+                      ${providerQualityReport.map(pq => `
+                        <option value="${pq.providerId}" ${String(qualityProviderFilter) === String(pq.providerId) ? 'selected' : ''}>${pq.providerName}</option>
+                      `).join('')}
+                    </select>
+                  </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left text-xs">
+                    <thead class="bg-slate-50 dark:bg-slate-800 text-slate-500 uppercase tracking-wider text-[10px] font-mono font-bold border-b border-slate-200 dark:border-slate-700">
+                      <tr>
+                        <th class="py-2.5 px-3">Empresa Proveedora</th>
+                        <th class="py-2.5 px-3 text-center">Alquileres</th>
+                        <th class="py-2.5 px-3 text-center">Devoluciones</th>
+                        <th class="py-2.5 px-3">Tasa Retorno</th>
+                        <th class="py-2.5 px-3 text-center">Garantías</th>
+                        <th class="py-2.5 px-3 text-center">Averías Obra</th>
+                        <th class="py-2.5 px-3 text-center">Reembolsos</th>
+                        <th class="py-2.5 px-3 text-right">Total Reembolsado</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 dark:divide-slate-800 font-medium text-xs">
+                      ${filteredQualityList.map(pq => {
+                        const returnRate = pq.returnRatePercentage ?? 0;
+                        const warranties = pq.warrantyClaimsCount ?? pq.warrantyClaims ?? 0;
+                        const damages = pq.damageReportsCount ?? pq.damageReports ?? 0;
+                        const refunds = pq.refundRequestsCount ?? pq.refundRequests ?? 0;
+                        const refundAmount = pq.totalRefundAmount ?? 0;
+
+                        return `
+                          <tr class="hover:bg-slate-50/60 dark:hover:bg-slate-800/30">
+                            <td class="py-3 px-3">
+                              <div class="font-bold text-slate-900 dark:text-white">${pq.providerName}</div>
+                              <div class="text-[10px] text-slate-400 font-mono">ID #${pq.providerId} · ${pq.city || 'Colombia'}</div>
+                            </td>
+                            <td class="py-3 px-3 text-center font-mono font-bold">${pq.totalRentals}</td>
+                            <td class="py-3 px-3 text-center font-mono font-bold text-emerald-600">${pq.returnedRentals}</td>
+                            <td class="py-3 px-3">
+                              <div class="flex items-center gap-2">
+                                <span class="font-mono font-bold text-[11px] ${returnRate >= 85 ? 'text-emerald-600' : (returnRate >= 70 ? 'text-amber-600' : 'text-rose-600')}">
+                                  ${returnRate}%
+                                </span>
+                                <div class="w-16 h-2 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
+                                  <div class="h-full ${returnRate >= 85 ? 'bg-emerald-500' : (returnRate >= 70 ? 'bg-amber-500' : 'bg-rose-500')}" style="width: ${Math.min(100, returnRate)}%"></div>
+                                </div>
+                              </div>
+                            </td>
+                            <td class="py-3 px-3 text-center">
+                              <span class="px-2 py-0.5 rounded-full font-mono text-[11px] font-bold ${warranties > 0 ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300' : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'}">
+                                ${warranties}
+                              </span>
+                            </td>
+                            <td class="py-3 px-3 text-center">
+                              <span class="px-2 py-0.5 rounded-full font-mono text-[11px] font-bold ${damages > 0 ? 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300' : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'}">
+                                ${damages}
+                              </span>
+                            </td>
+                            <td class="py-3 px-3 text-center">
+                              <span class="px-2 py-0.5 rounded-full font-mono text-[11px] font-bold ${refunds > 0 ? 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300' : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'}">
+                                ${refunds}
+                              </span>
+                            </td>
+                            <td class="py-3 px-3 text-right font-mono font-black ${refundAmount > 0 ? 'text-rose-600' : 'text-slate-500'}">
+                              ${formatCurrency(refundAmount)}
+                            </td>
+                          </tr>
+                        `;
+                      }).join('')}
+                      ${filteredQualityList.length === 0 ? `
+                        <tr>
+                          <td colspan="8" class="py-6 text-center text-slate-400">No hay datos de siniestralidad o calidad disponibles para este filtro.</td>
+                        </tr>
+                      ` : ''}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
             </div>
           ` : ''}
 
@@ -1074,6 +1172,11 @@ export async function renderAdminDashboard() {
 
     container.querySelector('#search-tool-input')?.addEventListener('input', (e) => {
       toolSearchQuery = e.target.value;
+      render();
+    });
+
+    container.querySelector('#select-filter-quality-provider')?.addEventListener('change', (e) => {
+      qualityProviderFilter = e.target.value;
       render();
     });
 

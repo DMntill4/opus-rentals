@@ -164,17 +164,29 @@ class ApiClient {
     }
 
     if (endpoint.startsWith('/auth/register')) {
+      const email = (body.email || `${body.username}@empresa.co`).trim().toLowerCase();
+      
+      const emailExists = this.mockUsers.some(u => u.email && u.email.toLowerCase() === email) ||
+                          this.registeredAccounts.has(email) ||
+                          (body.username && this.registeredAccounts.has(body.username.toLowerCase()));
+
+      if (emailExists) {
+        const err = new Error(`El correo electrónico ${email} ya se encuentra registrado en el sistema. Inicie sesión o utilice otro correo.`);
+        err.status = 409;
+        throw err;
+      }
+
       const role = body.role || (body.roles && body.roles[0]) || 'ROLE_CLIENTE';
       const cleanRoles = Array.isArray(body.roles) ? body.roles : [role];
       const account = {
         id: `usr-${Date.now().toString().slice(-4)}`,
-        username: body.username || body.email?.split('@')[0] || 'usuario',
-        email: body.email || `${body.username}@empresa.co`,
+        username: body.username || email.split('@')[0] || 'usuario',
+        email: email,
         roles: cleanRoles,
         enabled: true,
       };
-      this.registeredAccounts.set(body.username, account);
-      if (body.email) this.registeredAccounts.set(body.email, account);
+      this.registeredAccounts.set(body.username || email, account);
+      this.registeredAccounts.set(email, account);
       return account;
     }
 
@@ -383,6 +395,115 @@ class ApiClient {
     // 8. Inspections & Damages
     if (endpoint.startsWith('/inspections')) {
       return { id: `INSP-${Date.now().toString().slice(-4)}`, status: 'RECORDED' };
+    }
+
+    // 9. Claims, Warranties & Refunds
+    if (!this.mockClaims) this.mockClaims = [];
+
+    if (endpoint.includes('/claims')) {
+      if (endpoint.includes('/resolve') && method === 'PATCH') {
+        const parts = endpoint.split('/');
+        const claimId = parts[2];
+        const claim = this.mockClaims.find(c => String(c.id) === String(claimId));
+        if (claim) {
+          claim.status = body.status || 'RESOLVED';
+          if (body.refundAmount) claim.refundAmount = body.refundAmount;
+          if (body.resolutionNotes) claim.resolutionNotes = body.resolutionNotes;
+          claim.resolvedAt = new Date().toISOString();
+          return claim;
+        }
+        return { success: true, status: body.status || 'RESOLVED' };
+      }
+
+      if (method === 'POST') {
+        const rentalIdMatch = endpoint.match(/\/rentals\/(\d+)\/claims/);
+        const rentalId = rentalIdMatch ? Number(rentalIdMatch[1]) : 1;
+        const newClaim = {
+          id: Date.now(),
+          rentalId: rentalId,
+          clientId: 1,
+          clientFullName: 'Cliente en Obra',
+          clientPhone: '3101234567',
+          toolId: 3,
+          toolName: 'Herramienta Industrial',
+          providerId: 3,
+          providerCompanyName: 'Bosch Herramientas Pro',
+          claimType: body.claimType || 'WARRANTY_REPLACEMENT',
+          reason: body.reason || 'Falla técnica',
+          description: body.description || '',
+          requestedAction: body.requestedAction || 'REPLACEMENT',
+          status: 'PENDING',
+          refundAmount: 0,
+          resolutionNotes: null,
+          createdAt: new Date().toISOString(),
+          resolvedAt: null
+        };
+        this.mockClaims.unshift(newClaim);
+        return newClaim;
+      }
+
+      return this.mockClaims;
+    }
+
+    if (endpoint.startsWith('/admin/reports/provider-quality')) {
+      return [
+        {
+          providerId: 1,
+          providerName: 'Caterpillar Equipos SAS',
+          taxId: 'NIT-900123456-1',
+          city: 'Bogotá D.C.',
+          totalRentals: 48,
+          returnedRentals: 42,
+          returnRatePercentage: 87.5,
+          damageReportsCount: 2,
+          warrantyClaimsCount: 1,
+          refundRequestsCount: 0,
+          totalRefundAmount: 0,
+          activeToolsCount: 12
+        },
+        {
+          providerId: 2,
+          providerName: 'Komatsu Maquinaria Andina',
+          taxId: 'NIT-900234567-2',
+          city: 'Medellín',
+          totalRentals: 36,
+          returnedRentals: 32,
+          returnRatePercentage: 88.89,
+          damageReportsCount: 1,
+          warrantyClaimsCount: 2,
+          refundRequestsCount: 1,
+          totalRefundAmount: 450000,
+          activeToolsCount: 8
+        },
+        {
+          providerId: 3,
+          providerName: 'Bosch Herramientas Pro',
+          taxId: 'NIT-900345678-3',
+          city: 'Barranquilla',
+          totalRentals: 29,
+          returnedRentals: 26,
+          returnRatePercentage: 89.66,
+          damageReportsCount: 1,
+          warrantyClaimsCount: 1,
+          refundRequestsCount: 0,
+          totalRefundAmount: 0,
+          activeToolsCount: 10
+        },
+        {
+          providerId: 4,
+          providerName: 'Hilti Soluciones de Anclaje',
+          taxId: 'NIT-900456789-4',
+          city: 'Bogotá D.C.',
+          totalRentals: 22,
+          returnedRentals: 20,
+          returnRatePercentage: 90.91,
+          damageReportsCount: 0,
+          warrantyClaimsCount: 0,
+          refundRequestsCount: 0,
+          totalRefundAmount: 0,
+          activeToolsCount: 6
+        }
+      ];
     }
 
     return { message: 'Mock response successful' };
