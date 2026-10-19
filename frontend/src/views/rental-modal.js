@@ -6,19 +6,21 @@ import { formatCurrency, formatDate } from '../utils/formatters.js';
 import { renderIcon, renderToolRentMark, renderOpusMark, renderOpusBanner } from '../utils/icons.js';
 import { openAuthModal } from '../components/auth-modal.js';
 import { notificationsStore } from '../utils/notifications-store.js';
+import { openDateRangeModal } from '../components/custom-date-picker.js';
+import { validateRentalDates } from '../utils/validators.js';
 
-export async function openRentalModal(tool) {
+export async function openRentalModal(tool, initialDates = {}) {
   if (!auth.isAuthenticated()) {
     showToast('Debes iniciar sesión para realizar un alquiler', 'warning');
     openAuthModal('login');
     return;
   }
 
-  // Calculate default dates: tomorrow to +3 days
+  // Calculate default dates: tomorrow to +6 days (7 days default) or use passed initialDates
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
   const endDefault = new Date(tomorrow);
-  endDefault.setDate(endDefault.getDate() + 3);
+  endDefault.setDate(endDefault.getDate() + 6);
 
   const formatDateInput = (d) => d.toISOString().split('T')[0];
 
@@ -28,8 +30,8 @@ export async function openRentalModal(tool) {
     return formatDateInput(s);
   };
 
-  let startDate = formatDateInput(tomorrow);
-  let endDate = formatDateInput(endDefault);
+  let startDate = initialDates.startDate || formatDateInput(tomorrow);
+  let endDate = initialDates.endDate || formatDateInput(endDefault);
   let isCheckingAvailability = false;
   let isAvailable = true;
 
@@ -120,18 +122,36 @@ export async function openRentalModal(tool) {
               ${renderIcon('Calendar', 'w-4 h-4 inline mr-1 text-amber-500')} Período de Alquiler en Obra
             </label>
             
-            <div class="grid grid-cols-2 gap-3">
-              <div>
-                <label class="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1" for="rental-start-date">Fecha de inicio</label>
-                <input type="date" id="rental-start-date" value="${startDate}" min="${formatDateInput(new Date())}" class="w-full bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-amber-400" />
+            <!-- Custom Date Range Selector (Inicio vs Fin con Calendario Propio) -->
+            <div class="space-y-2">
+              <div class="flex items-center justify-between">
+                <label class="block text-[11px] font-bold text-slate-700 dark:text-slate-300">Periodo de Obra (Inicio vs. Fin)</label>
+                <span class="text-[10px] font-mono text-amber-600 dark:text-amber-400 font-bold bg-amber-50 dark:bg-amber-950/40 px-2 py-0.5 rounded-full border border-amber-200">Máx. 30 días</span>
               </div>
-              <div>
-                <div class="flex items-center justify-between mb-1">
-                  <label class="block text-[11px] font-bold text-slate-700 dark:text-slate-300" for="rental-end-date">Fecha de fin</label>
-                  <span class="text-[10px] font-mono text-amber-600 dark:text-amber-400 font-bold">Máx. 30 días</span>
+              
+              <button 
+                type="button" 
+                id="btn-modal-open-calendar"
+                class="w-full p-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 hover:border-[#FF7A00] bg-slate-50 dark:bg-slate-800 flex items-center justify-between transition-all cursor-pointer group shadow-2xs"
+                title="Haz clic para seleccionar o ajustar fechas con el calendario interactivo"
+              >
+                <div class="flex items-center gap-2.5">
+                  <div class="w-8 h-8 rounded-lg bg-orange-100 dark:bg-orange-950/50 text-[#FF7A00] flex items-center justify-center font-bold">
+                    ${renderIcon('Calendar', 'w-4 h-4')}
+                  </div>
+                  <div class="text-left font-mono">
+                    <div class="text-xs font-black text-slate-900 dark:text-white flex items-center gap-1.5">
+                      <span>${formatDate(startDate)}</span>
+                      <span class="text-[#FF7A00] font-black">➔</span>
+                      <span>${formatDate(endDate)}</span>
+                    </div>
+                    <div class="text-[10px] text-slate-400 group-hover:text-[#FF7A00]">Clic para cambiar en calendario</div>
+                  </div>
                 </div>
-                <input type="date" id="rental-end-date" value="${endDate}" min="${startDate}" max="${getMaxEndDate(startDate)}" class="w-full bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-amber-400" />
-              </div>
+                <span class="px-2.5 py-1 rounded-lg bg-orange-100 dark:bg-orange-950/50 text-[#FF7A00] text-xs font-black font-mono">
+                  ${days} días
+                </span>
+              </button>
             </div>
 
             <!-- Availability Status Alert -->
@@ -182,40 +202,35 @@ export async function openRentalModal(tool) {
       </div>
     `;
 
-    // Event handlers
-    const startInput = content.querySelector('#rental-start-date');
-    const endInput = content.querySelector('#rental-end-date');
-
-    startInput.addEventListener('change', (e) => {
-      startDate = e.target.value;
-      const maxAllowed = getMaxEndDate(startDate);
-      endInput.min = startDate;
-      endInput.max = maxAllowed;
-      if (endDate < startDate) {
-        endDate = startDate;
-        endInput.value = startDate;
-      } else if (endDate > maxAllowed) {
-        endDate = maxAllowed;
-        endInput.value = maxAllowed;
+    // Custom calendar range picker event handler
+    content.querySelector('#btn-modal-open-calendar')?.addEventListener('click', async () => {
+      let bookedRanges = [];
+      try {
+        const res = await api.get(`/rentals/tool/${tool.id}/booked-dates`);
+        bookedRanges = Array.isArray(res) ? res : [];
+      } catch (e) {
+        console.warn('Could not fetch tool booked dates', e);
       }
-      checkAvailability();
-    });
 
-    endInput.addEventListener('change', (e) => {
-      const maxAllowed = getMaxEndDate(startDate);
-      if (e.target.value > maxAllowed) {
-        endDate = maxAllowed;
-        endInput.value = maxAllowed;
-      } else if (e.target.value < startDate) {
-        endDate = startDate;
-        endInput.value = startDate;
-      } else {
-        endDate = e.target.value;
-      }
-      checkAvailability();
+      openDateRangeModal({
+        startDate,
+        endDate,
+        bookedDateRanges: bookedRanges,
+        onConfirm: (res) => {
+          startDate = res.startDate;
+          endDate = res.endDate;
+          checkAvailability();
+        }
+      });
     });
 
     content.querySelector('#btn-proceed-checkout')?.addEventListener('click', () => {
+      if (!auth.isAuthenticated()) {
+        modal.close();
+        openAuthModal('login');
+        showToast('Inicia sesión como Cliente para continuar con tu reserva', 'info');
+        return;
+      }
       openCheckoutModal(tool, { startDate, endDate, ...calculateCosts() });
     });
   }
@@ -256,39 +271,41 @@ async function openCheckoutModal(tool, rentalData) {
       <!-- Payment Method Selection -->
       <div>
         <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-2">Selecciona Método de Pago</label>
-        <div class="grid grid-cols-3 gap-2.5">
-          <label class="p-3 rounded-xl border-2 border-amber-500 bg-amber-500/10 dark:bg-amber-500/20 cursor-pointer flex flex-col items-center text-center gap-1.5 transition-all">
-            <input type="radio" name="payment-method" value="CREDIT_CARD" checked class="text-amber-500">
+        <div class="grid grid-cols-3 gap-2.5" id="payment-methods-grid">
+          <label class="pay-method-btn p-3 rounded-xl border-2 border-amber-500 bg-amber-500/10 dark:bg-amber-500/20 cursor-pointer flex flex-col items-center text-center gap-1.5 transition-all">
+            <input type="radio" name="payment-method" value="CREDIT_CARD" checked class="text-amber-500 hidden">
             ${renderIcon('CreditCard', 'w-5 h-5 text-amber-600 dark:text-amber-400')}
             <span class="text-xs font-bold text-slate-900 dark:text-white">Tarjeta Crédito</span>
           </label>
-          <label class="p-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-slate-300 cursor-pointer flex flex-col items-center text-center gap-1.5 transition-all">
-            <input type="radio" name="payment-method" value="DEBIT_CARD" class="text-amber-500">
+          <label class="pay-method-btn p-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-slate-300 cursor-pointer flex flex-col items-center text-center gap-1.5 transition-all">
+            <input type="radio" name="payment-method" value="DEBIT_CARD" class="text-amber-500 hidden">
             ${renderIcon('Wallet', 'w-5 h-5 text-slate-600 dark:text-slate-300')}
             <span class="text-xs font-bold text-slate-900 dark:text-white">PSE / Débito</span>
           </label>
-          <label class="p-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-slate-300 cursor-pointer flex flex-col items-center text-center gap-1.5 transition-all">
-            <input type="radio" name="payment-method" value="BANK_TRANSFER" class="text-amber-500">
+          <label class="pay-method-btn p-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-slate-300 cursor-pointer flex flex-col items-center text-center gap-1.5 transition-all">
+            <input type="radio" name="payment-method" value="BANK_TRANSFER" class="text-amber-500 hidden">
             ${renderIcon('Building2', 'w-5 h-5 text-slate-600 dark:text-slate-300')}
             <span class="text-xs font-bold text-slate-900 dark:text-white">Transferencia</span>
           </label>
         </div>
       </div>
 
-      <!-- Simulated Card Form -->
-      <div class="space-y-3 p-4 rounded-xl bg-slate-50 dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700">
-        <div>
-          <label class="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">Número de Tarjeta Corporativa</label>
-          <input type="text" class="w-full bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-mono font-bold text-slate-900 dark:text-white" value="4532 •••• •••• 8892" />
-        </div>
-        <div class="grid grid-cols-2 gap-3">
+      <!-- Payment Inputs Box (Dynamically updated) -->
+      <div class="space-y-3 p-4 rounded-xl bg-slate-50 dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700" id="card-inputs-box">
+        <div id="method-fields-container">
           <div>
-            <label class="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">Vencimiento</label>
-            <input type="text" class="w-full bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-mono font-bold text-slate-900 dark:text-white" value="12/28" />
+            <label class="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1" id="card-num-label">Número de Tarjeta Corporativa</label>
+            <input type="text" id="chk-card-num" class="w-full bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-mono font-bold text-slate-900 dark:text-white" value="4532 8920 1142 8892" placeholder="4532 8920 1142 8892" />
           </div>
-          <div>
-            <label class="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">CVC / CVV</label>
-            <input type="password" class="w-full bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-mono font-bold text-slate-900 dark:text-white" value="892" />
+          <div class="grid grid-cols-2 gap-3 mt-3" id="card-sub-fields">
+            <div>
+              <label class="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">Vencimiento (MM/AA)</label>
+              <input type="text" id="chk-card-exp" class="w-full bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-mono font-bold text-slate-900 dark:text-white" value="12/28" placeholder="MM/AA" />
+            </div>
+            <div>
+              <label class="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">CVC / CVV</label>
+              <input type="password" id="chk-card-cvv" maxlength="4" class="w-full bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-mono font-bold text-slate-900 dark:text-white" value="892" placeholder="123" />
+            </div>
           </div>
         </div>
       </div>
@@ -301,10 +318,68 @@ async function openCheckoutModal(tool, rentalData) {
     </div>
   `;
 
+  // Dynamic Payment Method Tabs Handler
+  const methodGrid = content.querySelector('#payment-methods-grid');
+  const cardNumLabel = content.querySelector('#card-num-label');
+  const cardNumInput = content.querySelector('#chk-card-num');
+  const cardSubFields = content.querySelector('#card-sub-fields');
+
+  methodGrid?.querySelectorAll('label').forEach(lbl => {
+    lbl.addEventListener('click', () => {
+      methodGrid.querySelectorAll('label').forEach(l => {
+        l.className = 'pay-method-btn p-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-slate-300 cursor-pointer flex flex-col items-center text-center gap-1.5 transition-all';
+      });
+      lbl.className = 'pay-method-btn p-3 rounded-xl border-2 border-amber-500 bg-amber-500/10 dark:bg-amber-500/20 cursor-pointer flex flex-col items-center text-center gap-1.5 transition-all';
+      const radio = lbl.querySelector('input[type="radio"]');
+      if (radio) {
+        radio.checked = true;
+        if (radio.value === 'CREDIT_CARD') {
+          if (cardNumLabel) cardNumLabel.textContent = 'Número de Tarjeta Corporativa';
+          if (cardNumInput) { cardNumInput.value = '4532 8920 1142 8892'; cardNumInput.placeholder = '4532 8920 1142 8892'; }
+          cardSubFields?.classList.remove('hidden');
+        } else if (radio.value === 'DEBIT_CARD') {
+          if (cardNumLabel) cardNumLabel.textContent = 'Número de Tarjeta Débito Nacional / PSE';
+          if (cardNumInput) { cardNumInput.value = '4000 1234 5678 9010'; cardNumInput.placeholder = '4000 1234 5678 9010'; }
+          cardSubFields?.classList.remove('hidden');
+        } else if (radio.value === 'BANK_TRANSFER') {
+          if (cardNumLabel) cardNumLabel.textContent = 'Referencia de Transferencia Empresarial Bancolombia (Cuenta Corriente # 104-98234-91)';
+          if (cardNumInput) { cardNumInput.value = `TRANSF-BANC-${Date.now().toString().slice(-6)}`; cardNumInput.placeholder = 'Comprobante de Transferencia'; }
+          cardSubFields?.classList.add('hidden');
+        }
+      }
+    });
+  });
+
+  // Real-time card formatting
+  const cardInputEl = content.querySelector('#chk-card-num');
+  if (cardInputEl) {
+    cardInputEl.addEventListener('input', (e) => {
+      let digits = e.target.value.replace(/\D/g, '').substring(0, 19);
+      let chunks = digits.match(/.{1,4}/g);
+      e.target.value = chunks ? chunks.join(' ') : digits;
+    });
+  }
+
   content.querySelector('#btn-confirm-payment').addEventListener('click', async () => {
     const btn = content.querySelector('#btn-confirm-payment');
     const errBox = content.querySelector('#checkout-error');
     errBox.classList.add('hidden');
+
+    const method = content.querySelector('input[name="payment-method"]:checked')?.value || 'CREDIT_CARD';
+
+    // Strict Card Validation
+    if (method === 'CREDIT_CARD' || method === 'DEBIT_CARD') {
+      const rawCard = content.querySelector('#chk-card-num')?.value || '';
+      const cardNum = rawCard.replace(/\D/g, '');
+      const isDemoCard = rawCard.includes('•') || rawCard.includes('4532') || rawCard.includes('4000');
+
+      if (!isDemoCard && cardNum.length > 0 && (cardNum.length < 13 || cardNum.length > 19)) {
+        errBox.textContent = 'El número de tarjeta es inválido (debe tener entre 13 y 19 dígitos).';
+        errBox.classList.remove('hidden');
+        return;
+      }
+    }
+
     btn.disabled = true;
     btn.innerHTML = `${renderIcon('Loader2', 'w-4 h-4 animate-spin inline mr-1.5')} Procesando pago seguro...`;
 
@@ -323,16 +398,15 @@ async function openCheckoutModal(tool, rentalData) {
         dailyPrice: tool.dailyPrice,
         subtotal: rentalData.subtotal,
         total: rentalData.total,
-        providerCompanyName: tool.provider?.name || tool.providerCompanyName || 'Opus Rentals Co.'
+        providerCompanyName: tool.provider?.name || tool.providerCompanyName || 'Caterpillar Equipos SAS'
       };
 
       const createdRental = await api.post('/rentals', rentalPayload);
 
-      // 2. Process payment (if backend auto-created invoice or via mock)
+      // 2. Process payment
       let paymentResult = null;
       if (createdRental?.invoiceId) {
         try {
-          // Map method to active payment_methods id (1=Visa, 4=PSE Bancolombia, etc.)
           const methodId = method === 'BANK_TRANSFER' ? 4 : (method === 'DEBIT_CARD' ? 10 : 1);
           paymentResult = await api.post('/payments', {
             invoiceId: createdRental.invoiceId,
@@ -344,12 +418,17 @@ async function openCheckoutModal(tool, rentalData) {
         }
       }
 
+      // Rental remains PENDING until the machinery provider approves and dispatches it
+      if (createdRental) {
+        createdRental.status = 'PENDING';
+      }
+
       // Trigger Notification in Notification Center and Toast
       notificationsStore.add({
         category: 'PAYMENT',
         type: 'success',
-        title: '¡Alquiler y Pago Confirmados!',
-        message: `Has reservado ${tool.name} (#${createdRental?.id || 'RES'}) por ${formatCurrency(rentalData.total)}. Factura legal generada.`,
+        title: '¡Pago Registrado y Solicitud Enviada!',
+        message: `Has reservado ${tool.name} (#${createdRental?.id || 'RES'}). Pago recibido exitosamente. La reserva está pendiente de confirmación por el proveedor.`,
         link: '#/client'
       });
 

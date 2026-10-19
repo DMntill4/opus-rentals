@@ -52,34 +52,44 @@ class NotificationsStore {
   }
 
   /**
-   * Returns notifications scoped to current user or active role
+   * Returns notifications scoped strictly to current user and active role
    */
   getAll() {
     const user = auth.getUser();
     if (!user) {
-      // Guest: only show unauthenticated/welcome notifications
-      return this.notifications.filter(n => !n.userId && !n.targetRole);
+      return [];
     }
 
-    const currentUserId = String(user.id || user.username || '');
-    const isProvider = auth.isProvider();
+    const currentUserId = String(user.id || user.userId || user.username || '');
     const isAdmin = auth.isAdmin();
+    const isProvider = !isAdmin && auth.isProvider();
+    const isClient = !isAdmin && !isProvider;
 
     return this.notifications.filter(n => {
-      // If notification has explicit target userId
-      if (n.userId && String(n.userId) === currentUserId) return true;
-      
-      // If notification targeted by role
-      if (isAdmin) return true;
-      if (n.targetRole === 'ROLE_PROVEEDOR' || n.targetRole === 'PROVEEDOR') {
-        return isProvider;
-      }
-      if (n.targetRole === 'ROLE_CLIENTE' || n.targetRole === 'CLIENTE') {
-        return !isProvider;
+      // 1. Admin only sees ADMIN / SYSTEM notifications
+      if (isAdmin) {
+        return n.targetRole === 'ROLE_ADMIN' || n.category === 'SYSTEM' || n.category === 'ADMIN';
       }
 
-      // If no explicit user or role, only show if matches recipient scope
-      if (!n.userId && !n.targetRole) {
+      // 2. Provider only sees PROVIDER notifications targeted to them
+      if (isProvider) {
+        const isProviderRole = n.targetRole === 'ROLE_PROVIDER' || n.targetRole === 'ROLE_PROVEEDOR';
+        if (!isProviderRole) return false;
+        // If explicitly addressed to another user ID, hide it
+        if (n.userId && currentUserId && String(n.userId) !== currentUserId) {
+          return false;
+        }
+        return true;
+      }
+
+      // 3. Client only sees CLIENT notifications targeted to them
+      if (isClient) {
+        const isClientRole = n.targetRole === 'ROLE_CLIENT' || n.targetRole === 'ROLE_CLIENTE';
+        if (!isClientRole) return false;
+        // If explicitly addressed to another user ID, hide it
+        if (n.userId && currentUserId && String(n.userId) !== currentUserId) {
+          return false;
+        }
         return true;
       }
 
@@ -118,12 +128,18 @@ class NotificationsStore {
   }
 
   /**
-   * Adds a notification scoped to the current user or specific role
+   * Adds a notification scoped strictly to specific role and user
    */
   add({ category = 'RENTAL', type = 'success', title, message, link = '#/client', targetRole = null, userId = null }) {
     const user = auth.getUser();
-    const effectiveUserId = userId || (user ? String(user.id || user.username || '') : null);
-    const effectiveRole = targetRole || (auth.isProvider() ? 'ROLE_PROVEEDOR' : 'ROLE_CLIENTE');
+    const effectiveUserId = userId || (user ? String(user.id || user.userId || user.username || '') : null);
+    
+    let resolvedRole = targetRole;
+    if (!resolvedRole) {
+      if (auth.isAdmin()) resolvedRole = 'ROLE_ADMIN';
+      else if (auth.isProvider()) resolvedRole = 'ROLE_PROVIDER';
+      else resolvedRole = 'ROLE_CLIENT';
+    }
 
     const newNotif = {
       id: `notif-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
@@ -136,7 +152,7 @@ class NotificationsStore {
       read: false,
       link,
       userId: effectiveUserId,
-      targetRole: effectiveRole
+      targetRole: resolvedRole
     };
 
     const updated = [newNotif, ...this.notifications];

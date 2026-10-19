@@ -67,7 +67,11 @@ class ApiClient {
       }
 
       if (!response.ok) {
-        const errorMsg = data?.message || data?.error || (typeof data === 'string' ? data : `Error HTTP ${response.status}`);
+        let errorMsg = data?.message || data?.error || (typeof data === 'string' ? data : `Error HTTP ${response.status}`);
+        if (data?.data && typeof data.data === 'object' && !Array.isArray(data.data)) {
+          const fieldErrors = Object.values(data.data).join('; ');
+          if (fieldErrors) errorMsg = `${errorMsg}: ${fieldErrors}`;
+        }
         const error = new Error(errorMsg);
         error.status = response.status;
         error.data = data;
@@ -247,6 +251,18 @@ class ApiClient {
       });
     }
 
+    if (endpoint.includes('/booked-dates')) {
+      const toolIdMatch = endpoint.match(/\/tool\/(\d+)\/booked-dates/);
+      const toolId = toolIdMatch ? toolIdMatch[1] : null;
+      return this.mockRequests
+        .filter(r => (!toolId || String(r.toolId) === String(toolId)) && r.status !== 'CANCELLED' && r.status !== 'REJECTED')
+        .map(r => ({
+          startDate: r.startDate || '2026-10-19',
+          endDate: r.endDate || '2026-10-21',
+          status: r.status || 'APPROVED'
+        }));
+    }
+
     if (endpoint.startsWith('/rentals/provider-requests') || endpoint.startsWith('/rentals/provider/')) {
       return this.mockRequests;
     }
@@ -273,6 +289,13 @@ class ApiClient {
         return { success: true, id, status: req?.status || 'UPDATED' };
       }
       if (method === 'POST') {
+        if (endpoint.includes('/cancel')) {
+          const parts = endpoint.split('/');
+          const id = parts[2];
+          const req = this.mockRequests.find(r => String(r.id) === String(id));
+          if (req) req.status = 'CANCELLED';
+          return { success: true, id, status: 'CANCELLED' };
+        }
         const foundTool = this.mockTools.find(t => String(t.id) === String(body.toolId)) || {};
         const toolName = body.toolName || foundTool.name || 'Maquinaria Industrial Certificada';
         const dailyPrice = body.dailyPrice || foundTool.dailyPrice || 1250000;

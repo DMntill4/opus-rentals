@@ -1,7 +1,7 @@
 import api from '../api/client.js';
 import auth from '../auth/state.js';
 import showToast from '../components/toast.js';
-import { formatCurrency, formatDate, getRentalStatusBadge } from '../utils/formatters.js';
+import { formatCurrency, formatDate, getRentalStatusBadge, getPaymentStatusBadge } from '../utils/formatters.js';
 import { renderIcon } from '../utils/icons.js';
 import { openAuthModal } from '../components/auth-modal.js';
 import { openInvoiceViewer } from './rental-modal.js';
@@ -123,11 +123,12 @@ export async function renderClientDashboard() {
           <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs flex flex-col md:flex-row justify-between gap-5 items-start md:items-center">
             
             <div class="space-y-2 flex-1">
-              <div class="flex items-center gap-3 text-xs">
+              <div class="flex flex-wrap items-center gap-2.5 text-xs">
                 <span class="font-mono font-black text-slate-900 bg-slate-100 px-2.5 py-0.5 rounded border border-slate-200">
                   Orden #${rental.id}
                 </span>
                 ${getRentalStatusBadge(rental.status)}
+                ${getPaymentStatusBadge(rental.invoiceStatus || (rental.status === 'APPROVED' ? 'PAID' : 'PENDING'))}
                 <span class="text-slate-400 font-mono text-[11px]">
                   Fecha: ${formatDate(rental.createdAt ? String(rental.createdAt).split('T')[0] : '2026-10-14')}
                 </span>
@@ -151,6 +152,18 @@ export async function renderClientDashboard() {
                 <span>Vigencia en obra: <strong>${formatDate(rental.startDate)}</strong> hasta <strong>${formatDate(rental.endDate)}</strong></span>
                 ${rental.providerCompanyName ? `<span>Proveedor: <strong>${rental.providerCompanyName}</strong></span>` : ''}
               </div>
+
+              ${isPending ? `
+                <div class="text-[11px] text-amber-800 bg-amber-50 px-3 py-1.5 rounded-lg border border-amber-200 flex items-center gap-1.5 font-medium mt-1">
+                  ${renderIcon('Clock', 'w-3.5 h-3.5 text-amber-600 flex-shrink-0')} 
+                  Pago recibido. En espera de confirmación y despacho por parte de <strong>${rental.providerCompanyName || 'el proveedor'}</strong>.
+                </div>
+              ` : (rental.status === 'APPROVED' ? `
+                <div class="text-[11px] text-emerald-800 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-200 flex items-center gap-1.5 font-medium mt-1">
+                  ${renderIcon('CheckCircle2', 'w-3.5 h-3.5 text-emerald-600 flex-shrink-0')} 
+                  ¡Reserva confirmada por el proveedor! Maquinaria programada para entrega en obra.
+                </div>
+              ` : '')}
             </div>
 
             <!-- Right: Exact Total & Actions -->
@@ -237,12 +250,12 @@ export async function renderClientDashboard() {
           if (!confirmed) return;
 
           try {
-            await api.post(`/rentals/${rentalId}/cancel`);
+            await api.patch(`/rentals/${rentalId}/status`, { status: 'CANCELLED' });
             showToast('Alquiler cancelado correctamente', 'success');
             loadClientRentals();
           } catch (e) {
             try {
-              await api.patch(`/rentals/${rentalId}/cancel`);
+              await api.post(`/rentals/${rentalId}/cancel`);
               showToast('Alquiler cancelado correctamente', 'success');
               loadClientRentals();
             } catch (err) {

@@ -521,32 +521,17 @@ export const curatedCatalogImageUrls = [
 export const mockRequests = [];
 
 export const mockAdminUsers = [
-  { id: 'usr-01', name: 'Juan Pérez García', email: 'juan.perez@ejemplo.com', role: 'Cliente', date: '13 oct 2026', active: true, avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100' },
-  { id: 'usr-02', name: 'Carlos Rodríguez', email: 'carlos.rodriguez@ejemplo.com', role: 'Proveedor', date: '11 oct 2026', active: true, avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100' },
-  { id: 'usr-03', name: 'Laura Gómez', email: 'laura.gomez@ejemplo.com', role: 'Cliente', date: '09 oct 2026', active: true, avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100' },
-  { id: 'usr-04', name: 'Diego Torres', email: 'diego.torres@ejemplo.com', role: 'Proveedor', date: '07 oct 2026', active: true, avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100' },
-  { id: 'usr-05', name: 'Ana Martínez', email: 'ana.martinez@ejemplo.com', role: 'Cliente', date: '05 oct 2026', active: false, avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100' },
-  { id: 'usr-06', name: 'Admin General ToolRent', email: 'admin@toolrent.co', role: 'Administrador', date: '01 oct 2026', active: true, avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100' },
+  { id: 'usr-01', name: 'Administrador General Opus', email: 'admin@opusrentals.com', role: 'Administrador', date: '18 oct 2026', active: true, avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100' },
+  { id: 'usr-02', name: 'Caterpillar Equipos SAS', email: 'provider.caterpillar@opusrentals.com', role: 'Proveedor', date: '18 oct 2026', active: true, avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100' },
+  { id: 'usr-03', name: 'Carlos Mendoza - Obras', email: 'client.carlos@gmail.com', role: 'Cliente', date: '18 oct 2026', active: true, avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100' }
 ];
 
 export const mockAdminKpis = {
-  totalIncome: 12450000,
-  activeRentals: 18,
-  totalUsers: 42,
-  availableTools: 56,
-  totalTools: 78,
-  topTools: [
-    { name: 'Excavadora hidráulica', count: 24, percent: 80 },
-    { name: 'Taladro percutor', count: 18, percent: 60 },
-    { name: 'Compresor de aire', count: 15, percent: 50 },
-    { name: 'Martillo demoledor', count: 12, percent: 40 },
-    { name: 'Andamio multidireccional', count: 10, percent: 33 },
-  ],
-  topClients: [
-    { name: 'Constructora del Norte S.A.S.', count: 12 },
-    { name: 'Juan Carlos Ramírez', count: 9 },
-    { name: 'Obras y Diseños S.A.S', count: 7 },
-    { name: 'Alianza Constructores', count: 6 },
-    { name: 'Proyectos del Valle', count: 5 },
-  ]
+  totalIncome: 0,
+  activeRentals: 0,
+  totalUsers: 3,
+  availableTools: 26,
+  totalTools: 26,
+  topTools: [],
+  topClients: []
 };

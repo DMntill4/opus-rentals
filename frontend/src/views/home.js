@@ -1,15 +1,27 @@
 import { renderNavbar } from '../components/navbar.js';
 import { renderIcon } from '../utils/icons.js';
-import { formatCurrency } from '../utils/formatters.js';
+import { formatCurrency, formatDate } from '../utils/formatters.js';
 import api from '../api/client.js';
 import auth from '../auth/state.js';
 import { openAuthModal } from '../components/auth-modal.js';
 import { resolveToolImageUrl, constructionHeroImage, constructionHeroImage2, constructionCategories } from '../utils/tool-images.js';
+import { openDateRangeModal, toIsoDate, calculateRentalDays } from '../components/custom-date-picker.js';
 
 export async function renderHomeView() {
   renderNavbar('home');
   const container = document.getElementById('app-content');
   if (!container) return;
+
+  // Date range state (default today -> 7 days, max 30 days)
+  const today = new Date();
+  const defaultStart = toIsoDate(today);
+  const defaultEndObj = new Date(today);
+  defaultEndObj.setDate(defaultEndObj.getDate() + 6);
+  const defaultEnd = toIsoDate(defaultEndObj);
+
+  let quoteStartDate = defaultStart;
+  let quoteEndDate = defaultEnd;
+  let quoteDays = calculateRentalDays(quoteStartDate, quoteEndDate);
 
   // Load tools
   let allTools = [];
@@ -35,6 +47,7 @@ export async function renderHomeView() {
           alt="Maquinaria Pesada en Obra Civil" 
           class="absolute inset-0 w-full h-full object-cover object-bottom select-none"
           loading="eager"
+          referrerpolicy="no-referrer"
           onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1579762715118-a6f1d4b934f1?auto=format&fit=crop&w=1920&q=85';"
         />
 
@@ -62,7 +75,8 @@ export async function renderHomeView() {
             <form id="hero-quote-form" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3 items-end">
               
               <!-- Ubicación de Obra -->
-              <div class="lg:col-span-4 space-y-1">
+              <!-- Ubicación de Obra -->
+              <div class="lg:col-span-3 space-y-1">
                 <label class="text-[10px] font-mono font-black uppercase text-slate-500 tracking-wider flex items-center gap-1">
                   ${renderIcon('MapPin', 'w-3 h-3 text-[#FF6B00]')} Ubicación de Obra
                 </label>
@@ -79,19 +93,32 @@ export async function renderHomeView() {
                 </div>
               </div>
 
-              <!-- Fechas -->
-              <div class="lg:col-span-3 space-y-1">
-                <label class="text-[10px] font-mono font-black uppercase text-slate-500 tracking-wider flex items-center gap-1">
-                  ${renderIcon('Calendar', 'w-3 h-3 text-[#FF6B00]')} Fecha Inicio
-                </label>
-                <input 
-                  type="date" 
-                  id="quote-start-date" 
-                  value="2026-10-16"
-                  class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-bold text-slate-900 focus:outline-none focus:border-[#FFB800]"
-                />
+              <!-- Fechas de Alquiler (Inicio vs. Fin con Calendario Propio) -->
+              <div class="lg:col-span-4 space-y-1">
+                <div class="flex items-center justify-between">
+                  <label class="text-[10px] font-mono font-black uppercase text-slate-500 tracking-wider flex items-center gap-1">
+                    ${renderIcon('Calendar', 'w-3 h-3 text-[#FF6B00]')} Periodo (Inicio vs. Fin)
+                  </label>
+                  <span class="text-[9px] font-mono font-bold text-amber-600 bg-amber-50 px-1.5 py-0.2 rounded border border-amber-200">Máx. 1 mes</span>
+                </div>
+                <button 
+                  type="button" 
+                  id="btn-hero-date-range" 
+                  class="w-full bg-slate-50 hover:bg-slate-100/90 border border-slate-300 rounded-xl px-3 py-2 text-left text-xs font-bold text-slate-900 flex items-center justify-between transition-colors cursor-pointer group shadow-2xs"
+                  title="Haz clic para abrir el calendario y seleccionar fechas"
+                >
+                  <div class="flex items-center gap-1.5 truncate font-mono text-[11px]">
+                    <span id="hero-display-start" class="text-slate-900">${formatDate(quoteStartDate)}</span>
+                    <span class="text-[#FF7A00] font-black">➔</span>
+                    <span id="hero-display-end" class="text-slate-900">${formatDate(quoteEndDate)}</span>
+                  </div>
+                  <span id="hero-display-days" class="px-2 py-0.5 rounded-md bg-orange-100 text-[#FF7A00] text-[10px] font-black font-mono shrink-0 ml-1">
+                    ${quoteDays} días
+                  </span>
+                </button>
               </div>
 
+              <!-- Modalidad -->
               <div class="lg:col-span-3 space-y-1">
                 <label class="text-[10px] font-mono font-black uppercase text-slate-500 tracking-wider flex items-center gap-1">
                   ${renderIcon('Clock', 'w-3 h-3 text-[#FF6B00]')} Modalidad
@@ -302,6 +329,7 @@ export async function renderHomeView() {
                 alt="${cat.name}" 
                 class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out select-none"
                 loading="lazy"
+                referrerpolicy="no-referrer"
                 onerror="if (this.src !== '${cat.remoteFallback}') { this.src = '${cat.remoteFallback}'; } else { this.onerror=null; this.src='https://images.unsplash.com/photo-1503708928676-1cb796a0891e?w=800'; }"
               />
 
@@ -364,6 +392,7 @@ export async function renderHomeView() {
                       alt="${t.name}" 
                       class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       loading="lazy"
+                      referrerpolicy="no-referrer"
                       onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1503708928676-1cb796a0891e?w=800';"
                     />
                     
@@ -412,10 +441,32 @@ export async function renderHomeView() {
     </div>
   `;
 
+  // Custom Date Range Modal trigger for hero
+  const heroDateBtn = container.querySelector('#btn-hero-date-range');
+  heroDateBtn?.addEventListener('click', () => {
+    openDateRangeModal({
+      startDate: quoteStartDate,
+      endDate: quoteEndDate,
+      onConfirm: (res) => {
+        quoteStartDate = res.startDate;
+        quoteEndDate = res.endDate;
+        quoteDays = res.days;
+
+        const startSpan = container.querySelector('#hero-display-start');
+        const endSpan = container.querySelector('#hero-display-end');
+        const daysSpan = container.querySelector('#hero-display-days');
+
+        if (startSpan) startSpan.textContent = formatDate(quoteStartDate);
+        if (endSpan) endSpan.textContent = formatDate(quoteEndDate);
+        if (daysSpan) daysSpan.textContent = `${quoteDays} día${quoteDays > 1 ? 's' : ''}`;
+      }
+    });
+  });
+
   // Hero form handler
   container.querySelector('#hero-quote-form')?.addEventListener('submit', (e) => {
     e.preventDefault();
-    window.location.hash = '#/catalog';
+    window.location.hash = `#/catalog?start=${quoteStartDate}&end=${quoteEndDate}`;
   });
 }
 

@@ -3,6 +3,7 @@ import modal from './modal.js';
 import showToast from './toast.js';
 import { renderIcon } from '../utils/icons.js';
 import { loginConstructionImage } from '../utils/tool-images.js';
+import { validateEmail, validatePersonName, validateCompanyName, validatePhone, validateTaxId, validateCity } from '../utils/validators.js';
 
 export function openAuthModal(initialTab = 'login') {
   let currentTab = initialTab; // 'login' or 'register'
@@ -11,21 +12,6 @@ export function openAuthModal(initialTab = 'login') {
 
   const content = document.createElement('div');
   content.className = 'w-full';
-
-  function validateEmail(email) {
-    if (!email) return false;
-    const re = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-    return re.test(String(email).trim());
-  }
-
-  function validateName(name) {
-    if (!name) return false;
-    const trimmed = String(name).trim();
-    if (trimmed.length < 3 || trimmed.length > 80) return false;
-    // Disallow pure symbols, script tags or strange characters
-    const validPattern = /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ0-9\s.,&'-]+$/;
-    return validPattern.test(trimmed);
-  }
 
   function renderView() {
     content.innerHTML = `
@@ -134,6 +120,79 @@ export function openAuthModal(initialTab = 'login') {
                     class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl text-sm font-semibold text-slate-950 placeholder-slate-400 focus:outline-none focus:border-[#FF7A00] focus:ring-2 focus:ring-[#FF7A00]/20 transition-all" 
                   />
                   <span id="name-error" class="hidden text-[11px] text-rose-600 font-bold mt-1 block"></span>
+                </div>
+
+                <!-- Documento de Identidad / NIT -->
+                <div class="grid grid-cols-1 sm:grid-cols-12 gap-3">
+                  <div class="sm:col-span-5">
+                    <label class="block text-xs font-black text-slate-800 font-mono uppercase tracking-wider mb-1.5">
+                      Tipo Doc. *
+                    </label>
+                    <select id="reg-doc-type" class="w-full px-3 py-3 bg-white border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-semibold text-slate-950 focus:outline-none focus:border-[#FF7A00] focus:ring-2 focus:ring-[#FF7A00]/20 transition-all">
+                      <option value="CC" ${selectedRole === 'ROLE_CLIENTE' ? 'selected' : ''}>Cédula (CC)</option>
+                      <option value="NIT" ${selectedRole === 'ROLE_PROVEEDOR' ? 'selected' : ''}>NIT Empresarial</option>
+                      <option value="CE">Cédula Extranjería (CE)</option>
+                      <option value="PASSPORT">Pasaporte</option>
+                    </select>
+                  </div>
+                  <div class="sm:col-span-7">
+                    <label class="block text-xs font-black text-slate-800 font-mono uppercase tracking-wider mb-1.5">
+                      ${selectedRole === 'ROLE_CLIENTE' ? 'Número de Documento *' : 'Número de NIT con dígito *'}
+                    </label>
+                    <input 
+                      type="text" 
+                      id="reg-doc-num" 
+                      required 
+                      placeholder="${selectedRole === 'ROLE_CLIENTE' ? 'Ej. 1020304050' : 'Ej. 901234567-1'}" 
+                      class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl text-sm font-semibold text-slate-950 placeholder-slate-400 focus:outline-none focus:border-[#FF7A00] focus:ring-2 focus:ring-[#FF7A00]/20 transition-all" 
+                    />
+                    <span id="doc-error" class="hidden text-[11px] text-rose-600 font-bold mt-1 block"></span>
+                  </div>
+                </div>
+
+                <!-- Celular & Ciudad -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label class="block text-xs font-black text-slate-800 font-mono uppercase tracking-wider mb-1.5">
+                      Número Celular / Móvil *
+                    </label>
+                    <input 
+                      type="tel" 
+                      id="reg-phone" 
+                      required 
+                      placeholder="Ej. 310 123 4567" 
+                      class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl text-sm font-semibold text-slate-950 placeholder-slate-400 focus:outline-none focus:border-[#FF7A00] focus:ring-2 focus:ring-[#FF7A00]/20 transition-all" 
+                    />
+                    <span id="phone-error" class="hidden text-[11px] text-rose-600 font-bold mt-1 block"></span>
+                  </div>
+                  <div>
+                    <label class="block text-xs font-black text-slate-800 font-mono uppercase tracking-wider mb-1.5">
+                      Ciudad / Municipio *
+                    </label>
+                    <input 
+                      type="text" 
+                      id="reg-city" 
+                      required 
+                      placeholder="Ej. Bogotá, Medellín, Cali" 
+                      class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl text-sm font-semibold text-slate-950 placeholder-slate-400 focus:outline-none focus:border-[#FF7A00] focus:ring-2 focus:ring-[#FF7A00]/20 transition-all" 
+                    />
+                    <span id="city-error" class="hidden text-[11px] text-rose-600 font-bold mt-1 block"></span>
+                  </div>
+                </div>
+
+                <!-- Dirección Física -->
+                <div>
+                  <label class="block text-xs font-black text-slate-800 font-mono uppercase tracking-wider mb-1.5">
+                    ${selectedRole === 'ROLE_CLIENTE' ? 'Dirección de Obra o Despacho *' : 'Dirección del Patio de Maquinaria *'}
+                  </label>
+                  <input 
+                    type="text" 
+                    id="reg-address" 
+                    required 
+                    placeholder="Ej. Calle 100 # 15-20, Frente de Obra Torre Norte" 
+                    class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl text-sm font-semibold text-slate-950 placeholder-slate-400 focus:outline-none focus:border-[#FF7A00] focus:ring-2 focus:ring-[#FF7A00]/20 transition-all" 
+                  />
+                  <span id="address-error" class="hidden text-[11px] text-rose-600 font-bold mt-1 block"></span>
                 </div>
               ` : ''}
 
@@ -328,6 +387,46 @@ export function openAuthModal(initialTab = 'login') {
       if (u && p) { u.value = 'admin@opusrentals.com'; p.value = 'password123'; }
     });
 
+    // Real-time live input validation feedback
+    const nameInputEl = content.querySelector('#reg-name');
+    const nameErrorEl = content.querySelector('#name-error');
+    nameInputEl?.addEventListener('input', () => {
+      const val = nameInputEl.value.trim();
+      if (!val) {
+        nameErrorEl?.classList.add('hidden');
+        return;
+      }
+      const res = selectedRole === 'ROLE_CLIENTE' ? validatePersonName(val) : validateCompanyName(val);
+      if (!res.valid) {
+        if (nameErrorEl) {
+          nameErrorEl.textContent = res.error;
+          nameErrorEl.classList.remove('hidden');
+        }
+      } else {
+        nameErrorEl?.classList.add('hidden');
+      }
+    });
+
+    const usernameInputEl = content.querySelector('#auth-username');
+    const emailErrorEl = content.querySelector('#email-error');
+    usernameInputEl?.addEventListener('input', () => {
+      if (currentTab !== 'register') return;
+      const val = usernameInputEl.value.trim();
+      if (!val) {
+        emailErrorEl?.classList.add('hidden');
+        return;
+      }
+      const res = validateEmail(val);
+      if (!res.valid) {
+        if (emailErrorEl) {
+          emailErrorEl.textContent = res.error;
+          emailErrorEl.classList.remove('hidden');
+        }
+      } else {
+        emailErrorEl?.classList.add('hidden');
+      }
+    });
+
     // Form Submission & Rigorous Validations
     content.querySelector('#toolrent-auth-form')?.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -358,23 +457,102 @@ export function openAuthModal(initialTab = 'login') {
       if (currentTab === 'register') {
         const fullName = nameInput?.value?.trim() || '';
         
-        // Strict Name Validation
-        if (!validateName(fullName)) {
+        // Strict Name / Company Validation (no numbers in personal names, no symbols)
+        const nameRes = selectedRole === 'ROLE_CLIENTE' ? validatePersonName(fullName) : validateCompanyName(fullName);
+        if (!nameRes.valid) {
           if (errorBox && errorMsg) {
-            errorMsg.textContent = 'Por favor ingresa un nombre o razón social válido (entre 3 y 80 caracteres, sin símbolos especiales no permitidos).';
+            errorMsg.textContent = nameRes.error;
             errorBox.classList.remove('hidden');
+          }
+          if (nameErrorEl) {
+            nameErrorEl.textContent = nameRes.error;
+            nameErrorEl.classList.remove('hidden');
           }
           nameInput?.focus();
           return;
         }
 
-        // Strict Email Validation (requires real @domain.com)
-        if (!validateEmail(username)) {
+        // Strict Email Validation (requires @ and real domain, e.g. usuario@gmail.com)
+        const emailRes = validateEmail(username);
+        if (!emailRes.valid) {
           if (errorBox && errorMsg) {
-            errorMsg.textContent = 'Por favor ingresa un correo electrónico corporativo válido (debe incluir @ y dominio, ej. usuario@gmail.com o contacto@empresa.com).';
+            errorMsg.textContent = emailRes.error;
             errorBox.classList.remove('hidden');
           }
+          if (emailErrorEl) {
+            emailErrorEl.textContent = emailRes.error;
+            emailErrorEl.classList.remove('hidden');
+          }
           usernameInput?.focus();
+          return;
+        }
+
+        const docType = content.querySelector('#reg-doc-type')?.value || 'CC';
+        const docNum = content.querySelector('#reg-doc-num')?.value?.trim() || '';
+        const phone = content.querySelector('#reg-phone')?.value?.trim() || '';
+        const city = content.querySelector('#reg-city')?.value?.trim() || '';
+        const address = content.querySelector('#reg-address')?.value?.trim() || '';
+
+        // Validate Document Number
+        const docRes = validateTaxId(docNum);
+        if (!docRes.valid) {
+          if (errorBox && errorMsg) {
+            errorMsg.textContent = docRes.error;
+            errorBox.classList.remove('hidden');
+          }
+          const docErrorEl = content.querySelector('#doc-error');
+          if (docErrorEl) {
+            docErrorEl.textContent = docRes.error;
+            docErrorEl.classList.remove('hidden');
+          }
+          content.querySelector('#reg-doc-num')?.focus();
+          return;
+        }
+
+        // Validate Phone
+        const phoneRes = validatePhone(phone);
+        if (!phoneRes.valid) {
+          if (errorBox && errorMsg) {
+            errorMsg.textContent = phoneRes.error;
+            errorBox.classList.remove('hidden');
+          }
+          const phoneErrorEl = content.querySelector('#phone-error');
+          if (phoneErrorEl) {
+            phoneErrorEl.textContent = phoneRes.error;
+            phoneErrorEl.classList.remove('hidden');
+          }
+          content.querySelector('#reg-phone')?.focus();
+          return;
+        }
+
+        // Validate City
+        const cityRes = validateCity(city);
+        if (!cityRes.valid) {
+          if (errorBox && errorMsg) {
+            errorMsg.textContent = cityRes.error;
+            errorBox.classList.remove('hidden');
+          }
+          const cityErrorEl = content.querySelector('#city-error');
+          if (cityErrorEl) {
+            cityErrorEl.textContent = cityRes.error;
+            cityErrorEl.classList.remove('hidden');
+          }
+          content.querySelector('#reg-city')?.focus();
+          return;
+        }
+
+        // Validate Address
+        if (!address || address.length < 5) {
+          if (errorBox && errorMsg) {
+            errorMsg.textContent = 'Por favor ingresa una dirección completa válida (ej. Calle 100 # 15-20).';
+            errorBox.classList.remove('hidden');
+          }
+          const addressErrorEl = content.querySelector('#address-error');
+          if (addressErrorEl) {
+            addressErrorEl.textContent = 'Ingresa una dirección completa de al menos 5 caracteres.';
+            addressErrorEl.classList.remove('hidden');
+          }
+          content.querySelector('#reg-address')?.focus();
           return;
         }
 
@@ -387,7 +565,14 @@ export function openAuthModal(initialTab = 'login') {
             email: username,
             password,
             role: selectedRole,
-            fullName
+            fullName,
+            documentType: docType,
+            documentNumber: docNum,
+            phone,
+            city,
+            address,
+            companyName: fullName,
+            taxId: docNum
           });
           showToast('Cuenta creada con éxito. ¡Bienvenido a Opus Rentals!', 'success');
           modal.close();

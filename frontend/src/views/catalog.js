@@ -39,6 +39,28 @@ export async function renderCatalogView() {
     console.error('Error loading catalog data', e);
   }
 
+  // Resolve category object by ID or name/slug
+  let activeCategoryObj = null;
+  if (selectedCategory && selectedCategory !== 'cat-all') {
+    const sCatLower = String(selectedCategory).toLowerCase().trim();
+    activeCategoryObj = categories.find(c => 
+      String(c.id) === sCatLower ||
+      c.name.toLowerCase() === sCatLower ||
+      c.name.toLowerCase().includes(sCatLower) ||
+      sCatLower.includes(c.name.toLowerCase()) ||
+      (c.name.toLowerCase().includes('demolicion') && sCatLower.includes('demol')) ||
+      (c.name.toLowerCase().includes('excavac') && (sCatLower.includes('excav') || sCatLower.includes('retro'))) ||
+      (c.name.toLowerCase().includes('concreto') && sCatLower.includes('concre')) ||
+      (c.name.toLowerCase().includes('generac') && sCatLower.includes('generad')) ||
+      (c.name.toLowerCase().includes('compres') && sCatLower.includes('compres')) ||
+      (c.name.toLowerCase().includes('elevac') && sCatLower.includes('plataform')) ||
+      (c.name.toLowerCase().includes('compactac') && sCatLower.includes('compact'))
+    );
+    if (activeCategoryObj) {
+      selectedCategory = String(activeCategoryObj.id);
+    }
+  }
+
   const brands = Array.from(new Set(allTools.map(t => t.brand).filter(Boolean)));
 
   function getFilteredTools() {
@@ -85,20 +107,29 @@ export async function renderCatalogView() {
     return filtered;
   }
 
+  const initialFiltered = getFilteredTools();
+
   container.innerHTML = `
     <div class="bg-[#F4F5F7] min-h-screen pb-16 text-[#1A1A1A] font-sans">
       
       <!-- Top Breadcrumb & Status Bar -->
       <div class="bg-white border-b border-slate-200 py-3 shadow-2xs">
         <div class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between text-xs">
-          <nav class="flex items-center gap-2 text-slate-500 font-medium">
-            <a href="#/home" class="hover:text-amber-700 transition-colors">Inicio</a>
+          <nav class="flex items-center gap-2 text-slate-500 font-medium flex-wrap">
+            <a href="#/home" class="hover:text-[#FF7A00] transition-colors">Inicio</a>
             <span>/</span>
-            <span class="text-slate-900 font-bold">Catálogo de Maquinaria Pesada</span>
+            <a href="#/catalog" class="hover:text-[#FF7A00] transition-colors font-bold ${selectedCategory === 'cat-all' ? 'text-slate-900' : 'text-slate-600'}">Catálogo de Maquinaria Pesada</a>
+            ${selectedCategory !== 'cat-all' && activeCategoryObj ? `
+              <span>/</span>
+              <span class="anim-tag-enter inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-orange-100/90 text-[#FF7A00] font-black font-mono text-[11px] border border-orange-200 shadow-2xs">
+                ${renderIcon(activeCategoryObj.icon || 'Hammer', 'w-3.5 h-3.5 text-[#FF7A00]')}
+                <span>${activeCategoryObj.name}</span>
+              </span>
+            ` : ''}
             ${selectedProvider ? `<span>/</span><span class="text-amber-700 font-bold">${selectedProvider}</span>` : ''}
           </nav>
-          <span id="top-results-counter" class="text-slate-500 font-mono font-bold">
-            ${allTools.length} unidades registradas
+          <span id="top-results-counter" class="text-slate-500 font-mono font-bold whitespace-nowrap">
+            ${initialFiltered.length} unidades listadas
           </span>
         </div>
       </div>
@@ -250,6 +281,33 @@ export async function renderCatalogView() {
               </div>
             </div>
 
+            <!-- Active Category Filter Banner with clear button -->
+            ${selectedCategory !== 'cat-all' && activeCategoryObj ? `
+              <div class="anim-tag-enter bg-gradient-to-r from-orange-500/10 via-amber-500/5 to-white border-l-4 border-[#FF7A00] rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-xl bg-[#FF7A00] text-white flex items-center justify-center shadow-xs flex-shrink-0">
+                    ${renderIcon(activeCategoryObj.icon || 'Hammer', 'w-5 h-5 text-white')}
+                  </div>
+                  <div>
+                    <div class="flex items-center gap-2">
+                      <span class="text-[10px] font-black uppercase tracking-wider font-mono text-[#FF7A00]">Rubro de Trabajo Activo</span>
+                      <span class="w-1.5 h-1.5 rounded-full bg-[#FF7A00]"></span>
+                      <span class="text-xs font-mono font-bold text-slate-500">${initialFiltered.length} equipos certificados</span>
+                    </div>
+                    <h2 class="text-sm sm:text-base font-black text-slate-900">${activeCategoryObj.name}</h2>
+                    ${activeCategoryObj.description ? `<p class="text-xs text-slate-600 line-clamp-1">${activeCategoryObj.description}</p>` : ''}
+                  </div>
+                </div>
+                <button 
+                  id="btn-banner-clear-cat" 
+                  class="self-start sm:self-center flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-white border border-slate-200 hover:border-[#FF7A00] text-slate-700 hover:text-[#FF7A00] text-xs font-bold transition-all shadow-2xs cursor-pointer group"
+                >
+                  <span>Ver toda la flota</span>
+                  <span class="text-slate-400 group-hover:text-[#FF7A00] transition-colors font-mono font-black">&times;</span>
+                </button>
+              </div>
+            ` : ''}
+
             <!-- Products Grid -->
             <div id="catalog-products-container" class="min-h-[450px]">
               ${renderCardGridSkeleton(6)}
@@ -316,6 +374,8 @@ export async function renderCatalogView() {
                     alt="${tool.name}" 
                     class="w-full h-full object-cover group-hover:scale-108 transition-transform duration-500 select-none" 
                     loading="lazy"
+                    referrerpolicy="no-referrer"
+                    onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1503708928676-1cb796a0891e?w=800';"
                   />
                   
                   <span class="absolute top-2.5 left-2.5 px-2.5 py-0.5 rounded-md text-[10px] font-black uppercase font-mono shadow-sm ${
@@ -366,26 +426,22 @@ export async function renderCatalogView() {
   }
 
   function resetFilters() {
-    selectedCategory = 'cat-all';
-    selectedStatus = 'ALL';
-    selectedProvider = '';
-    selectedBrand = 'ALL';
-    searchQuery = '';
-    minPrice = 0;
-    maxPrice = 10000000;
-    sortBy = 'relevant';
-    renderCatalogView();
+    window.location.hash = '#/catalog';
   }
 
   container.querySelectorAll('.filter-cat-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-      selectedCategory = btn.dataset.catId;
-      container.querySelectorAll('.filter-cat-btn').forEach(b => {
-        b.classList.remove('bg-[#FF7A00]', 'text-white', 'font-black', 'shadow-xs');
-      });
-      btn.classList.add('bg-[#FF7A00]', 'text-white', 'font-black', 'shadow-xs');
-      renderCards();
+      const catId = btn.dataset.catId;
+      if (catId === 'cat-all') {
+        window.location.hash = '#/catalog';
+      } else {
+        window.location.hash = `#/catalog?category=${catId}`;
+      }
     });
+  });
+
+  container.querySelector('#btn-banner-clear-cat')?.addEventListener('click', () => {
+    window.location.hash = '#/catalog';
   });
 
   container.querySelectorAll('.status-radio').forEach(radio => {

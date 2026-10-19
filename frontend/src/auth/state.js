@@ -9,7 +9,21 @@ class AuthState {
   loadStoredUser() {
     try {
       const stored = localStorage.getItem('user');
-      return stored ? JSON.parse(stored) : null;
+      if (!stored) return null;
+      const parsed = JSON.parse(stored);
+      if (parsed) {
+        if (!parsed.username || parsed.username === 'undefined') {
+          parsed.username = (parsed.displayName && parsed.displayName !== 'undefined')
+            ? parsed.displayName
+            : (parsed.fullName && parsed.fullName !== 'undefined'
+                ? parsed.fullName
+                : (parsed.email ? parsed.email.split('@')[0] : 'Usuario'));
+        }
+        if (!parsed.displayName || parsed.displayName === 'undefined') {
+          parsed.displayName = parsed.username;
+        }
+      }
+      return parsed;
     } catch {
       return null;
     }
@@ -45,8 +59,34 @@ class AuthState {
 
   setSession({ token, user }) {
     this.token = token || 'demo-jwt-token';
-    const roles = user?.roles || (user?.role ? [user.role] : ['ROLE_CLIENTE']);
-    this.user = user ? { ...user, roles } : { username: 'usuario', roles: ['ROLE_CLIENTE'] };
+    const rawRole = user?.role || (user?.roles && user.roles[0]) || 'ROLE_CLIENT';
+    const normalizedRole = rawRole === 'ROLE_CLIENT' ? 'ROLE_CLIENTE' : (rawRole === 'ROLE_PROVIDER' ? 'ROLE_PROVEEDOR' : rawRole);
+    const roles = user?.roles || [normalizedRole, rawRole];
+
+    const computedName = (user?.displayName && user.displayName !== 'undefined')
+      ? user.displayName
+      : ((user?.fullName && user.fullName !== 'undefined')
+          ? user.fullName
+          : ((user?.username && user.username !== 'undefined')
+              ? user.username
+              : (user?.email ? user.email.split('@')[0] : 'Usuario')));
+
+    this.user = user ? { 
+      ...user,
+      id: user.userId || user.id || 1,
+      username: computedName,
+      displayName: computedName,
+      fullName: user.fullName || computedName,
+      email: user.email || '',
+      roles: roles,
+      profile: {
+        id: user.profileId || user.userId || user.id || 1,
+        fullName: computedName,
+        companyName: computedName,
+        ...(user.profile || {})
+      }
+    } : { username: 'usuario', displayName: 'Usuario', roles: ['ROLE_CLIENTE'] };
+
     localStorage.setItem('token', this.token);
     localStorage.setItem('user', JSON.stringify(this.user));
     this.notifyChange();
@@ -75,11 +115,11 @@ class AuthState {
   }
 
   isProvider() {
-    return this.hasRole('PROVEEDOR') || this.hasRole('ROLE_PROVEEDOR');
+    return this.hasRole('PROVEEDOR') || this.hasRole('ROLE_PROVEEDOR') || this.hasRole('PROVIDER') || this.hasRole('ROLE_PROVIDER');
   }
 
   isClient() {
-    return this.hasRole('CLIENTE') || this.hasRole('ROLE_CLIENTE');
+    return this.hasRole('CLIENTE') || this.hasRole('ROLE_CLIENTE') || this.hasRole('CLIENT') || this.hasRole('ROLE_CLIENT');
   }
 
   async login(identifier, password) {
@@ -143,38 +183,71 @@ class AuthState {
     return this.user;
   }
 
-  async register({ username, email, password, roles, role, fullName, phone, companyName, taxId }) {
+  async register({ username, email, password, roles, role, fullName, phone, companyName, taxId, documentType, documentNumber, address, city }) {
     const finalRole = role || (roles && roles[0]) || 'ROLE_CLIENTE';
     const isClientRole = finalRole === 'ROLE_CLIENTE' || finalRole === 'ROLE_CLIENT';
     const cleanEmail = email || (username?.includes('@') ? username : `${username}@${isClientRole ? 'cliente.com' : 'proveedor.com'}`);
+    const resolvedPhone = phone || '3001234567';
+    const resolvedAddress = address ? (city ? `${address}, ${city}` : address) : (city ? `Zona Central, ${city}` : 'Bogota, Colombia');
 
     if (isClientRole) {
       const parts = (fullName || username || 'Cliente').split(' ');
       const firstName = parts[0] || 'Cliente';
       const lastName = parts.slice(1).join(' ') || 'General';
+      const docType = documentType || 'CC';
+      const docNum = documentNumber || taxId || String(Date.now()).slice(-8);
+
       const res = await api.post('/auth/register/client', {
         email: cleanEmail,
         password,
         firstName,
         lastName,
-        documentType: 'CC',
-        documentNumber: taxId || String(Date.now()).slice(-8),
-        phone: phone || '3001234567',
-        address: 'Bogota, Colombia'
+        documentType: docType,
+        documentNumber: docNum,
+        phone: resolvedPhone,
+        address: resolvedAddress
       });
       if (res && res.token) {
-        return this.setSession({ token: res.token, user: res });
+        return this.setSession({ 
+          token: res.token, 
+          user: {
+            ...res,
+            displayName: res.displayName || fullName || `${firstName} ${lastName}`,
+            fullName: fullName || res.displayName || `${firstName} ${lastName}`,
+            username: fullName || res.displayName || username || cleanEmail.split('@')[0],
+            phone: resolvedPhone,
+            address: resolvedAddress
+          } 
+        });
       }
     } else {
+      const provName = companyName || fullName || username || 'Empresa Maquinaria SAS';
+      const rawTaxId = (taxId || documentNumber || `${Date.now().toString().slice(-8)}-1`);
+      const provTaxId = rawTaxId.replace(/^NIT\s*[-:]?\s*/i, '').trim();
+
       const res = await api.post('/auth/register/provider', {
         email: cleanEmail,
         password,
-        companyName: companyName || fullName || username || 'Empresa Maquinaria SAS',
-        taxId: taxId || `NIT-900${Date.now().toString().slice(-6)}-1`,
-        address: 'Zona Industrial, Colombia'
+        companyName: provName,
+        taxId: provTaxId,
+        address: resolvedAddress,
+        contacts: [{ contactType: 'PHONE', contactValue: resolvedPhone }],
+        coverageZones: [{ state: 'Cundinamarca', city: city || 'Bogotá' }]
       });
       if (res && res.token) {
-        return this.setSession({ token: res.token, user: res });
+        return this.setSession({ 
+          token: res.token, 
+          user: {
+            ...res,
+            role: res.role || 'ROLE_PROVIDER',
+            roles: [res.role || 'ROLE_PROVIDER'],
+            displayName: res.displayName || provName,
+            fullName: provName,
+            username: provName,
+            phone: resolvedPhone,
+            address: resolvedAddress
+          } 
+        });
       }
     }
 

@@ -6,15 +6,64 @@
 
 import { customLinks } from './custom-links.js';
 
+/**
+ * Strict Image URL Sanitizer & Security Validator
+ * Protects against:
+ * - XSS via dangerous schemes (javascript:, data:text/html, vbscript:, blob:)
+ * - Rejection of malformed URLs or malicious strings
+ * - Prevents script injection in <img> tags
+ * Ensures only safe web protocols (https://, http://, /assets/) are accepted.
+ */
+export function sanitizeImageUrl(url, fallback = 'https://images.unsplash.com/photo-1503708928676-1cb796a0891e?w=800') {
+  if (!url || typeof url !== 'string') return fallback;
+  const trimmed = url.trim();
+  if (!trimmed) return fallback;
+
+  // Allow safe local project assets
+  if (trimmed.startsWith('/assets/') || trimmed.startsWith('./assets/')) {
+    if (trimmed.includes('..') || /[\r\n<>"']/.test(trimmed)) {
+      return fallback;
+    }
+    return trimmed;
+  }
+
+  // Strictly enforce http or https protocols
+  try {
+    const parsed = new URL(trimmed);
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+      console.warn(`[Seguridad] Protocolo peligroso rechazado en imagen: "${parsed.protocol}" en ${trimmed}`);
+      return fallback;
+    }
+
+    // Reject control characters or script injection attempts
+    if (/[\r\n<>"'`\0]/.test(trimmed)) {
+      return fallback;
+    }
+
+    return parsed.href;
+  } catch (err) {
+    return fallback;
+  }
+}
+
 // Full-width worksite hero background (Uses customLinks, then local hero-excavator.jpg, then remote fallback)
-export const constructionHeroImage = customLinks?.general?.heroBackground || '/assets/hero/hero-excavator.jpg';
+export const constructionHeroImage = sanitizeImageUrl(
+  customLinks?.general?.heroBackground,
+  '/assets/hero/hero-excavator.jpg'
+);
 export const constructionHeroRemoteFallback = 'https://images.unsplash.com/photo-1579762715118-a6f1d4b934f1?auto=format&fit=crop&w=1920&q=85';
 
 // Second showcase/banner image for technical guide section in Home (constructionHeroImage2)
-export const constructionHeroImage2 = customLinks?.general?.featuredMachineryGuide || 'https://images.unsplash.com/photo-1541888946425-d0fbb186156f?auto=format&fit=crop&w=1200&q=85';
+export const constructionHeroImage2 = sanitizeImageUrl(
+  customLinks?.general?.featuredMachineryGuide,
+  'https://images.unsplash.com/photo-1541888946425-d0fbb186156f?auto=format&fit=crop&w=1200&q=85'
+);
 
 // Worksite engineer & contractor visual for Auth Modal & B2B Portals
-export const loginConstructionImage = customLinks?.general?.loginBackground || 'https://plus.unsplash.com/premium_photo-1658506693963-75f3e1b849c7?auto=format&fit=crop&w=1200&q=85';
+export const loginConstructionImage = sanitizeImageUrl(
+  customLinks?.general?.loginBackground,
+  'https://plus.unsplash.com/premium_photo-1658506693963-75f3e1b849c7?auto=format&fit=crop&w=1200&q=85'
+);
 
 // 7 Photographic Category Backgrounds - Industry-Accurate Equipment
 export const constructionCategories = [
@@ -24,7 +73,7 @@ export const constructionCategories = [
     tag: 'CAT · Komatsu · JCB · Sany',
     count: '12 unidades',
     icon: 'Shovel',
-    imageUrl: customLinks?.categories?.excavadoras || '/assets/categories/cat-excavadoras.jpg',
+    imageUrl: sanitizeImageUrl(customLinks?.categories?.excavadoras, '/assets/categories/cat-excavadoras.jpg'),
     remoteFallback: 'https://images.unsplash.com/photo-1503708928676-1cb796a0891e?auto=format&fit=crop&w=800&q=80'
   },
   {
@@ -33,7 +82,7 @@ export const constructionCategories = [
     tag: 'Mixers · Allanadoras · Vaciado',
     count: '8 unidades',
     icon: 'PaintRoller',
-    imageUrl: customLinks?.categories?.concreto || '/assets/categories/cat-concreto.jpg',
+    imageUrl: sanitizeImageUrl(customLinks?.categories?.concreto, '/assets/categories/cat-concreto.jpg'),
     remoteFallback: 'https://plus.unsplash.com/premium_photo-1676212977330-3c887ff4a1f0?auto=format&fit=crop&w=800&q=80'
   },
   {
@@ -42,7 +91,7 @@ export const constructionCategories = [
     tag: 'Hilti · Bosch Rompepavimentos',
     count: '6 unidades',
     icon: 'Hammer',
-    imageUrl: customLinks?.categories?.demolicion || '/assets/categories/cat-demolicion.jpg',
+    imageUrl: sanitizeImageUrl(customLinks?.categories?.demolicion, '/assets/categories/cat-demolicion.jpg'),
     remoteFallback: 'https://plus.unsplash.com/premium_photo-1723651228034-58b60c613964?auto=format&fit=crop&w=800&q=80'
   },
   {
@@ -51,7 +100,7 @@ export const constructionCategories = [
     tag: 'Genie · Tijeras Eléctricas · Manlift',
     count: '5 unidades',
     icon: 'ArrowUpCircle',
-    imageUrl: customLinks?.categories?.elevacion || '/assets/categories/cat-elevacion.jpg',
+    imageUrl: sanitizeImageUrl(customLinks?.categories?.elevacion, '/assets/categories/cat-elevacion.jpg'),
     remoteFallback: 'https://images.unsplash.com/photo-1581093588401-fbb62a02f120?auto=format&fit=crop&w=800&q=80'
   },
   {
@@ -60,7 +109,7 @@ export const constructionCategories = [
     tag: 'Rodillos Komatsu · Bailarinas Wacker',
     count: '7 unidades',
     icon: 'Layers',
-    imageUrl: customLinks?.categories?.compactacion || '/assets/categories/cat-compactacion.jpg',
+    imageUrl: sanitizeImageUrl(customLinks?.categories?.compactacion, '/assets/categories/cat-compactacion.jpg'),
     remoteFallback: 'https://plus.unsplash.com/premium_photo-1661943489715-ea5e9dac7852?auto=format&fit=crop&w=800&q=80'
   },
   {
@@ -69,7 +118,7 @@ export const constructionCategories = [
     tag: 'Plantas Insonorizadas 24/7 CAT',
     count: '9 unidades',
     icon: 'Zap',
-    imageUrl: customLinks?.categories?.generadores || '/assets/categories/cat-generadores.jpg',
+    imageUrl: sanitizeImageUrl(customLinks?.categories?.generadores, '/assets/categories/cat-generadores.jpg'),
     remoteFallback: 'https://plus.unsplash.com/premium_photo-1661761538618-af050f9ef244?auto=format&fit=crop&w=800&q=80'
   },
   {
@@ -78,7 +127,7 @@ export const constructionCategories = [
     tag: 'Atlas Copco Tornillo Industrial',
     count: '4 unidades',
     icon: 'Wind',
-    imageUrl: customLinks?.categories?.compresores || '/assets/categories/cat-compresores.jpg',
+    imageUrl: sanitizeImageUrl(customLinks?.categories?.compresores, '/assets/categories/cat-compresores.jpg'),
     remoteFallback: 'https://images.unsplash.com/photo-1581092446327-9b52bd1570c2?auto=format&fit=crop&w=800&q=80'
   }
 ];
@@ -140,14 +189,18 @@ export const fallbackMachineryImages = {
 export function resolveToolImageUrl(tool) {
   if (!tool) return constructionHeroImage;
   const id = Number(tool.id) || 1;
+  const fallback = fallbackMachineryImages[id] || fallbackMachineryImages[1];
 
   // 1. If user put links in customLinks.machinery[id]
   const customArr = customLinks?.machinery?.[id];
-  if (Array.isArray(customArr) && customArr.length > 0 && customArr[0]) {
-    return customArr[0];
+  if (Array.isArray(customArr) && customArr.length > 0) {
+    const candidate = customArr.find(u => typeof u === 'string' && u.trim().length > 0);
+    if (candidate) {
+      return sanitizeImageUrl(candidate, fallback);
+    }
   }
-  if (typeof customArr === 'string' && customArr) {
-    return customArr;
+  if (typeof customArr === 'string' && customArr.trim()) {
+    return sanitizeImageUrl(customArr, fallback);
   }
 
   // 2. Direct mapping to curated, 100% verified equipment photo
@@ -156,7 +209,7 @@ export function resolveToolImageUrl(tool) {
   }
   
   // 3. Fallback
-  return fallbackMachineryImages[1];
+  return fallback;
 }
 
 /**
@@ -165,11 +218,14 @@ export function resolveToolImageUrl(tool) {
 export function resolveToolGalleryImages(tool) {
   if (!tool) return [{ imageUrl: constructionHeroImage }];
   const id = Number(tool.id) || 1;
+  const defaultFallback = fallbackMachineryImages[id] || fallbackMachineryImages[1];
 
   // 1. Check customLinks.machinery[id] for user-provided array
   const customArr = customLinks?.machinery?.[id];
   if (Array.isArray(customArr)) {
-    const validCustom = customArr.filter(Boolean).map(url => ({ imageUrl: url }));
+    const validCustom = customArr
+      .filter(u => typeof u === 'string' && u.trim().length > 0)
+      .map(url => ({ imageUrl: sanitizeImageUrl(url, defaultFallback) }));
     if (validCustom.length > 0) {
       return validCustom;
     }
