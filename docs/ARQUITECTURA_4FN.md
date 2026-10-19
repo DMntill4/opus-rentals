@@ -2,11 +2,13 @@
 
 ## 1. MATHEMATICAL PROOF OF FOURTH NORMAL FORM (4NF)
 
-A relation $R$ is in **Fourth Normal Form (4NF)** if and only if, for every non-trivial Multivalued Dependency (MVD) $X \twoheadrightarrow Y$, $X$ is a superkey of $R$.
+A relation `R` is in **Fourth Normal Form (4NF)** if and only if, for every non-trivial Multivalued Dependency (MVD) `X ↠ Y`, `X` is a superkey of `R`.
 
 ### Multivalued Dependency Problem
 When an entity holds two or more independent multivalued attributes:
-$$X \twoheadrightarrow Y \quad \text{and} \quad X \twoheadrightarrow Z \quad \text{where} \quad Y \cap Z = \emptyset$$
+```text
+X ↠ Y   and   X ↠ Z   where   Y ∩ Z = ∅
+```
 storing them in a single table forces a Cartesian product of tuples, causing insertion, deletion, and update anomalies.
 
 ---
@@ -16,8 +18,8 @@ storing them in a single table forces a Cartesian product of tuples, causing ins
 ### Case 1: Equipment vs Images vs Technical Specifications
 - **Attributes**: `tool_id`, `image_url`, `spec_key`, `spec_value`.
 - **Dependencies**:
-  $$\text{tool\_id} \twoheadrightarrow \text{image\_url}$$
-  $$\text{tool\_id} \twoheadrightarrow (\text{spec\_key}, \text{spec\_value})$$
+  - `tool_id ↠ image_url`
+  - `tool_id ↠ (spec_key, spec_value)`
 - A photograph of an excavator has no functional correlation with its engine output or operating weight.
 - **4NF Normalized Decomposition**:
   1. `tools(id, provider_id, category_id, name, brand, model, daily_price, deposit_amount, status)`
@@ -27,8 +29,8 @@ storing them in a single table forces a Cartesian product of tuples, causing ins
 ### Case 2: Providers vs Contact Channels vs Operational Zones
 - **Attributes**: `provider_id`, `contact_type`, `contact_value`, `state`, `city`.
 - **Dependencies**:
-  $$\text{provider\_id} \twoheadrightarrow (\text{contact\_type}, \text{contact\_value})$$
-  $$\text{provider\_id} \twoheadrightarrow (\text{state}, \text{city})$$
+  - `provider_id ↠ (contact_type, contact_value)`
+  - `provider_id ↠ (state, city)`
 - A corporate telephone or email has no functional dependence on a specific delivery city or municipality.
 - **4NF Normalized Decomposition**:
   1. `providers(id, user_id, company_name, tax_id, address, rating)`
@@ -38,7 +40,7 @@ storing them in a single table forces a Cartesian product of tuples, causing ins
 ### Case 3: Returns vs Documented Damage Items
 - **Attributes**: `rental_id`, `return_date`, `general_notes`, `inspector_notes`, `damage_description`, `severity`, `penalty_amount`.
 - **Dependencies**:
-  $$\text{return\_id} \twoheadrightarrow (\text{description}, \text{severity}, \text{penalty\_amount})$$
+  - `return_id ↠ (description, severity, penalty_amount)`
 - A physical inspection certificate may record multiple unrelated damages, each carrying distinct severity ratings and individual replacement penalties.
 - **4NF Normalized Decomposition**:
   1. `rental_returns(id, rental_id, return_date, status, general_notes, inspector_notes)`
