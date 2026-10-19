@@ -97,14 +97,14 @@ export function renderNavbar(activeRoute = 'catalog') {
               </a>
             ` : ''}
 
-            ${isAuth && (isClient || isAdmin) ? `
+            ${isAuth && isClient && !isAdmin ? `
               <a href="#/client" class="flex items-center gap-2 px-3 py-2 rounded-xl text-slate-700 hover:text-slate-950 hover:bg-slate-100 text-xs font-bold transition-all">
                 ${renderIcon('FileText', 'w-4 h-4 text-amber-600')}
                 <span class="hidden md:inline">Mis Alquileres</span>
               </a>
             ` : ''}
 
-            ${isAuth && (isProvider || isAdmin) ? `
+            ${isAuth && isProvider && !isAdmin ? `
               <a href="#/provider" class="flex items-center gap-2 px-3 py-2 rounded-xl text-slate-700 hover:text-slate-950 hover:bg-slate-100 text-xs font-bold transition-all">
                 ${renderIcon('Truck', 'w-4 h-4 text-amber-600')}
                 <span class="hidden md:inline">Mi Flota</span>
@@ -230,10 +230,10 @@ export function renderNavbar(activeRoute = 'catalog') {
       <div id="mobile-menu" class="hidden sm:hidden border-t border-slate-200 bg-white px-4 py-3 space-y-1 shadow-lg">
         <a href="#/home" class="block px-3 py-2 rounded-lg text-sm font-semibold text-slate-700 hover:bg-slate-50">Inicio</a>
         <a href="#/catalog" class="block px-3 py-2 rounded-lg text-sm font-semibold text-slate-700 hover:bg-slate-50">Catálogo Completo</a>
-        ${isAuth && (isClient || isAdmin) ? `
+        ${isAuth && isClient && !isAdmin ? `
           <a href="#/client" class="block px-3 py-2 rounded-lg text-sm font-semibold text-slate-700 hover:bg-slate-50">Mis Alquileres</a>
         ` : ''}
-        ${isAuth && (isProvider || isAdmin) ? `
+        ${isAuth && isProvider && !isAdmin ? `
           <a href="#/provider" class="block px-3 py-2 rounded-lg text-sm font-semibold text-slate-700 hover:bg-slate-50">Mi Flota Proveedor</a>
         ` : ''}
         ${isAuth && isAdmin ? `

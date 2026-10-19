@@ -96,6 +96,12 @@ const routes = {
 };
 
 function router() {
+  // Prevent path corruption when navigating from /admin, etc.
+  if (typeof window !== 'undefined' && window.location.pathname !== '/' && window.location.pathname !== '') {
+    const cleanHash = window.location.hash || (window.location.pathname.startsWith('/admin') ? '#/admin' : '#/home');
+    window.history.replaceState(null, '', '/' + cleanHash);
+  }
+
   const hash = window.location.hash || '#/home';
   const cleanRoute = hash.split('?')[0];
   
