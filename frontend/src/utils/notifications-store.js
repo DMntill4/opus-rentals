@@ -71,15 +71,34 @@ class NotificationsStore {
         return n.targetRole === 'ROLE_ADMIN' || n.category === 'SYSTEM' || n.category === 'ADMIN';
       }
 
-      // 2. Provider only sees PROVIDER notifications targeted to them
+      // 2. Provider sees PROVIDER notifications targeted to them or their company
       if (isProvider) {
         const isProviderRole = n.targetRole === 'ROLE_PROVIDER' || n.targetRole === 'ROLE_PROVEEDOR';
         if (!isProviderRole) return false;
-        // If explicitly addressed to another user ID, hide it
-        if (n.userId && currentUserId && String(n.userId) !== currentUserId) {
-          return false;
+
+        const currentCompanyName = (user.companyName || user.profile?.companyName || user.username || '').toLowerCase().trim();
+        const notifProviderName = (n.providerName || '').toLowerCase().trim();
+
+        if (notifProviderName && currentCompanyName) {
+          if (currentCompanyName.includes(notifProviderName) || notifProviderName.includes(currentCompanyName)) {
+            return true;
+          }
         }
-        return true;
+
+        if (n.providerId && (String(n.providerId) === currentUserId || String(n.providerId) === String(user.providerId || ''))) {
+          return true;
+        }
+
+        if (n.userId && currentUserId && String(n.userId) === currentUserId) {
+          return true;
+        }
+
+        // Generic provider notification if no specific provider restriction
+        if (!n.providerName && !n.providerId && !n.userId) {
+          return true;
+        }
+
+        return false;
       }
 
       // 3. Client only sees CLIENT notifications targeted to them
@@ -130,15 +149,20 @@ class NotificationsStore {
   /**
    * Adds a notification scoped strictly to specific role and user
    */
-  add({ category = 'RENTAL', type = 'success', title, message, link = '#/client', targetRole = null, userId = null }) {
+  add({ category = 'RENTAL', type = 'success', title, message, link = '#/client', targetRole = null, userId = null, providerName = null, providerId = null, silentToast = false }) {
     const user = auth.getUser();
-    const effectiveUserId = userId || (user ? String(user.id || user.userId || user.username || '') : null);
     
     let resolvedRole = targetRole;
     if (!resolvedRole) {
       if (auth.isAdmin()) resolvedRole = 'ROLE_ADMIN';
       else if (auth.isProvider()) resolvedRole = 'ROLE_PROVIDER';
       else resolvedRole = 'ROLE_CLIENT';
+    }
+
+    // For provider role, don't auto-bind to current client user ID
+    let effectiveUserId = userId;
+    if (!effectiveUserId && resolvedRole !== 'ROLE_PROVIDER') {
+      effectiveUserId = user ? String(user.id || user.userId || user.username || '') : null;
     }
 
     const newNotif = {
@@ -152,14 +176,18 @@ class NotificationsStore {
       read: false,
       link,
       userId: effectiveUserId,
-      targetRole: resolvedRole
+      targetRole: resolvedRole,
+      providerName: providerName || null,
+      providerId: providerId || null
     };
 
     const updated = [newNotif, ...this.notifications];
     this.save(updated);
 
-    // Trigger visual toast banner
-    showToast(message, type, 4500, title);
+    // Trigger visual toast banner unless requested silent
+    if (!silentToast) {
+      showToast(message, type, 4500, title);
+    }
 
     return newNotif;
   }

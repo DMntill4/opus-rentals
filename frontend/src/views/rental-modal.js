@@ -8,6 +8,7 @@ import { openAuthModal } from '../components/auth-modal.js';
 import { notificationsStore } from '../utils/notifications-store.js';
 import { openDateRangeModal } from '../components/custom-date-picker.js';
 import { validateRentalDates } from '../utils/validators.js';
+import { resolveToolImageUrl } from '../utils/tool-images.js';
 
 export async function openRentalModal(tool, initialDates = {}) {
   if (!auth.isAuthenticated()) {
@@ -32,6 +33,8 @@ export async function openRentalModal(tool, initialDates = {}) {
 
   let startDate = initialDates.startDate || formatDateInput(tomorrow);
   let endDate = initialDates.endDate || formatDateInput(endDefault);
+  let quantity = initialDates.quantity || 1;
+  const availableUnits = tool.availableQuantity || tool.totalQuantity || 5;
   let isCheckingAvailability = false;
   let isAvailable = true;
 
@@ -65,16 +68,16 @@ export async function openRentalModal(tool, initialDates = {}) {
     if (days > 30) days = 30;
     
     const dailyPrice = tool.dailyPrice || 850000;
-    const subtotal = days * dailyPrice;
+    const subtotal = days * dailyPrice * quantity;
     const tax = subtotal * 0.19; // 19% IVA
-    const deposit = (tool.replacementValue || 85000000) * 0.10; // 10% depósito de garantía
+    const deposit = ((tool.replacementValue || 85000000) * 0.10) * quantity; // 10% depósito de garantía por unidad
     const total = subtotal + tax;
 
-    return { days, subtotal, tax, deposit, total };
+    return { days, quantity, subtotal, tax, deposit, total };
   }
 
   function renderView() {
-    const primaryImg = tool.images?.find(img => img.isPrimary)?.imageUrl || tool.images?.[0]?.imageUrl || 'https://images.unsplash.com/photo-1503708928676-1cb796a0891e?w=800';
+    const primaryImg = resolveToolImageUrl(tool);
     const { days, subtotal, tax, deposit, total } = calculateCosts();
 
     content.innerHTML = `
@@ -99,20 +102,52 @@ export async function openRentalModal(tool, initialDates = {}) {
             <p class="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 mt-1">${tool.description || 'Maquinaria pesada certificada de alto rendimiento para obras civiles e infraestructura en Colombia.'}</p>
           </div>
 
-            <div class="p-3.5 bg-amber-500/5 dark:bg-amber-500/10 border border-amber-500/20 rounded-xl space-y-2 text-xs">
+          <div class="p-3.5 bg-amber-500/5 dark:bg-amber-500/10 border border-amber-500/20 rounded-xl space-y-2 text-xs">
             <div class="flex justify-between text-slate-700 dark:text-slate-300">
               <span class="font-medium">Tarifa por día:</span>
               <strong class="text-amber-600 dark:text-amber-400 font-black text-sm">${formatCurrency(tool.dailyPrice || 850000)} / día</strong>
             </div>
             <div class="flex justify-between text-slate-600 dark:text-slate-400">
-              <span>Valor de reposición:</span>
+              <span>Valor reposición por unidad:</span>
               <strong class="text-slate-900 dark:text-slate-200 font-semibold">${formatCurrency(tool.replacementValue || 85000000)}</strong>
             </div>
             <div class="flex justify-between text-slate-600 dark:text-slate-400">
-              <span>Depósito de garantía (10%):</span>
+              <span>Depósito garantía (${quantity} unid):</span>
               <strong class="text-slate-900 dark:text-slate-200 font-semibold">${formatCurrency(deposit)}</strong>
             </div>
           </div>
+
+          <!-- Quantity Units Selector -->
+          <div class="p-3.5 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl space-y-1.5">
+            <div class="flex items-center justify-between">
+              <div>
+                <span class="text-xs font-bold text-slate-900 dark:text-white">Unidades a Alquilar</span>
+                <div class="text-[11px] text-slate-500 dark:text-slate-400">
+                  Flota disponible: <strong class="text-emerald-600 dark:text-emerald-400">${availableUnits} unidades</strong>
+                </div>
+              </div>
+              <div class="flex items-center gap-2 bg-white dark:bg-slate-900 border-2 border-slate-300 dark:border-slate-600 rounded-xl p-1 shadow-2xs">
+                <button 
+                  type="button" 
+                  id="btn-qty-minus" 
+                  class="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center justify-center font-black text-slate-700 dark:text-slate-200 transition-colors cursor-pointer ${quantity <= 1 ? 'opacity-30 cursor-not-allowed' : ''}"
+                >
+                  -
+                </button>
+                <span id="rental-qty-display" class="w-7 text-center font-mono font-black text-sm text-slate-900 dark:text-white">
+                  ${quantity}
+                </span>
+                <button 
+                  type="button" 
+                  id="btn-qty-plus" 
+                  class="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center justify-center font-black text-slate-700 dark:text-slate-200 transition-colors cursor-pointer ${quantity >= availableUnits ? 'opacity-30 cursor-not-allowed' : ''}"
+                >
+                  +
+                </button>
+              </div>
+            </div>
+          </div>
+
         </div>
 
         <!-- Right: Dates Selection & Costs Breakdown -->
@@ -163,14 +198,14 @@ export async function openRentalModal(tool, initialDates = {}) {
               ` : isAvailable ? `
                 <div class="text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-800 p-3 rounded-xl flex items-center gap-2 text-xs font-medium">
                   ${renderIcon('CheckCircle2', 'w-4 h-4 text-emerald-600 flex-shrink-0')}
-                  <span>Máquina lista para despacho inmediato (${days} días en obra). Póliza SURA incluida.</span>
+                  <span>${quantity} ${quantity > 1 ? 'unidades listas' : 'máquina lista'} para despacho inmediato (${days} días en obra). Póliza SURA incluida.</span>
                 </div>
               ` : `
                 <div class="text-rose-700 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 p-3 rounded-xl flex items-start gap-2 text-xs">
                   ${renderIcon('AlertCircle', 'w-4 h-4 text-rose-600 flex-shrink-0 mt-0.5')}
                   <div>
                     <span class="font-bold">No disponible en estas fechas.</span>
-                    <p class="text-[11px] text-rose-600 dark:text-rose-400 mt-0.5">El equipo ya tiene un contrato activo en ese intervalo de fechas.</p>
+                    <p class="text-[11px] text-rose-600 dark:text-rose-400 mt-0.5">El equipo ya tiene contratos activos para la cantidad solicitada.</p>
                   </div>
                 </div>
               `}
@@ -180,7 +215,7 @@ export async function openRentalModal(tool, initialDates = {}) {
           <!-- Price Summary Breakdown -->
           <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/80 border-2 border-slate-200 dark:border-slate-700 space-y-2 text-xs">
             <div class="flex justify-between text-slate-600 dark:text-slate-400">
-              <span>Alquiler (${days} días × ${formatCurrency(tool.dailyPrice || 850000)}):</span>
+              <span>Alquiler (${days} días × ${quantity} unid × ${formatCurrency(tool.dailyPrice || 850000)}):</span>
               <span class="text-slate-900 dark:text-slate-200 font-bold">${formatCurrency(subtotal)}</span>
             </div>
             <div class="flex justify-between text-slate-600 dark:text-slate-400">
@@ -201,6 +236,21 @@ export async function openRentalModal(tool, initialDates = {}) {
 
       </div>
     `;
+
+    // Quantity buttons
+    content.querySelector('#btn-qty-minus')?.addEventListener('click', () => {
+      if (quantity > 1) {
+        quantity--;
+        updateCalculationUI();
+      }
+    });
+
+    content.querySelector('#btn-qty-plus')?.addEventListener('click', () => {
+      if (quantity < availableUnits) {
+        quantity++;
+        updateCalculationUI();
+      }
+    });
 
     // Custom calendar range picker event handler
     content.querySelector('#btn-modal-open-calendar')?.addEventListener('click', async () => {
@@ -292,18 +342,22 @@ async function openCheckoutModal(tool, rentalData) {
 
       <!-- Payment Inputs Box (Dynamically updated) -->
       <div class="space-y-3 p-4 rounded-xl bg-slate-50 dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700" id="card-inputs-box">
-        <div id="method-fields-container">
+        <div id="method-fields-container" class="space-y-3">
+          <div id="card-name-group">
+            <label class="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">Nombre del Titular (Como figura en la tarjeta)</label>
+            <input type="text" id="chk-card-name" class="w-full bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-bold text-slate-900 dark:text-white" value="CONSTRUCTORA BOGOTA S.A.S." placeholder="Ej. Roberto Gómez / Constructora S.A.S." />
+          </div>
           <div>
             <label class="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1" id="card-num-label">Número de Tarjeta Corporativa</label>
-            <input type="text" id="chk-card-num" class="w-full bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-mono font-bold text-slate-900 dark:text-white" value="4532 8920 1142 8892" placeholder="4532 8920 1142 8892" />
+            <input type="text" id="chk-card-num" maxlength="23" class="w-full bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-mono font-bold text-slate-900 dark:text-white" value="4532 8920 1142 8892" placeholder="4532 8920 1142 8892" />
           </div>
-          <div class="grid grid-cols-2 gap-3 mt-3" id="card-sub-fields">
+          <div class="grid grid-cols-2 gap-3" id="card-sub-fields">
             <div>
               <label class="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">Vencimiento (MM/AA)</label>
-              <input type="text" id="chk-card-exp" class="w-full bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-mono font-bold text-slate-900 dark:text-white" value="12/28" placeholder="MM/AA" />
+              <input type="text" id="chk-card-exp" maxlength="5" class="w-full bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-mono font-bold text-slate-900 dark:text-white" value="12/28" placeholder="MM/AA" />
             </div>
             <div>
-              <label class="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">CVC / CVV</label>
+              <label class="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">CVC / CVV (Solo dígitos)</label>
               <input type="password" id="chk-card-cvv" maxlength="4" class="w-full bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-mono font-bold text-slate-900 dark:text-white" value="892" placeholder="123" />
             </div>
           </div>
@@ -322,6 +376,7 @@ async function openCheckoutModal(tool, rentalData) {
   const methodGrid = content.querySelector('#payment-methods-grid');
   const cardNumLabel = content.querySelector('#card-num-label');
   const cardNumInput = content.querySelector('#chk-card-num');
+  const cardNameGroup = content.querySelector('#card-name-group');
   const cardSubFields = content.querySelector('#card-sub-fields');
 
   methodGrid?.querySelectorAll('label').forEach(lbl => {
@@ -336,27 +391,50 @@ async function openCheckoutModal(tool, rentalData) {
         if (radio.value === 'CREDIT_CARD') {
           if (cardNumLabel) cardNumLabel.textContent = 'Número de Tarjeta Corporativa';
           if (cardNumInput) { cardNumInput.value = '4532 8920 1142 8892'; cardNumInput.placeholder = '4532 8920 1142 8892'; }
+          cardNameGroup?.classList.remove('hidden');
           cardSubFields?.classList.remove('hidden');
         } else if (radio.value === 'DEBIT_CARD') {
           if (cardNumLabel) cardNumLabel.textContent = 'Número de Tarjeta Débito Nacional / PSE';
           if (cardNumInput) { cardNumInput.value = '4000 1234 5678 9010'; cardNumInput.placeholder = '4000 1234 5678 9010'; }
+          cardNameGroup?.classList.remove('hidden');
           cardSubFields?.classList.remove('hidden');
         } else if (radio.value === 'BANK_TRANSFER') {
           if (cardNumLabel) cardNumLabel.textContent = 'Referencia de Transferencia Empresarial Bancolombia (Cuenta Corriente # 104-98234-91)';
           if (cardNumInput) { cardNumInput.value = `TRANSF-BANC-${Date.now().toString().slice(-6)}`; cardNumInput.placeholder = 'Comprobante de Transferencia'; }
+          cardNameGroup?.classList.add('hidden');
           cardSubFields?.classList.add('hidden');
         }
       }
     });
   });
 
-  // Real-time card formatting
+  // Real-time card formatting & strict CVV / expiry masking
   const cardInputEl = content.querySelector('#chk-card-num');
   if (cardInputEl) {
     cardInputEl.addEventListener('input', (e) => {
       let digits = e.target.value.replace(/\D/g, '').substring(0, 19);
       let chunks = digits.match(/.{1,4}/g);
       e.target.value = chunks ? chunks.join(' ') : digits;
+    });
+  }
+
+  const expInputEl = content.querySelector('#chk-card-exp');
+  if (expInputEl) {
+    expInputEl.addEventListener('input', (e) => {
+      let digits = e.target.value.replace(/\D/g, '').substring(0, 4);
+      if (digits.length >= 3) {
+        e.target.value = digits.substring(0, 2) + '/' + digits.substring(2);
+      } else {
+        e.target.value = digits;
+      }
+    });
+  }
+
+  const cvvInputEl = content.querySelector('#chk-card-cvv');
+  if (cvvInputEl) {
+    cvvInputEl.addEventListener('input', (e) => {
+      // Strictly digits only: strip all letters, @, symbols, spaces
+      e.target.value = e.target.value.replace(/\D/g, '').substring(0, 4);
     });
   }
 
@@ -367,14 +445,54 @@ async function openCheckoutModal(tool, rentalData) {
 
     const method = content.querySelector('input[name="payment-method"]:checked')?.value || 'CREDIT_CARD';
 
-    // Strict Card Validation
+    // Strict Card and CVV Validation
     if (method === 'CREDIT_CARD' || method === 'DEBIT_CARD') {
+      const cardName = content.querySelector('#chk-card-name')?.value?.trim() || '';
       const rawCard = content.querySelector('#chk-card-num')?.value || '';
       const cardNum = rawCard.replace(/\D/g, '');
-      const isDemoCard = rawCard.includes('•') || rawCard.includes('4532') || rawCard.includes('4000');
+      const expVal = content.querySelector('#chk-card-exp')?.value?.trim() || '';
+      const cvvVal = content.querySelector('#chk-card-cvv')?.value?.trim() || '';
 
-      if (!isDemoCard && cardNum.length > 0 && (cardNum.length < 13 || cardNum.length > 19)) {
-        errBox.textContent = 'El número de tarjeta es inválido (debe tener entre 13 y 19 dígitos).';
+      if (!cardName || cardName.length < 3) {
+        errBox.textContent = 'Ingresa el nombre completo o razón social del titular de la tarjeta.';
+        errBox.classList.remove('hidden');
+        return;
+      }
+
+      if (!cardNum || cardNum.length < 13 || cardNum.length > 19) {
+        errBox.textContent = 'El número de tarjeta es inválido (debe tener entre 13 y 19 dígitos numéricos).';
+        errBox.classList.remove('hidden');
+        return;
+      }
+
+      // Validate expiry MM/YY format & future date
+      const expMatch = expVal.match(/^(0[1-9]|1[0-2])\/(\d{2})$/);
+      if (!expMatch) {
+        errBox.textContent = 'La fecha de vencimiento es inválida (debe ser formato MM/AA).';
+        errBox.classList.remove('hidden');
+        return;
+      }
+      const expMonth = parseInt(expMatch[1], 10);
+      const expYear = 2000 + parseInt(expMatch[2], 10);
+      const now = new Date();
+      const currentYear = now.getFullYear();
+      const currentMonth = now.getMonth() + 1;
+      if (expYear < currentYear || (expYear === currentYear && expMonth < currentMonth)) {
+        errBox.textContent = 'La tarjeta ingresada se encuentra vencida. Utiliza un medio de pago vigente.';
+        errBox.classList.remove('hidden');
+        return;
+      }
+
+      // Strictly 3 or 4 numeric digits for CVV
+      if (!/^\d{3,4}$/.test(cvvVal)) {
+        errBox.textContent = 'El código CVC/CVV es requerido y debe contener estrictamente 3 o 4 dígitos numéricos.';
+        errBox.classList.remove('hidden');
+        return;
+      }
+    } else if (method === 'BANK_TRANSFER') {
+      const transfRef = content.querySelector('#chk-card-num')?.value?.trim() || '';
+      if (!transfRef || transfRef.length < 4) {
+        errBox.textContent = 'Ingresa una referencia o comprobante de transferencia bancaria válido.';
         errBox.classList.remove('hidden');
         return;
       }
@@ -385,20 +503,20 @@ async function openCheckoutModal(tool, rentalData) {
 
     try {
       const user = auth.getUser();
-      const method = content.querySelector('input[name="payment-method"]:checked')?.value || 'CREDIT_CARD';
 
-      // 1. Create Rental in Backend
+      // 1. Create Rental in Backend (with multi-unit quantity support)
       const numericToolId = Number(tool.id) || Number(String(tool.id).replace(/\D/g, '')) || 1;
       const rentalPayload = {
         toolId: numericToolId,
         startDate: rentalData.startDate,
         endDate: rentalData.endDate,
-        notes: `Reserva web cliente ${user?.username || ''}`,
+        quantity: rentalData.quantity || 1,
+        notes: `Reserva web cliente ${user?.username || ''} (${rentalData.quantity || 1} unidades)`,
         toolName: tool.name,
         dailyPrice: tool.dailyPrice,
         subtotal: rentalData.subtotal,
         total: rentalData.total,
-        providerCompanyName: tool.provider?.name || tool.providerCompanyName || 'Caterpillar Equipos SAS'
+        providerCompanyName: tool.provider?.companyName || tool.provider?.name || tool.providerCompanyName || 'Caterpillar Equipos SAS'
       };
 
       const createdRental = await api.post('/rentals', rentalPayload);
@@ -423,13 +541,28 @@ async function openCheckoutModal(tool, rentalData) {
         createdRental.status = 'PENDING';
       }
 
-      // Trigger Notification in Notification Center and Toast
+      // Trigger Client Notification
       notificationsStore.add({
         category: 'PAYMENT',
         type: 'success',
         title: '¡Pago Registrado y Solicitud Enviada!',
-        message: `Has reservado ${tool.name} (#${createdRental?.id || 'RES'}). Pago recibido exitosamente. La reserva está pendiente de confirmación por el proveedor.`,
+        message: `Has reservado ${rentalData.quantity || 1}x ${tool.name} (#${createdRental?.id || 'RES'}). Pago recibido exitosamente. La reserva está pendiente de confirmación por el proveedor.`,
         link: '#/client'
+      });
+
+      // Trigger Provider Targeted Notification
+      const targetProvName = tool.provider?.companyName || tool.provider?.name || tool.providerCompanyName || 'Proveedor';
+      const targetProvId = tool.provider?.id || tool.providerId;
+      notificationsStore.add({
+        category: 'RENTAL_REQUEST',
+        type: 'info',
+        title: 'Nueva Solicitud de Reserva Recibida',
+        message: `El cliente ${user?.username || 'Cliente'} ha reservado ${rentalData.quantity || 1} unidad(es) de ${tool.name} (#${createdRental?.id || 'RES'}). Revisa tu flota para confirmar el despacho.`,
+        link: '#/provider',
+        targetRole: 'ROLE_PROVIDER',
+        providerName: targetProvName,
+        providerId: targetProvId,
+        silentToast: true
       });
 
       // 3. Show Success & Invoice Viewer
