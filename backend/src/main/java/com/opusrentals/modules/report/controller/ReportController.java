@@ -55,5 +55,12 @@ public class ReportController {
         FleetStatusResponse fleetStatus = reportService.getFleetStatusReport();
         return ResponseEntity.ok(ApiResponse.ok("Reporte de disponibilidad y estado de flota obtenido exitosamente", fleetStatus));
     }
+
+    @GetMapping("/provider-quality")
+    @Operation(summary = "Get provider returns, damages, warranties, and return rate report (Admin only)")
+    public ResponseEntity<ApiResponse<List<com.opusrentals.modules.report.dto.response.ProviderQualityResponse>>> getProviderQualityReport() {
+        List<com.opusrentals.modules.report.dto.response.ProviderQualityResponse> list = reportService.getProviderQualityReports();
+        return ResponseEntity.ok(ApiResponse.ok("Reporte de calidad y devoluciones por proveedor obtenido exitosamente", list));
+    }
 }
 

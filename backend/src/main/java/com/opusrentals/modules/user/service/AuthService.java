@@ -107,20 +107,20 @@ public class AuthService {
 
     @Transactional
     public AuthResponse registerClient(RegisterClientRequest request) {
-        String email = request.getEmail().trim();
+        String email = request.getEmail().trim().toLowerCase();
         if (!email.contains("@")) {
             email = email + "@cliente.com";
         }
 
         if (userRepository.existsByEmail(email)) {
-            throw new ConflictException("Ya existe un usuario registrado con el email: " + email);
+            throw new ConflictException("Ya existe un usuario registrado con el correo electrónico: " + email);
         }
 
-        String docType = (request.getDocumentType() != null && !request.getDocumentType().isBlank()) ? request.getDocumentType() : "CC";
-        String docNumber = (request.getDocumentNumber() != null && !request.getDocumentNumber().isBlank()) ? request.getDocumentNumber() : String.valueOf(System.currentTimeMillis()).substring(3);
+        String docType = (request.getDocumentType() != null && !request.getDocumentType().isBlank()) ? request.getDocumentType().trim().toUpperCase() : "CC";
+        String docNumber = (request.getDocumentNumber() != null && !request.getDocumentNumber().isBlank()) ? request.getDocumentNumber().trim() : String.valueOf(System.currentTimeMillis()).substring(3);
 
         if (clientRepository.existsByDocumentTypeAndDocumentNumber(docType, docNumber)) {
-            docNumber = docNumber + "-" + (int)(Math.random() * 100);
+            throw new ConflictException("Ya existe un cliente registrado con el documento: " + docType + " " + docNumber);
         }
 
         Role clientRole = roleRepository.findByName("ROLE_CLIENT")
@@ -155,13 +155,13 @@ public class AuthService {
 
     @Transactional
     public AuthResponse registerProvider(RegisterProviderRequest request) {
-        String email = request.getEmail().trim();
+        String email = request.getEmail().trim().toLowerCase();
         if (!email.contains("@")) {
             email = email + "@proveedor.com";
         }
 
         if (userRepository.existsByEmail(email)) {
-            throw new ConflictException("Ya existe un usuario registrado con el email: " + email);
+            throw new ConflictException("Ya existe un usuario registrado con el correo electrónico: " + email);
         }
 
         String rawTax = request.getTaxId();
@@ -170,7 +170,7 @@ public class AuthService {
             : "900" + String.valueOf(System.currentTimeMillis()).substring(4) + "-1";
 
         if (providerRepository.existsByTaxId(taxId)) {
-            taxId = taxId + "-" + (int)(Math.random() * 100);
+            throw new ConflictException("Ya existe un proveedor registrado con el NIT / Identificación: " + taxId);
         }
 
         Role providerRole = roleRepository.findByName("ROLE_PROVIDER")

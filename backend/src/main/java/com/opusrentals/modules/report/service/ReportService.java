@@ -32,6 +32,7 @@ public class ReportService {
     private final RentalRepository rentalRepository;
     private final InvoiceRepository invoiceRepository;
     private final RentalDamageRepository damageRepository;
+    private final com.opusrentals.modules.rental.repository.RentalClaimRepository claimRepository;
 
     @Transactional(readOnly = true)
     public DashboardSummaryResponse getDashboardSummary() {
@@ -240,5 +241,61 @@ public class ReportService {
                 .statusBreakdown(statusBreakdown)
                 .categoryBreakdown(categoryBreakdown)
                 .build();
+    }
+
+    @Transactional(readOnly = true)
+    public List<com.opusrentals.modules.report.dto.response.ProviderQualityResponse> getProviderQualityReports() {
+        List<com.opusrentals.modules.user.entity.Provider> providers = providerRepository.findAll();
+        List<Rental> allRentals = rentalRepository.findAll();
+        List<com.opusrentals.modules.rental.entity.RentalClaim> allClaims = claimRepository.findAll();
+
+        return providers.stream().map(provider -> {
+            long totalRentals = allRentals.stream()
+                    .filter(r -> r.getTool() != null && r.getTool().getProvider() != null && r.getTool().getProvider().getId().equals(provider.getId()))
+                    .count();
+
+            long returnedRentals = allRentals.stream()
+                    .filter(r -> r.getTool() != null && r.getTool().getProvider() != null && r.getTool().getProvider().getId().equals(provider.getId()) && "RETURNED".equalsIgnoreCase(r.getStatus()))
+                    .count();
+
+            double returnRate = totalRentals > 0
+                    ? Math.round(((double) returnedRentals / totalRentals) * 10000.0) / 100.0
+                    : 0.0;
+
+            long damageReports = allClaims.stream()
+                    .filter(c -> c.getRental().getTool().getProvider().getId().equals(provider.getId()) && "DAMAGE_REPORT".equalsIgnoreCase(c.getClaimType()))
+                    .count();
+
+            long warrantyClaims = allClaims.stream()
+                    .filter(c -> c.getRental().getTool().getProvider().getId().equals(provider.getId()) && "WARRANTY_REPLACEMENT".equalsIgnoreCase(c.getClaimType()))
+                    .count();
+
+            long refundRequests = allClaims.stream()
+                    .filter(c -> c.getRental().getTool().getProvider().getId().equals(provider.getId()) && "REFUND_REQUEST".equalsIgnoreCase(c.getClaimType()))
+                    .count();
+
+            BigDecimal totalRefund = allClaims.stream()
+                    .filter(c -> c.getRental().getTool().getProvider().getId().equals(provider.getId()) && ("APPROVED".equalsIgnoreCase(c.getStatus()) || "RESOLVED".equalsIgnoreCase(c.getStatus())))
+                    .map(com.opusrentals.modules.rental.entity.RentalClaim::getRefundAmount)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+            long activeTools = toolRepository.countByProviderId(provider.getId());
+
+            return com.opusrentals.modules.report.dto.response.ProviderQualityResponse.builder()
+                    .providerId(provider.getId())
+                    .providerName(provider.getCompanyName())
+                    .taxId(provider.getTaxId())
+                    .city(provider.getAddress())
+                    .totalRentals(totalRentals)
+                    .returnedRentals(returnedRentals)
+                    .returnRatePercentage(returnRate)
+                    .damageReportsCount(damageReports)
+                    .warrantyClaimsCount(warrantyClaims)
+                    .refundRequestsCount(refundRequests)
+                    .totalRefundAmount(totalRefund)
+                    .activeToolsCount(activeTools)
+                    .build();
+        }).sorted(Comparator.comparing(com.opusrentals.modules.report.dto.response.ProviderQualityResponse::getTotalRentals).reversed())
+          .collect(Collectors.toList());
     }
 }
