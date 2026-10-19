@@ -140,6 +140,8 @@ CREATE TABLE `tools` (
     `model` VARCHAR(100) NOT NULL,
     `daily_price` DECIMAL(12,2) NOT NULL,
     `deposit_amount` DECIMAL(12,2) NOT NULL,
+    `total_quantity` INT NOT NULL DEFAULT 5,
+    `available_quantity` INT NOT NULL DEFAULT 5,
     `status` VARCHAR(30) NOT NULL DEFAULT 'AVAILABLE', -- 'AVAILABLE', 'RENTED', 'MAINTENANCE', 'RETIRED'
     `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT `pk_tools` PRIMARY KEY (`id`),
@@ -187,6 +189,7 @@ CREATE TABLE `rentals` (
     `end_date` DATE NOT NULL,
     `total_days` INT NOT NULL,
     `daily_rate` DECIMAL(12,2) NOT NULL,
+    `quantity` INT NOT NULL DEFAULT 1,
     `subtotal` DECIMAL(12,2) NOT NULL,
     `deposit_amount` DECIMAL(12,2) NOT NULL,
     `status` VARCHAR(30) NOT NULL DEFAULT 'PENDING', -- 'PENDING', 'APPROVED', 'IN_PROGRESS', 'RETURNED', 'CANCELLED'
@@ -283,3 +286,28 @@ CREATE TABLE `payments` (
     INDEX `idx_payments_invoice` (`invoice_id`),
     INDEX `idx_payments_status` (`payment_status`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- -----------------------------------------------------------------------------
+-- 17. RENTAL CLAIMS, WARRANTIES AND REFUNDS TABLE
+-- -----------------------------------------------------------------------------
+CREATE TABLE `rental_claims` (
+    `id` BIGINT NOT NULL AUTO_INCREMENT,
+    `rental_id` BIGINT NOT NULL,
+    `client_id` BIGINT NOT NULL,
+    `claim_type` VARCHAR(50) NOT NULL, -- 'WARRANTY_REPLACEMENT', 'DAMAGE_REPORT', 'REFUND_REQUEST'
+    `reason` VARCHAR(255) NOT NULL,
+    `description` TEXT NOT NULL,
+    `requested_action` VARCHAR(100) NULL, -- 'REPLACEMENT', 'TECHNICIAN_VISIT', 'PARTIAL_REFUND', 'TOTAL_REFUND'
+    `status` VARCHAR(30) NOT NULL DEFAULT 'PENDING', -- 'PENDING', 'IN_REVIEW', 'APPROVED', 'REJECTED', 'RESOLVED'
+    `refund_amount` DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+    `resolution_notes` TEXT NULL,
+    `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `resolved_at` TIMESTAMP NULL,
+    CONSTRAINT `pk_rental_claims` PRIMARY KEY (`id`),
+    CONSTRAINT `fk_claims_rentals` FOREIGN KEY (`rental_id`) REFERENCES `rentals` (`id`) ON DELETE CASCADE,
+    CONSTRAINT `fk_claims_clients` FOREIGN KEY (`client_id`) REFERENCES `clients` (`id`) ON DELETE CASCADE,
+    INDEX `idx_claims_rental` (`rental_id`),
+    INDEX `idx_claims_client` (`client_id`),
+    INDEX `idx_claims_status` (`status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
