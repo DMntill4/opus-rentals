@@ -321,5 +321,129 @@ INSERT INTO `payment_methods` (`id`, `code`, `name`, `is_active`) VALUES
 (19, 'BANK_CHECK', 'Cheque de Gerencia Certificado', TRUE),
 (20, 'LEASING_OPERATIVO', 'Contrato de Leasing Operativo', TRUE);
 
--- (Rentals, returns, damages, invoices, and payments start completely empty for real live user bookings)
+-- -----------------------------------------------------------------------------
+-- 12. RENTALS (20 records - 4FN)
+-- -----------------------------------------------------------------------------
+INSERT INTO `rentals` (`id`, `client_id`, `tool_id`, `start_date`, `end_date`, `total_days`, `daily_rate`, `subtotal`, `deposit_amount`, `status`, `notes`) VALUES
+(1, 1, 1, '2026-07-01', '2026-07-05', 5, 250000.00, 1250000.00, 1000000.00, 'RETURNED', 'Excavacion para cimentacion torre A'),
+(2, 2, 2, '2026-07-06', '2026-07-09', 4, 580000.00, 2320000.00, 2500000.00, 'RETURNED', 'Movimiento de tierra sector oriental'),
+(3, 3, 3, '2026-07-10', '2026-07-12', 3, 65000.00, 195000.00, 300000.00, 'RETURNED', 'Demolicion de muro perimetral sur'),
+(4, 4, 4, '2026-07-13', '2026-07-19', 7, 85000.00, 595000.00, 400000.00, 'RETURNED', 'Apertura de zanjas para tuberia matriz'),
+(5, 5, 5, '2026-07-20', '2026-07-25', 6, 75000.00, 450000.00, 350000.00, 'RETURNED', 'Allanado de piso en parqueadero'),
+(6, 6, 6, '2026-07-26', '2026-07-29', 4, 95000.00, 380000.00, 450000.00, 'RETURNED', 'Corte de juntas de dilatacion en calzada'),
+(7, 7, 7, '2026-08-01', '2026-08-05', 5, 55000.00, 275000.00, 250000.00, 'RETURNED', 'Compactacion de sub-base anden peatonal'),
+(8, 8, 8, '2026-08-06', '2026-08-11', 6, 420000.00, 2520000.00, 1800000.00, 'RETURNED', 'Adecuacion de terreno urbanizacion nueva'),
+(9, 9, 9, '2026-08-12', '2026-08-15', 4, 210000.00, 840000.00, 900000.00, 'RETURNED', 'Carga de escombros en contenedores'),
+(10, 10, 10, '2026-08-16', '2026-08-20', 5, 160000.00, 800000.00, 700000.00, 'RETURNED', 'Instalacion de ductos de ventilacion en altura'),
+(11, 11, 11, '2026-08-21', '2026-08-23', 3, 130000.00, 390000.00, 600000.00, 'RETURNED', 'Alimentacion neumatica para arenado de fachada'),
+(12, 12, 12, '2026-08-24', '2026-08-28', 5, 540000.00, 2700000.00, 2200000.00, 'RETURNED', 'Extraccion de talud en rampa de acceso'),
+(13, 13, 13, '2026-09-01', '2026-09-04', 4, 490000.00, 1960000.00, 2000000.00, 'RETURNED', 'Acopio de material granular triturado'),
+(14, 14, 14, '2026-09-05', '2026-09-10', 6, 850000.00, 5100000.00, 4000000.00, 'RETURNED', 'Elevacion de formaletas pesadas piso 5'),
+(15, 15, 15, '2026-09-11', '2026-09-13', 3, 60000.00, 180000.00, 280000.00, 'RETURNED', 'Corte manual de vigas de amarre'),
+(16, 16, 16, '2026-09-14', '2026-09-18', 5, 240000.00, 1200000.00, 950000.00, 'RETURNED', 'Zanjado fino para acometidas de gas'),
+(17, 17, 17, '2026-09-19', '2026-09-20', 2, 580000.00, 1160000.00, 260000.00, 'RETURNED', 'Desbaste de carpeta asfaltica deteriorada'),
+(18, 18, 18, '2026-09-21', '2026-09-24', 4, 140000.00, 560000.00, 650000.00, 'RETURNED', 'Soldadura en sitio de vigas estructurales'),
+(19, 19, 19, '2026-09-25', '2026-09-29', 5, 150000.00, 750000.00, 680000.00, 'RETURNED', 'Ensamble de pasarelas metalicas'),
+(20, 20, 20, '2026-10-01', '2026-10-07', 7, 920000.00, 6440000.00, 5000000.00, 'RETURNED', 'Trituracion in-situ de concreto reciclado');
+
+-- -----------------------------------------------------------------------------
+-- 13. RENTAL RETURNS (20 records - 4FN)
+-- -----------------------------------------------------------------------------
+INSERT INTO `rental_returns` (`id`, `rental_id`, `return_date`, `status`, `general_notes`, `inspector_notes`) VALUES
+(1, 1, '2026-07-05', 'COMPLETED', 'Equipo retornado en hora pactada', 'Inspeccion completa conforme, lavado requerido'),
+(2, 2, '2026-07-09', 'DAMAGED_REPORTED', 'Retorno con observaciones menores', 'Filtro de aire saturado de polvillo de cantera'),
+(3, 3, '2026-07-12', 'DAMAGED_REPORTED', 'Herramienta de impacto retornada', 'Cincel con desgaste severo de punta por uso en piedra'),
+(4, 4, '2026-07-19', 'DAMAGED_REPORTED', 'Equipo de demolicion devuelto', 'Cable de alimentacion con recubrimiento pelado'),
+(5, 5, '2026-07-25', 'COMPLETED', 'Allanadora recibida completa', 'Paletas con rayaduras superficiales normales'),
+(6, 6, '2026-07-29', 'DAMAGED_REPORTED', 'Cortadora entregada en bodega', 'Protector metalico lateral con abolladura'),
+(7, 7, '2026-08-05', 'DAMAGED_REPORTED', 'Vibrocompactador devuelto', 'Fuga menor detectada en empaque de zapata'),
+(8, 8, '2026-08-11', 'DAMAGED_REPORTED', 'Retroexcavadora recibida con checklist', 'Espejo retrovisor lateral derecho quebrado'),
+(9, 9, '2026-08-15', 'COMPLETED', 'Minicargador en condiciones operativas', 'Pintura exterior con marcas leves de trabajo'),
+(10, 10, '2026-08-20', 'DAMAGED_REPORTED', 'Plataforma devuelta al patio', 'Sensor de inclinacion descalibrado'),
+(11, 11, '2026-08-23', 'DAMAGED_REPORTED', 'Compresor probado en recepcion', 'Manometro analogico averiado'),
+(12, 12, '2026-08-28', 'COMPLETED', 'Excavadora recibida conforme', 'Horometro verificado, niveles de aceite correctos'),
+(13, 13, '2026-09-04', 'DAMAGED_REPORTED', 'Cargador frontal recepcionado', 'Faro explorador auxiliar delantero roto'),
+(14, 14, '2026-09-10', 'DAMAGED_REPORTED', 'Grua desmontada y recibida en patio', 'Guaya de tambor con hebra suelta por roce'),
+(15, 15, '2026-09-13', 'COMPLETED', 'Cortadora manual entregada', 'Limpieza adecuada, disco con desgaste regular'),
+(16, 16, '2026-09-18', 'DAMAGED_REPORTED', 'Miniexcavadora inspeccionada', 'Corte transversal menor en oruga de caucho'),
+(17, 17, '2026-09-20', 'DAMAGED_REPORTED', 'Cortadora de disco recibida', 'Filtro de gasolina obstruido con sedimento'),
+(18, 18, '2026-09-24', 'DAMAGED_REPORTED', 'Planta soldadora recibida', 'Pinza de tierra con bornes recalentados'),
+(19, 19, '2026-09-29', 'DAMAGED_REPORTED', 'Equipo de soldadura probado', 'Aislante de porta-electrodo agrietado'),
+(20, 20, '2026-10-07', 'DAMAGED_REPORTED', 'Trituradora movil inspeccionada', 'Mandibula con desgaste abrasivo en placas de choque');
+
+-- -----------------------------------------------------------------------------
+-- 14. RENTAL DAMAGES (20 records - 4FN)
+-- -----------------------------------------------------------------------------
+INSERT INTO `rental_damages` (`id`, `return_id`, `description`, `severity`, `penalty_amount`) VALUES
+(1, 1, 'Desgaste operacional normal en tren de rodaje', 'MINOR', 0.00),
+(2, 2, 'Saturacion critica de filtro de aire de motor', 'MINOR', 45000.00),
+(3, 3, 'Punta piramidal de cincel quebrada en borde', 'MODERATE', 75000.00),
+(4, 4, 'Cable encauchetado 110V con aislamiento expuesto', 'MINOR', 60000.00),
+(5, 5, 'Rayaduras superficiales en cuchillas de allanadora', 'MINOR', 0.00),
+(6, 6, 'Abolladura en guarda metalica de disco diamantado', 'MINOR', 50000.00),
+(7, 7, 'Empaque de amortiguacion con fuga hidraulica', 'MODERATE', 120000.00),
+(8, 8, 'Cristal de espejo lateral quebrado', 'MINOR', 85000.00),
+(9, 9, 'Roce de pintura en contrapeso posterior', 'MINOR', 0.00),
+(10, 10, 'Descalibracion electronica de sensor de pendiente', 'MODERATE', 180000.00),
+(11, 11, 'Manometro de presion de salida fracturado', 'MINOR', 90000.00),
+(12, 12, 'Pintura de pluma con rayones sin dano estructural', 'MINOR', 0.00),
+(13, 13, 'Carcasa y bombillo de explorador delantero destruidos', 'MINOR', 65000.00),
+(14, 14, 'Hilamento roto en cable principal de izaje', 'SEVERE', 650000.00),
+(15, 15, 'Desgaste normal de disco de corte', 'MINOR', 0.00),
+(16, 16, 'Fisura en perfil guia de oruga de goma', 'MODERATE', 220000.00),
+(17, 17, 'Filtro de combustible tapado con residuos de obra', 'MINOR', 40000.00),
+(18, 18, 'Borne de conexion de masa recalentado', 'MINOR', 55000.00),
+(19, 19, 'Protector aislante de electrodo fisurado', 'MINOR', 35000.00),
+(20, 20, 'Placas de desgaste de mandibula con erosion severa', 'MODERATE', 480000.00);
+
+-- -----------------------------------------------------------------------------
+-- 15. INVOICES (20 records - 19% IVA)
+-- -----------------------------------------------------------------------------
+INSERT INTO `invoices` (`id`, `rental_id`, `invoice_number`, `issue_date`, `subtotal`, `tax_amount`, `total_amount`, `status`) VALUES
+(1, 1, 'INV-2026-OP0001', '2026-07-01', 1250000.00, 237500.00, 1487500.00, 'PAID'),
+(2, 2, 'INV-2026-OP0002', '2026-07-06', 2320000.00, 440800.00, 2760800.00, 'PAID'),
+(3, 3, 'INV-2026-OP0003', '2026-07-10', 195000.00, 37050.00, 232050.00, 'PAID'),
+(4, 4, 'INV-2026-OP0004', '2026-07-13', 595000.00, 113050.00, 708050.00, 'PAID'),
+(5, 5, 'INV-2026-OP0005', '2026-07-20', 450000.00, 85500.00, 535500.00, 'PAID'),
+(6, 6, 'INV-2026-OP0006', '2026-07-26', 380000.00, 72200.00, 452200.00, 'PAID'),
+(7, 7, 'INV-2026-OP0007', '2026-08-01', 275000.00, 52250.00, 327250.00, 'PAID'),
+(8, 8, 'INV-2026-OP0008', '2026-08-06', 2520000.00, 478800.00, 2998800.00, 'PAID'),
+(9, 9, 'INV-2026-OP0009', '2026-08-12', 840000.00, 159600.00, 999600.00, 'PAID'),
+(10, 10, 'INV-2026-OP0010', '2026-08-16', 800000.00, 152000.00, 952000.00, 'PAID'),
+(11, 11, 'INV-2026-OP0011', '2026-08-21', 390000.00, 74100.00, 464100.00, 'PAID'),
+(12, 12, 'INV-2026-OP0012', '2026-08-24', 2700000.00, 513000.00, 3213000.00, 'PAID'),
+(13, 13, 'INV-2026-OP0013', '2026-09-01', 1960000.00, 372400.00, 2332400.00, 'PAID'),
+(14, 14, 'INV-2026-OP0014', '2026-09-05', 5100000.00, 969000.00, 6069000.00, 'PAID'),
+(15, 15, 'INV-2026-OP0015', '2026-09-11', 180000.00, 34200.00, 214200.00, 'PAID'),
+(16, 16, 'INV-2026-OP0016', '2026-09-14', 1200000.00, 228000.00, 1428000.00, 'PAID'),
+(17, 17, 'INV-2026-OP0017', '2026-09-19', 1160000.00, 220400.00, 1380400.00, 'PAID'),
+(18, 18, 'INV-2026-OP0018', '2026-09-21', 560000.00, 106400.00, 666400.00, 'PAID'),
+(19, 19, 'INV-2026-OP0019', '2026-09-25', 750000.00, 142500.00, 892500.00, 'PAID'),
+(20, 20, 'INV-2026-OP0020', '2026-10-01', 6440000.00, 1223600.00, 7663600.00, 'PAID');
+
+-- -----------------------------------------------------------------------------
+-- 16. PAYMENTS (20 records - 4FN)
+-- -----------------------------------------------------------------------------
+INSERT INTO `payments` (`id`, `invoice_id`, `payment_method_id`, `transaction_reference`, `amount`, `payment_status`) VALUES
+(1, 1, 1, 'TXN-2026-OP-0001-A71C', 1487500.00, 'COMPLETED'),
+(2, 2, 4, 'TXN-2026-OP-0002-B82D', 2760800.00, 'COMPLETED'),
+(3, 3, 8, 'TXN-2026-OP-0003-C93E', 232050.00, 'COMPLETED'),
+(4, 4, 10, 'TXN-2026-OP-0004-D04F', 708050.00, 'COMPLETED'),
+(5, 5, 2, 'TXN-2026-OP-0005-E15G', 535500.00, 'COMPLETED'),
+(6, 6, 5, 'TXN-2026-OP-0006-F26H', 452200.00, 'COMPLETED'),
+(7, 7, 9, 'TXN-2026-OP-0007-G37I', 327250.00, 'COMPLETED'),
+(8, 8, 3, 'TXN-2026-OP-0008-H48J', 2998800.00, 'COMPLETED'),
+(9, 9, 6, 'TXN-2026-OP-0009-I59K', 999600.00, 'COMPLETED'),
+(10, 10, 1, 'TXN-2026-OP-0010-J60L', 952000.00, 'COMPLETED'),
+(11, 11, 7, 'TXN-2026-OP-0011-K71M', 464100.00, 'COMPLETED'),
+(12, 12, 4, 'TXN-2026-OP-0012-L82N', 3213000.00, 'COMPLETED'),
+(13, 13, 2, 'TXN-2026-OP-0013-M93O', 2332400.00, 'COMPLETED'),
+(14, 14, 14, 'TXN-2026-OP-0014-N04P', 6069000.00, 'COMPLETED'),
+(15, 15, 8, 'TXN-2026-OP-0015-O15Q', 214200.00, 'COMPLETED'),
+(16, 16, 10, 'TXN-2026-OP-0016-P26R', 1428000.00, 'COMPLETED'),
+(17, 17, 5, 'TXN-2026-OP-0017-Q37S', 1380400.00, 'COMPLETED'),
+(18, 18, 1, 'TXN-2026-OP-0018-R48T', 666400.00, 'COMPLETED'),
+(19, 19, 4, 'TXN-2026-OP-0019-S59U', 892500.00, 'COMPLETED'),
+(20, 20, 14, 'TXN-2026-OP-0020-T60V', 7663600.00, 'COMPLETED');
+
 
