@@ -3,7 +3,8 @@ import modal from './modal.js';
 import showToast from './toast.js';
 import { renderIcon } from '../utils/icons.js';
 import { loginConstructionImage } from '../utils/tool-images.js';
-import { validateEmail, validatePersonName, validateCompanyName, validatePhone, validateTaxId, validateCity } from '../utils/validators.js';
+import { validateEmail, validatePersonName, validateCompanyName, validatePhone, validateDocument, maskDocumentInput, maskPhoneInput } from '../utils/validators.js';
+import { DEPARTMENTS, getMunicipalitiesByDepartment } from '../utils/colombian-locations.js';
 
 export function openAuthModal(initialTab = 'login') {
   let currentTab = initialTab; // 'login' or 'register'
@@ -128,54 +129,64 @@ export function openAuthModal(initialTab = 'login') {
                     <label class="block text-xs font-black text-slate-800 font-mono uppercase tracking-wider mb-1.5">
                       Tipo Doc. *
                     </label>
-                    <select id="reg-doc-type" class="w-full px-3 py-3 bg-white border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-semibold text-slate-950 focus:outline-none focus:border-[#FF7A00] focus:ring-2 focus:ring-[#FF7A00]/20 transition-all">
-                      <option value="CC" ${selectedRole === 'ROLE_CLIENTE' ? 'selected' : ''}>Cédula (CC)</option>
+                    <select id="reg-doc-type" class="w-full px-3 py-3 bg-white border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-semibold text-slate-950 focus:outline-none focus:border-[#FF7A00] focus:ring-2 focus:ring-[#FF7A00]/20 transition-all cursor-pointer">
+                      <option value="CC" ${selectedRole === 'ROLE_CLIENTE' ? 'selected' : ''}>Cédula de Ciudadanía (CC)</option>
                       <option value="NIT" ${selectedRole === 'ROLE_PROVEEDOR' ? 'selected' : ''}>NIT Empresarial</option>
                       <option value="CE">Cédula Extranjería (CE)</option>
                       <option value="PASSPORT">Pasaporte</option>
                     </select>
                   </div>
                   <div class="sm:col-span-7">
-                    <label class="block text-xs font-black text-slate-800 font-mono uppercase tracking-wider mb-1.5">
-                      ${selectedRole === 'ROLE_CLIENTE' ? 'Número de Documento *' : 'Número de NIT con dígito *'}
+                    <label class="block text-xs font-black text-slate-800 font-mono uppercase tracking-wider mb-1.5" id="reg-doc-label">
+                      ${selectedRole === 'ROLE_CLIENTE' ? 'Número de Documento (Solo Números) *' : 'Número de NIT con dígito *'}
                     </label>
                     <input 
                       type="text" 
                       id="reg-doc-num" 
                       required 
+                      maxlength="15"
                       placeholder="${selectedRole === 'ROLE_CLIENTE' ? 'Ej. 1020304050' : 'Ej. 901234567-1'}" 
-                      class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl text-sm font-semibold text-slate-950 placeholder-slate-400 focus:outline-none focus:border-[#FF7A00] focus:ring-2 focus:ring-[#FF7A00]/20 transition-all" 
+                      class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl text-sm font-semibold text-slate-950 placeholder-slate-400 focus:outline-none focus:border-[#FF7A00] focus:ring-2 focus:ring-[#FF7A00]/20 transition-all font-mono" 
                     />
                     <span id="doc-error" class="hidden text-[11px] text-rose-600 font-bold mt-1 block"></span>
                   </div>
                 </div>
 
-                <!-- Celular & Ciudad -->
+                <!-- Celular -->
+                <div>
+                  <label class="block text-xs font-black text-slate-800 font-mono uppercase tracking-wider mb-1.5">
+                    Número Celular / Móvil * (Solo 10 dígitos, ej. 3101234567)
+                  </label>
+                  <input 
+                    type="tel" 
+                    id="reg-phone" 
+                    required 
+                    maxlength="10"
+                    placeholder="Ej. 3101234567" 
+                    class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl text-sm font-semibold text-slate-950 placeholder-slate-400 focus:outline-none focus:border-[#FF7A00] focus:ring-2 focus:ring-[#FF7A00]/20 transition-all font-mono" 
+                  />
+                  <span id="phone-error" class="hidden text-[11px] text-rose-600 font-bold mt-1 block"></span>
+                </div>
+
+                <!-- Ubicación Geográfica Colombia (Cascading Selector: Departamento -> Ciudad / Municipio) -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label class="block text-xs font-black text-slate-800 font-mono uppercase tracking-wider mb-1.5">
-                      Número Celular / Móvil *
+                      1. Departamento *
                     </label>
-                    <input 
-                      type="tel" 
-                      id="reg-phone" 
-                      required 
-                      placeholder="Ej. 310 123 4567" 
-                      class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl text-sm font-semibold text-slate-950 placeholder-slate-400 focus:outline-none focus:border-[#FF7A00] focus:ring-2 focus:ring-[#FF7A00]/20 transition-all" 
-                    />
-                    <span id="phone-error" class="hidden text-[11px] text-rose-600 font-bold mt-1 block"></span>
+                    <select id="reg-department" required class="w-full px-3 py-3 bg-white border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-semibold text-slate-950 focus:outline-none focus:border-[#FF7A00] focus:ring-2 focus:ring-[#FF7A00]/20 transition-all cursor-pointer">
+                      <option value="">Selecciona Departamento...</option>
+                      ${DEPARTMENTS.map(d => `<option value="${d}">${d}</option>`).join('')}
+                    </select>
+                    <span id="dept-error" class="hidden text-[11px] text-rose-600 font-bold mt-1 block"></span>
                   </div>
                   <div>
                     <label class="block text-xs font-black text-slate-800 font-mono uppercase tracking-wider mb-1.5">
-                      Ciudad / Municipio *
+                      2. Ciudad / Municipio *
                     </label>
-                    <input 
-                      type="text" 
-                      id="reg-city" 
-                      required 
-                      placeholder="Ej. Bogotá, Medellín, Cali" 
-                      class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl text-sm font-semibold text-slate-950 placeholder-slate-400 focus:outline-none focus:border-[#FF7A00] focus:ring-2 focus:ring-[#FF7A00]/20 transition-all" 
-                    />
+                    <select id="reg-municipality" required class="w-full px-3 py-3 bg-white border-2 border-slate-300 rounded-xl text-xs sm:text-sm font-semibold text-slate-950 focus:outline-none focus:border-[#FF7A00] focus:ring-2 focus:ring-[#FF7A00]/20 transition-all cursor-pointer">
+                      <option value="">Primero elige un departamento</option>
+                    </select>
                     <span id="city-error" class="hidden text-[11px] text-rose-600 font-bold mt-1 block"></span>
                   </div>
                 </div>
@@ -427,6 +438,106 @@ export function openAuthModal(initialTab = 'login') {
       }
     });
 
+    // Document live masking & type change
+    const docTypeEl = content.querySelector('#reg-doc-type');
+    const docNumEl = content.querySelector('#reg-doc-num');
+    const docErrorEl = content.querySelector('#doc-error');
+    const docLabelEl = content.querySelector('#reg-doc-label');
+
+    function updateDocRules() {
+      const type = docTypeEl?.value || 'CC';
+      if (docLabelEl) {
+        if (type === 'PASSPORT') docLabelEl.textContent = 'Número de Pasaporte (Letras y Números) *';
+        else if (type === 'NIT') docLabelEl.textContent = 'Número de NIT con dígito *';
+        else if (type === 'CE') docLabelEl.textContent = 'Cédula de Extranjería (Solo Números) *';
+        else docLabelEl.textContent = 'Número de Cédula de Ciudadanía (Solo Números) *';
+      }
+      if (docNumEl) {
+        docNumEl.value = maskDocumentInput(docNumEl.value, type);
+      }
+    }
+
+    docTypeEl?.addEventListener('change', () => {
+      updateDocRules();
+      if (docNumEl?.value) {
+        const res = validateDocument(docNumEl.value, docTypeEl.value);
+        if (!res.valid) {
+          docErrorEl?.classList.remove('hidden');
+          if (docErrorEl) docErrorEl.textContent = res.error;
+        } else {
+          docErrorEl?.classList.add('hidden');
+        }
+      }
+    });
+
+    docNumEl?.addEventListener('input', (e) => {
+      const type = docTypeEl?.value || 'CC';
+      e.target.value = maskDocumentInput(e.target.value, type);
+      const val = e.target.value.trim();
+      if (!val) {
+        docErrorEl?.classList.add('hidden');
+        return;
+      }
+      const res = validateDocument(val, type);
+      if (!res.valid) {
+        if (docErrorEl) {
+          docErrorEl.textContent = res.error;
+          docErrorEl.classList.remove('hidden');
+        }
+      } else {
+        docErrorEl?.classList.add('hidden');
+      }
+    });
+
+    // Phone live masking (strictly numbers only, no @, no letters, no symbols)
+    const phoneInputEl = content.querySelector('#reg-phone');
+    const phoneErrorEl = content.querySelector('#phone-error');
+    phoneInputEl?.addEventListener('input', (e) => {
+      e.target.value = maskPhoneInput(e.target.value);
+      const val = e.target.value.trim();
+      if (!val) {
+        phoneErrorEl?.classList.add('hidden');
+        return;
+      }
+      const res = validatePhone(val);
+      if (!res.valid) {
+        if (phoneErrorEl) {
+          phoneErrorEl.textContent = res.error;
+          phoneErrorEl.classList.remove('hidden');
+        }
+      } else {
+        phoneErrorEl?.classList.add('hidden');
+      }
+    });
+
+    // Cascading Colombian Locations (Departamento -> Ciudad / Municipio)
+    const deptSelect = content.querySelector('#reg-department');
+    const muniSelect = content.querySelector('#reg-municipality');
+    const deptError = content.querySelector('#dept-error');
+    const cityError = content.querySelector('#city-error');
+
+    deptSelect?.addEventListener('change', () => {
+      const selectedDept = deptSelect.value;
+      if (!selectedDept) {
+        if (muniSelect) {
+          muniSelect.innerHTML = '<option value="">Primero elige un departamento</option>';
+        }
+        return;
+      }
+      const munis = getMunicipalitiesByDepartment(selectedDept);
+      if (muniSelect) {
+        muniSelect.innerHTML = `
+          <option value="">Selecciona Ciudad / Municipio...</option>
+          ${munis.map(m => `<option value="${m}">${m}</option>`).join('')}
+        `;
+      }
+      deptError?.classList.add('hidden');
+    });
+
+    muniSelect?.addEventListener('change', () => {
+      if (muniSelect.value) cityError?.classList.add('hidden');
+    });
+
     // Form Submission & Rigorous Validations
     content.querySelector('#toolrent-auth-form')?.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -490,17 +601,17 @@ export function openAuthModal(initialTab = 'login') {
         const docType = content.querySelector('#reg-doc-type')?.value || 'CC';
         const docNum = content.querySelector('#reg-doc-num')?.value?.trim() || '';
         const phone = content.querySelector('#reg-phone')?.value?.trim() || '';
-        const city = content.querySelector('#reg-city')?.value?.trim() || '';
+        const dept = content.querySelector('#reg-department')?.value || '';
+        const municipality = content.querySelector('#reg-municipality')?.value || '';
         const address = content.querySelector('#reg-address')?.value?.trim() || '';
 
         // Validate Document Number
-        const docRes = validateTaxId(docNum);
+        const docRes = validateDocument(docNum, docType);
         if (!docRes.valid) {
           if (errorBox && errorMsg) {
             errorMsg.textContent = docRes.error;
             errorBox.classList.remove('hidden');
           }
-          const docErrorEl = content.querySelector('#doc-error');
           if (docErrorEl) {
             docErrorEl.textContent = docRes.error;
             docErrorEl.classList.remove('hidden');
@@ -509,14 +620,13 @@ export function openAuthModal(initialTab = 'login') {
           return;
         }
 
-        // Validate Phone
+        // Validate Phone (strictly numbers only)
         const phoneRes = validatePhone(phone);
         if (!phoneRes.valid) {
           if (errorBox && errorMsg) {
             errorMsg.textContent = phoneRes.error;
             errorBox.classList.remove('hidden');
           }
-          const phoneErrorEl = content.querySelector('#phone-error');
           if (phoneErrorEl) {
             phoneErrorEl.textContent = phoneRes.error;
             phoneErrorEl.classList.remove('hidden');
@@ -525,21 +635,30 @@ export function openAuthModal(initialTab = 'login') {
           return;
         }
 
-        // Validate City
-        const cityRes = validateCity(city);
-        if (!cityRes.valid) {
+        // Validate Location (Departamento y Municipio)
+        if (!dept) {
           if (errorBox && errorMsg) {
-            errorMsg.textContent = cityRes.error;
+            errorMsg.textContent = 'Por favor selecciona un departamento de Colombia.';
             errorBox.classList.remove('hidden');
           }
-          const cityErrorEl = content.querySelector('#city-error');
-          if (cityErrorEl) {
-            cityErrorEl.textContent = cityRes.error;
-            cityErrorEl.classList.remove('hidden');
-          }
-          content.querySelector('#reg-city')?.focus();
+          deptError?.classList.remove('hidden');
+          if (deptError) deptError.textContent = 'Selecciona un departamento.';
+          deptSelect?.focus();
           return;
         }
+
+        if (!municipality) {
+          if (errorBox && errorMsg) {
+            errorMsg.textContent = 'Por favor selecciona un municipio o ciudad.';
+            errorBox.classList.remove('hidden');
+          }
+          cityError?.classList.remove('hidden');
+          if (cityError) cityError.textContent = 'Selecciona una ciudad o municipio.';
+          muniSelect?.focus();
+          return;
+        }
+
+        const city = `${municipality}, ${dept}`;
 
         // Validate Address
         if (!address || address.length < 5) {
@@ -578,9 +697,22 @@ export function openAuthModal(initialTab = 'login') {
           modal.close();
           window.location.reload();
         } catch (err) {
+          const message = err.message || 'Error al registrar la cuenta. Verifica que el correo no esté en uso.';
           if (errorBox && errorMsg) {
-            errorMsg.textContent = err.message || 'Error al registrar la cuenta. Verifica que el correo no esté en uso.';
+            errorMsg.textContent = message;
             errorBox.classList.remove('hidden');
+          }
+          if (message.toLowerCase().includes('correo') || message.toLowerCase().includes('email')) {
+            if (emailErrorEl) {
+              emailErrorEl.textContent = message;
+              emailErrorEl.classList.remove('hidden');
+            }
+          }
+          if (message.toLowerCase().includes('documento') || message.toLowerCase().includes('cédula') || message.toLowerCase().includes('nit')) {
+            if (docErrorEl) {
+              docErrorEl.textContent = message;
+              docErrorEl.classList.remove('hidden');
+            }
           }
           if (submitBtn) submitBtn.disabled = false;
           if (submitText) submitText.textContent = 'Crear Cuenta';

@@ -230,48 +230,108 @@ export function validateCountry(country) {
 
 /**
  * 6. Validación de Teléfono / WhatsApp
- * Rechaza: letras ("300abc"), caracteres raros ("$$$"), longitudes menores a 7 o mayores a 15 dígitos.
+ * Rechaza: letras ("300abc"), arrobas ("@"), caracteres especiales, y longitudes distintas a 10 dígitos.
  */
 export function validatePhone(phone) {
   if (!phone || typeof phone !== 'string') {
-    return { valid: false, error: 'El teléfono de contacto es obligatorio.' };
+    return { valid: false, error: 'El número de celular es obligatorio.' };
   }
   const trimmed = phone.trim();
 
-  // Si tiene letras
+  // Si contiene arroba o símbolos especiales
+  if (/[@#\$%&\*\(\)\=\+\/\\\{\}\[\];:,<>\?~`!^|]/.test(trimmed)) {
+    return { valid: false, error: 'El número de celular no puede contener arrobas (@) ni caracteres especiales.' };
+  }
+
+  // Si contiene letras
   if (/[a-zA-Z]/.test(trimmed)) {
-    return { valid: false, error: 'El teléfono no puede contener letras. Solo dígitos numéricos.' };
+    return { valid: false, error: 'El número de celular no puede contener letras. Solo números.' };
   }
 
   // Extraer solo dígitos
   const digitsOnly = trimmed.replace(/\D/g, '');
-  if (digitsOnly.length < 7 || digitsOnly.length > 15) {
-    return { valid: false, error: 'El número telefónico debe tener entre 7 y 15 dígitos (ej. 3101234567 o +57 310 123 4567).' };
+  if (digitsOnly.length !== 10) {
+    return { valid: false, error: 'El número de celular en Colombia debe tener exactamente 10 dígitos (ej. 3101234567).' };
+  }
+  if (!digitsOnly.startsWith('3')) {
+    return { valid: false, error: 'El número de celular debe iniciar con 3 (ej. 3101234567).' };
   }
 
   return { valid: true, error: null };
 }
 
 /**
- * 7. Validación de NIT / RUT / Cédula
- * Formatos válidos: 901234567-8, 901.234.567-8, 1032456789
+ * 7. Validación Estricta de Documento de Identidad por Tipo
+ * - CC (Cédula de Ciudadanía): SOLO dígitos numéricos, entre 6 y 10 dígitos. Sin letras ni símbolos.
+ * - CE (Cédula de Extranjería): SOLO dígitos numéricos, entre 6 y 10 dígitos.
+ * - NIT: SOLO números con dígito de verificación opcional (ej. 901234567 o 901234567-1).
+ * - PASAPORTE: Alfanumérico (letras y números), entre 6 y 15 caracteres.
  */
-export function validateTaxId(taxId) {
-  if (!taxId || typeof taxId !== 'string') {
-    return { valid: false, error: 'El NIT o documento de identificación es obligatorio.' };
+export function validateDocument(docNumber, docType = 'CC') {
+  if (!docNumber || typeof docNumber !== 'string') {
+    return { valid: false, error: 'El número de documento es obligatorio.' };
   }
-  const trimmed = taxId.trim();
-  const clean = trimmed.replace(/[\.\s-]/g, '');
+  const trimmed = docNumber.trim();
+  const normalizedType = (docType || 'CC').toUpperCase();
 
-  if (/[a-zA-Z]/.test(clean.slice(0, -1))) {
-    return { valid: false, error: 'El NIT / Cédula debe contener solo números (ej. 901.234.567-8 o 1.032.456.789).' };
+  if (normalizedType === 'PASSPORT' || normalizedType === 'PASAPORTE') {
+    if (/[^a-zA-Z0-9]/.test(trimmed)) {
+      return { valid: false, error: 'El pasaporte solo puede contener letras y números (sin caracteres especiales ni espacios).' };
+    }
+    if (trimmed.length < 6 || trimmed.length > 15) {
+      return { valid: false, error: 'El pasaporte debe tener entre 6 y 15 caracteres alfanuméricos.' };
+    }
+    return { valid: true, error: null };
   }
 
-  if (clean.length < 6 || clean.length > 15) {
-    return { valid: false, error: 'El NIT o Cédula debe tener entre 6 y 12 dígitos.' };
+  if (normalizedType === 'NIT') {
+    const nitPattern = /^\d{8,10}(-\d{1})?$/;
+    if (!nitPattern.test(trimmed)) {
+      return { valid: false, error: 'El NIT debe contener únicamente números (entre 8 y 10 dígitos, ej. 901234567 o 901234567-1).' };
+    }
+    return { valid: true, error: null };
+  }
+
+  // CC o CE: estrictamente dígitos numéricos
+  if (/\D/.test(trimmed)) {
+    const label = normalizedType === 'CE' ? 'Cédula de Extranjería' : 'Cédula de Ciudadanía';
+    return { valid: false, error: `La ${label} solo permite números, sin letras ni caracteres especiales.` };
+  }
+
+  if (trimmed.length < 6 || trimmed.length > 10) {
+    return { valid: false, error: 'El número de cédula debe tener entre 6 y 10 dígitos numéricos.' };
   }
 
   return { valid: true, error: null };
+}
+
+/**
+ * 7b. Validación Legacy de NIT / RUT
+ */
+export function validateTaxId(taxId) {
+  return validateDocument(taxId, 'NIT');
+}
+
+/**
+ * Helpers para enmascarado y filtrado en tiempo real al escribir
+ */
+export function maskDocumentInput(value, docType = 'CC') {
+  if (!value) return '';
+  const normalizedType = (docType || 'CC').toUpperCase();
+  if (normalizedType === 'PASSPORT' || normalizedType === 'PASAPORTE') {
+    return value.replace(/[^a-zA-Z0-9]/g, '').toUpperCase().substring(0, 15);
+  }
+  if (normalizedType === 'NIT') {
+    return value.replace(/[^\d-]/g, '').substring(0, 12);
+  }
+  // CC / CE: solo números, max 10 dígitos
+  return value.replace(/\D/g, '').substring(0, 10);
+}
+
+export function maskPhoneInput(value) {
+  if (!value) return '';
+  // Elimina cualquier carácter que no sea dígito numérico, max 10 dígitos
+  return value.replace(/\D/g, '').substring(0, 10);
 }
 
 /**
