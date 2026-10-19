@@ -12,6 +12,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -46,5 +47,42 @@ public class PaymentController {
     public ResponseEntity<ApiResponse<List<PaymentResponse>>> getPaymentsByInvoice(@PathVariable Long invoiceId) {
         List<PaymentResponse> payments = paymentService.getPaymentsByInvoiceId(invoiceId);
         return ResponseEntity.ok(ApiResponse.ok(payments));
+    }
+
+    @GetMapping("/payments")
+    @SecurityRequirement(name = "Bearer Authentication")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    @Operation(summary = "List all payments across platform (Admin only)")
+    public ResponseEntity<ApiResponse<List<PaymentResponse>>> getAllPayments() {
+        List<PaymentResponse> payments = paymentService.getAllPayments();
+        return ResponseEntity.ok(ApiResponse.ok(payments));
+    }
+
+    @GetMapping("/payments/{id}")
+    @SecurityRequirement(name = "Bearer Authentication")
+    @Operation(summary = "Get payment details by ID")
+    public ResponseEntity<ApiResponse<PaymentResponse>> getPaymentById(@PathVariable Long id) {
+        PaymentResponse payment = paymentService.getPaymentById(id);
+        return ResponseEntity.ok(ApiResponse.ok(payment));
+    }
+
+    @PatchMapping("/payments/{id}/refund")
+    @SecurityRequirement(name = "Bearer Authentication")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    @Operation(summary = "Refund a payment transaction (Admin only)", description = "Marks payment as REFUNDED and reverts invoice status to ISSUED")
+    public ResponseEntity<ApiResponse<PaymentResponse>> refundPayment(
+            @PathVariable Long id,
+            @RequestParam(required = false, defaultValue = "Solicitud de reembolso aprobada") String reason) {
+        PaymentResponse response = paymentService.refundPayment(id, reason);
+        return ResponseEntity.ok(ApiResponse.ok("Pago reembolsado exitosamente", response));
+    }
+
+    @DeleteMapping("/payments/{id}")
+    @SecurityRequirement(name = "Bearer Authentication")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    @Operation(summary = "Void/Delete payment record (Admin only)")
+    public ResponseEntity<ApiResponse<Void>> deletePayment(@PathVariable Long id) {
+        paymentService.deletePayment(id);
+        return ResponseEntity.ok(ApiResponse.ok("Registro de pago anulado exitosamente", null));
     }
 }

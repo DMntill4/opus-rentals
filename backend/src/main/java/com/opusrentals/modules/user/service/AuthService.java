@@ -164,9 +164,10 @@ public class AuthService {
             throw new ConflictException("Ya existe un usuario registrado con el email: " + email);
         }
 
-        String taxId = (request.getTaxId() != null && !request.getTaxId().isBlank()) 
-            ? request.getTaxId() 
-            : "NIT-" + String.valueOf(System.currentTimeMillis()).substring(4) + "-1";
+        String rawTax = request.getTaxId();
+        String taxId = (rawTax != null && !rawTax.isBlank()) 
+            ? rawTax.replaceAll("^(?i)NIT\\s*[-:]?\\s*", "").trim()
+            : "900" + String.valueOf(System.currentTimeMillis()).substring(4) + "-1";
 
         if (providerRepository.existsByTaxId(taxId)) {
             taxId = taxId + "-" + (int)(Math.random() * 100);

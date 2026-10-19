@@ -111,4 +111,134 @@ public class ReportService {
                 .topRentedTools(topTools)
                 .build();
     }
+
+    @Transactional(readOnly = true)
+    public List<TopToolResponse> getTopTools() {
+        List<Rental> allRentals = rentalRepository.findAll();
+        Map<Long, List<Rental>> byTool = allRentals.stream()
+                .collect(Collectors.groupingBy(r -> r.getTool().getId()));
+
+        return byTool.entrySet().stream()
+                .map(e -> {
+                    Rental sample = e.getValue().get(0);
+                    BigDecimal rev = e.getValue().stream()
+                            .map(Rental::getSubtotal)
+                            .reduce(BigDecimal.ZERO, BigDecimal::add);
+                    return TopToolResponse.builder()
+                            .toolId(e.getKey())
+                            .toolName(sample.getTool().getName())
+                            .categoryName(sample.getTool().getCategory().getName())
+                            .providerCompanyName(sample.getTool().getProvider().getCompanyName())
+                            .totalRentals(e.getValue().size())
+                            .generatedRevenue(rev)
+                            .build();
+                })
+                .sorted((a, b) -> Long.compare(b.getTotalRentals(), a.getTotalRentals()))
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<com.opusrentals.modules.report.dto.response.FrequentClientResponse> getFrequentClients() {
+        List<com.opusrentals.modules.user.entity.Client> allClients = clientRepository.findAll();
+        List<Rental> allRentals = rentalRepository.findAll();
+
+        Map<Long, List<Rental>> rentalsByClient = allRentals.stream()
+                .collect(Collectors.groupingBy(r -> r.getClient().getId()));
+
+        return allClients.stream()
+                .map(client -> {
+                    List<Rental> clientRentals = rentalsByClient.getOrDefault(client.getId(), Collections.emptyList());
+                    long totalRentals = clientRentals.size();
+                    long activeRentals = clientRentals.stream()
+                            .filter(r -> "IN_PROGRESS".equals(r.getStatus()) || "APPROVED".equals(r.getStatus()))
+                            .count();
+                    long completedRentals = clientRentals.stream()
+                            .filter(r -> "RETURNED".equals(r.getStatus()))
+                            .count();
+                    BigDecimal totalSpent = clientRentals.stream()
+                            .filter(r -> !"CANCELLED".equals(r.getStatus()))
+                            .map(Rental::getSubtotal)
+                            .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+                    return com.opusrentals.modules.report.dto.response.FrequentClientResponse.builder()
+                            .clientId(client.getId())
+                            .userId(client.getUser().getId())
+                            .fullName(client.getFirstName() + " " + client.getLastName())
+                            .email(client.getUser().getEmail())
+                            .phone(client.getPhone())
+                            .documentNumber(client.getDocumentNumber())
+                            .totalRentals(totalRentals)
+                            .activeRentals(activeRentals)
+                            .completedRentals(completedRentals)
+                            .totalSpent(totalSpent)
+                            .build();
+                })
+                .sorted(Comparator.comparingLong(com.opusrentals.modules.report.dto.response.FrequentClientResponse::getTotalRentals)
+                        .reversed()
+                        .thenComparing((a, b) -> b.getTotalSpent().compareTo(a.getTotalSpent())))
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public com.opusrentals.modules.report.dto.response.FleetStatusResponse getFleetStatusReport() {
+        List<com.opusrentals.modules.tool.entity.Tool> allTools = toolRepository.findAll();
+        long totalTools = allTools.size();
+
+        long availableCount = allTools.stream()
+                .filter(t -> "AVAILABLE".equalsIgnoreCase(t.getStatus()))
+                .count();
+        long rentedCount = allTools.stream()
+                .filter(t -> "RENTED".equalsIgnoreCase(t.getStatus()))
+                .count();
+        long maintenanceCount = allTools.stream()
+                .filter(t -> "MAINTENANCE".equalsIgnoreCase(t.getStatus()))
+                .count();
+        long retiredCount = allTools.stream()
+                .filter(t -> "RETIRED".equalsIgnoreCase(t.getStatus()))
+                .count();
+
+        double utilizationRate = totalTools > 0
+                ? Math.round(((double) rentedCount / totalTools) * 10000.0) / 100.0
+                : 0.0;
+
+        Map<String, Long> statusBreakdown = allTools.stream()
+                .collect(Collectors.groupingBy(t -> t.getStatus().toUpperCase(), Collectors.counting()));
+
+        Map<Long, List<com.opusrentals.modules.tool.entity.Tool>> byCategory = allTools.stream()
+                .collect(Collectors.groupingBy(t -> t.getCategory().getId()));
+
+        List<com.opusrentals.modules.report.dto.response.CategoryFleetMetricResponse> categoryBreakdown = byCategory.entrySet().stream()
+                .map(entry -> {
+                    List<com.opusrentals.modules.tool.entity.Tool> catTools = entry.getValue();
+                    com.opusrentals.modules.tool.entity.Category cat = catTools.get(0).getCategory();
+                    long catTotal = catTools.size();
+                    long catAvail = catTools.stream().filter(t -> "AVAILABLE".equalsIgnoreCase(t.getStatus())).count();
+                    long catRented = catTools.stream().filter(t -> "RENTED".equalsIgnoreCase(t.getStatus())).count();
+                    long catMaint = catTools.stream().filter(t -> "MAINTENANCE".equalsIgnoreCase(t.getStatus())).count();
+                    long catRetired = catTools.stream().filter(t -> "RETIRED".equalsIgnoreCase(t.getStatus())).count();
+
+                    return com.opusrentals.modules.report.dto.response.CategoryFleetMetricResponse.builder()
+                            .categoryId(cat.getId())
+                            .categoryName(cat.getName())
+                            .totalTools(catTotal)
+                            .availableTools(catAvail)
+                            .rentedTools(catRented)
+                            .maintenanceTools(catMaint)
+                            .retiredTools(catRetired)
+                            .build();
+                })
+                .sorted(Comparator.comparing(com.opusrentals.modules.report.dto.response.CategoryFleetMetricResponse::getCategoryName))
+                .collect(Collectors.toList());
+
+        return com.opusrentals.modules.report.dto.response.FleetStatusResponse.builder()
+                .totalTools(totalTools)
+                .availableCount(availableCount)
+                .rentedCount(rentedCount)
+                .maintenanceCount(maintenanceCount)
+                .retiredCount(retiredCount)
+                .utilizationRatePercentage(utilizationRate)
+                .statusBreakdown(statusBreakdown)
+                .categoryBreakdown(categoryBreakdown)
+                .build();
+    }
 }

@@ -56,8 +56,20 @@ public class ToolService {
     public ToolResponse createTool(String userEmail, CreateToolRequest request) {
         var user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
-        Provider provider = providerRepository.findByUser(user)
-                .orElseThrow(() -> new BadRequestException("Solo un proveedor registrado puede agregar herramientas"));
+
+        Provider provider;
+        if ("ROLE_ADMIN".equals(user.getRole().getName())) {
+            if (request.getProviderId() != null) {
+                provider = providerRepository.findById(request.getProviderId())
+                        .orElseThrow(() -> new ResourceNotFoundException("Proveedor no encontrado con ID: " + request.getProviderId()));
+            } else {
+                provider = providerRepository.findAll().stream().findFirst()
+                        .orElseThrow(() -> new BadRequestException("No hay proveedores registrados en la plataforma"));
+            }
+        } else {
+            provider = providerRepository.findByUser(user)
+                    .orElseThrow(() -> new BadRequestException("Solo un proveedor registrado puede agregar herramientas"));
+        }
 
         Category category = categoryRepository.findById(request.getCategoryId())
                 .orElseThrow(() -> new ResourceNotFoundException("Categoría no encontrada con ID: " + request.getCategoryId()));

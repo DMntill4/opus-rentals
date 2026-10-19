@@ -1,8 +1,11 @@
 package com.opusrentals.modules.tool.dto.request;
 
+import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -20,17 +23,24 @@ public class CreateToolRequest {
     @NotNull(message = "La categoría es obligatoria")
     private Long categoryId;
 
-    @NotBlank(message = "El nombre de la herramienta es obligatorio")
+    private Long providerId;
+
+    @NotBlank(message = "El nombre de la maquinaria es obligatorio")
+    @Size(min = 5, max = 150, message = "El nombre de la maquinaria debe tener entre 5 y 150 caracteres descriptivos")
+    @Pattern(regexp = "^.*[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ].*$", message = "El nombre de la maquinaria debe contener letras descriptivas")
     private String name;
 
     @NotBlank(message = "La marca es obligatoria")
+    @Size(min = 2, max = 50, message = "La marca debe tener entre 2 y 50 caracteres")
     private String brand;
 
     @NotBlank(message = "El modelo es obligatorio")
+    @Size(min = 2, max = 50, message = "El modelo debe tener entre 2 y 50 caracteres")
     private String model;
 
     @NotNull(message = "El precio de alquiler diario es obligatorio")
-    @DecimalMin(value = "0.01", message = "El precio diario debe ser mayor a 0")
+    @DecimalMin(value = "10000.00", message = "La tarifa diaria mínima permitida es de $10.000 COP")
+    @DecimalMax(value = "50000000.00", message = "La tarifa diaria no puede exceder $50.000.000 COP")
     private BigDecimal dailyPrice;
 
     @NotNull(message = "El valor del depósito de garantía es obligatorio")

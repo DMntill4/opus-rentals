@@ -77,6 +77,13 @@ public class RentalController {
         return ResponseEntity.ok(ApiResponse.ok(response));
     }
 
+    @GetMapping("/tool/{toolId}/booked-dates")
+    @Operation(summary = "Get booked date ranges for a tool", description = "Public endpoint to query dates when equipment is currently rented or pending")
+    public ResponseEntity<ApiResponse<List<java.util.Map<String, String>>>> getToolBookedDates(@PathVariable Long toolId) {
+        List<java.util.Map<String, String>> ranges = rentalService.getBookedDateRangesByToolId(toolId);
+        return ResponseEntity.ok(ApiResponse.ok(ranges));
+    }
+
     @PatchMapping("/{id}/status")
     @Operation(summary = "Update rental status", description = "Allows provider to approve/reject, client to cancel, or admin to update")
     public ResponseEntity<ApiResponse<RentalResponse>> updateRentalStatus(
@@ -85,5 +92,24 @@ public class RentalController {
             Authentication authentication) {
         RentalResponse response = rentalService.updateRentalStatus(id, authentication.getName(), request);
         return ResponseEntity.ok(ApiResponse.ok("Estado de la reserva actualizado exitosamente", response));
+    }
+
+    @PostMapping("/{id}/cancel")
+    @Operation(summary = "Cancel a rental booking", description = "Allows client to cancel their rental booking")
+    public ResponseEntity<ApiResponse<RentalResponse>> cancelRental(
+            @PathVariable Long id,
+            Authentication authentication) {
+        ProcessRentalStatusRequest request = new ProcessRentalStatusRequest();
+        request.setStatus("CANCELLED");
+        RentalResponse response = rentalService.updateRentalStatus(id, authentication.getName(), request);
+        return ResponseEntity.ok(ApiResponse.ok("Reserva cancelada exitosamente", response));
+    }
+
+    @PatchMapping("/{id}/cancel")
+    @Operation(summary = "Cancel a rental booking (PATCH)")
+    public ResponseEntity<ApiResponse<RentalResponse>> cancelRentalPatch(
+            @PathVariable Long id,
+            Authentication authentication) {
+        return cancelRental(id, authentication);
     }
 }

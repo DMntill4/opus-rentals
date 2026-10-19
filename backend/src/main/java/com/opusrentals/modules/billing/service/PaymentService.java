@@ -9,6 +9,9 @@ import com.opusrentals.modules.billing.entity.PaymentMethod;
 import com.opusrentals.modules.billing.repository.InvoiceRepository;
 import com.opusrentals.modules.billing.repository.PaymentMethodRepository;
 import com.opusrentals.modules.billing.repository.PaymentRepository;
+import com.opusrentals.modules.rental.entity.Rental;
+import com.opusrentals.modules.rental.repository.RentalRepository;
+import com.opusrentals.modules.tool.repository.ToolRepository;
 import com.opusrentals.shared.exception.BadRequestException;
 import com.opusrentals.shared.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +31,8 @@ public class PaymentService {
     private final PaymentRepository paymentRepository;
     private final PaymentMethodRepository paymentMethodRepository;
     private final InvoiceRepository invoiceRepository;
+    private final RentalRepository rentalRepository;
+    private final ToolRepository toolRepository;
 
     @Transactional(readOnly = true)
     public List<PaymentMethodResponse> getActivePaymentMethods() {
@@ -72,11 +77,60 @@ public class PaymentService {
 
         Payment savedPayment = paymentRepository.save(payment);
 
-        // Update invoice status to PAID
+        // Update invoice status to PAID (Rental remains PENDING until provider approves)
         invoice.setStatus("PAID");
         invoiceRepository.save(invoice);
 
         return mapToResponse(savedPayment);
+    }
+
+    @Transactional(readOnly = true)
+    public List<PaymentResponse> getAllPayments() {
+        return paymentRepository.findAll().stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public PaymentResponse getPaymentById(Long id) {
+        Payment payment = paymentRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Pago no encontrado con ID: " + id));
+        return mapToResponse(payment);
+    }
+
+    @Transactional
+    public PaymentResponse refundPayment(Long id, String reason) {
+        Payment payment = paymentRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Pago no encontrado con ID: " + id));
+
+        if ("REFUNDED".equals(payment.getPaymentStatus())) {
+            throw new BadRequestException("Este pago ya ha sido reembolsado previamente");
+        }
+
+        payment.setPaymentStatus("REFUNDED");
+        Payment saved = paymentRepository.save(payment);
+
+        Invoice invoice = payment.getInvoice();
+        if (invoice != null) {
+            invoice.setStatus("ISSUED");
+            invoiceRepository.save(invoice);
+        }
+
+        return mapToResponse(saved);
+    }
+
+    @Transactional
+    public void deletePayment(Long id) {
+        Payment payment = paymentRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Pago no encontrado con ID: " + id));
+
+        Invoice invoice = payment.getInvoice();
+        if (invoice != null && "PAID".equals(invoice.getStatus())) {
+            invoice.setStatus("ISSUED");
+            invoiceRepository.save(invoice);
+        }
+
+        paymentRepository.delete(payment);
     }
 
     @Transactional(readOnly = true)

@@ -1,6 +1,9 @@
 package com.opusrentals.modules.report.controller;
 
 import com.opusrentals.modules.report.dto.response.DashboardSummaryResponse;
+import com.opusrentals.modules.report.dto.response.FleetStatusResponse;
+import com.opusrentals.modules.report.dto.response.FrequentClientResponse;
+import com.opusrentals.modules.report.dto.response.TopToolResponse;
 import com.opusrentals.modules.report.service.ReportService;
 import com.opusrentals.shared.dto.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -12,6 +15,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/admin/reports")
@@ -29,4 +34,26 @@ public class ReportController {
         DashboardSummaryResponse summary = reportService.getDashboardSummary();
         return ResponseEntity.ok(ApiResponse.ok("Métricas de la plataforma obtenidas exitosamente", summary));
     }
+
+    @GetMapping("/top-tools")
+    @Operation(summary = "Get top rented tools report (Admin only)", description = "Returns most rented tools ranked by total rental operations and revenue generated")
+    public ResponseEntity<ApiResponse<List<TopToolResponse>>> getTopTools() {
+        List<TopToolResponse> topTools = reportService.getTopTools();
+        return ResponseEntity.ok(ApiResponse.ok("Reporte de herramientas más alquiladas obtenido exitosamente", topTools));
+    }
+
+    @GetMapping("/frequent-clients")
+    @Operation(summary = "Get frequent clients report (Admin only)", description = "Returns clients ranking by rental frequency, active rentals, and total spend")
+    public ResponseEntity<ApiResponse<List<FrequentClientResponse>>> getFrequentClients() {
+        List<FrequentClientResponse> frequentClients = reportService.getFrequentClients();
+        return ResponseEntity.ok(ApiResponse.ok("Reporte de clientes frecuentes obtenido exitosamente", frequentClients));
+    }
+
+    @GetMapping("/fleet-status")
+    @Operation(summary = "Get fleet availability and status report (Admin only)", description = "Returns status breakdown (available, rented, maintenance, retired) and utilization metrics per category")
+    public ResponseEntity<ApiResponse<FleetStatusResponse>> getFleetStatusReport() {
+        FleetStatusResponse fleetStatus = reportService.getFleetStatusReport();
+        return ResponseEntity.ok(ApiResponse.ok("Reporte de disponibilidad y estado de flota obtenido exitosamente", fleetStatus));
+    }
 }
+

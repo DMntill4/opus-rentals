@@ -25,4 +25,7 @@ public interface RentalRepository extends JpaRepository<Rental, Long> {
     boolean hasOverlappingRentals(@Param("toolId") Long toolId,
                                   @Param("startDate") LocalDate startDate,
                                   @Param("endDate") LocalDate endDate);
+
+    @Query("SELECT r FROM Rental r WHERE r.tool.id = :toolId AND r.status NOT IN ('CANCELLED', 'REJECTED')")
+    List<Rental> findActiveRentalsByToolId(@Param("toolId") Long toolId);
 }

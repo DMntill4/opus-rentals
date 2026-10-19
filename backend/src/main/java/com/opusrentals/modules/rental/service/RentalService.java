@@ -105,14 +105,20 @@ public class RentalService {
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
 
         boolean isAdmin = "ROLE_ADMIN".equals(user.getRole().getName());
-        boolean isProvider = rental.getTool().getProvider().getUser().getId().equals(user.getId());
-        boolean isClient = rental.getClient().getUser().getId().equals(user.getId());
+        boolean isProvider = rental.getTool() != null && 
+                             rental.getTool().getProvider() != null && 
+                             rental.getTool().getProvider().getUser() != null && 
+                             rental.getTool().getProvider().getUser().getId().equals(user.getId());
+        boolean isClient = rental.getClient() != null && 
+                           rental.getClient().getUser() != null && 
+                           rental.getClient().getUser().getId().equals(user.getId());
 
-        if (!isAdmin && !isProvider && !(isClient && "CANCELLED".equals(request.getStatus()))) {
+        String targetStatus = request.getStatus() != null ? request.getStatus().trim().toUpperCase() : "CANCELLED";
+
+        if (!isAdmin && !isProvider && !(isClient && "CANCELLED".equals(targetStatus))) {
             throw new BadRequestException("No tiene permisos para modificar el estado de este alquiler");
         }
 
-        String targetStatus = request.getStatus().toUpperCase();
         rental.setStatus(targetStatus);
 
         if ("APPROVED".equals(targetStatus) || "IN_PROGRESS".equals(targetStatus)) {
@@ -171,6 +177,19 @@ public class RentalService {
         Rental rental = rentalRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Alquiler no encontrado con ID: " + id));
         return mapToResponse(rental);
+    }
+
+    @Transactional(readOnly = true)
+    public List<java.util.Map<String, String>> getBookedDateRangesByToolId(Long toolId) {
+        return rentalRepository.findActiveRentalsByToolId(toolId).stream()
+                .map(r -> {
+                    java.util.Map<String, String> map = new java.util.HashMap<>();
+                    map.put("startDate", r.getStartDate().toString());
+                    map.put("endDate", r.getEndDate().toString());
+                    map.put("status", r.getStatus());
+                    return map;
+                })
+                .collect(Collectors.toList());
     }
 
     public RentalResponse mapToResponse(Rental rental) {
