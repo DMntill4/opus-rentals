@@ -71,7 +71,10 @@ com.opusrentals/
     └── report/              # Dashboard administrativo, KPIs y Analítica de Flota
 ```
 
-Para consultar la demostración matemática de 4NF y el diagrama relacional SVG completo, consulta [docs/ARQUITECTURA_4FN.md](./docs/ARQUITECTURA_4FN.md).
+### Modelo Relacional de Base de Datos
+![Diagrama de Base de Datos](./docs/img/db_schema.png)
+
+Para consultar la demostración matemática de 4NF y el diagrama relacional completo, consulta [docs/ARQUITECTURA_4FN.md](./docs/ARQUITECTURA_4FN.md).
 
 ---
 

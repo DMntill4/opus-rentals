@@ -50,7 +50,9 @@ storing them in a single table forces a Cartesian product of tuples, causing ins
 
 ## 3. FULL RELATIONAL SCHEMA MATRIX (16 TABLES)
 
-![Diagrama Relacional 4NF](./diagrama_relacional_bd.svg)
+![Diagrama Relacional 4NF](./img/db_schema.png)
+
+*(Para visualización vectorial en alta resolución o edición, ver también el archivo [diagrama_relacional_bd.svg](./diagrama_relacional_bd.svg))*
 
 1. `roles`: Master table for authorization scopes (`ROLE_ADMIN`, `ROLE_PROVIDER`, `ROLE_CLIENT`).
 2. `users`: Credentials, status, and encrypted password hashes.
