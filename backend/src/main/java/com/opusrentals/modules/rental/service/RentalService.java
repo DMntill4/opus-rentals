@@ -69,9 +69,20 @@ public class RentalService {
         int requestedQty = (request.getQuantity() != null && request.getQuantity() > 0) ? request.getQuantity() : 1;
         int totalUnits = (tool.getTotalQuantity() != null && tool.getTotalQuantity() > 0) ? tool.getTotalQuantity() : 5;
         
-        int rentedUnitsInPeriod = rentalRepository.sumRentedQuantityInPeriod(tool.getId(), request.getStartDate(), request.getEndDate());
-        if (rentedUnitsInPeriod + requestedQty > totalUnits) {
-            int availableUnits = Math.max(0, totalUnits - rentedUnitsInPeriod);
+        List<Rental> activeRentals = rentalRepository.findActiveRentalsByToolId(tool.getId());
+        int maxRentedInPeriod = 0;
+        for (LocalDate d = request.getStartDate(); !d.isAfter(request.getEndDate()); d = d.plusDays(1)) {
+            final LocalDate cur = d;
+            int rentedOnDay = activeRentals.stream()
+                    .filter(r -> !cur.isBefore(r.getStartDate()) && !cur.isAfter(r.getEndDate()))
+                    .mapToInt(r -> r.getQuantity() != null ? r.getQuantity() : 1)
+                    .sum();
+            if (rentedOnDay > maxRentedInPeriod) {
+                maxRentedInPeriod = rentedOnDay;
+            }
+        }
+        if (maxRentedInPeriod + requestedQty > totalUnits) {
+            int availableUnits = Math.max(0, totalUnits - maxRentedInPeriod);
             throw new ConflictException("Solo hay " + availableUnits + " unidades disponibles para ese rango de fechas (solicitadas: " + requestedQty + ")");
         }
 
@@ -203,16 +214,65 @@ public class RentalService {
 
     @Transactional(readOnly = true)
     public List<java.util.Map<String, String>> getBookedDateRangesByToolId(Long toolId) {
-        return rentalRepository.findActiveRentalsByToolId(toolId).stream()
-                .map(r -> {
-                    java.util.Map<String, String> map = new java.util.HashMap<>();
-                    map.put("startDate", r.getStartDate().toString());
-                    map.put("endDate", r.getEndDate().toString());
-                    map.put("status", r.getStatus());
-                    map.put("quantity", String.valueOf(r.getQuantity() != null ? r.getQuantity() : 1));
-                    return map;
-                })
-                .collect(Collectors.toList());
+        Tool tool = toolRepository.findById(toolId).orElse(null);
+        int totalUnits = (tool != null && tool.getTotalQuantity() != null && tool.getTotalQuantity() > 0)
+                ? tool.getTotalQuantity() : 5;
+
+        List<Rental> activeRentals = rentalRepository.findActiveRentalsByToolId(toolId);
+        if (activeRentals.isEmpty()) {
+            return java.util.Collections.emptyList();
+        }
+
+        LocalDate minStart = activeRentals.stream().map(Rental::getStartDate).min(LocalDate::compareTo).orElse(LocalDate.now());
+        LocalDate maxEnd = activeRentals.stream().map(Rental::getEndDate).max(LocalDate::compareTo).orElse(LocalDate.now());
+
+        java.util.Set<LocalDate> fullyBookedDates = new java.util.TreeSet<>();
+        for (LocalDate d = minStart; !d.isAfter(maxEnd); d = d.plusDays(1)) {
+            final LocalDate currentDay = d;
+            int rentedOnDay = activeRentals.stream()
+                    .filter(r -> !currentDay.isBefore(r.getStartDate()) && !currentDay.isAfter(r.getEndDate()))
+                    .mapToInt(r -> r.getQuantity() != null ? r.getQuantity() : 1)
+                    .sum();
+            if (rentedOnDay >= totalUnits) {
+                fullyBookedDates.add(currentDay);
+            }
+        }
+
+        if (fullyBookedDates.isEmpty()) {
+            return java.util.Collections.emptyList();
+        }
+
+        List<java.util.Map<String, String>> result = new java.util.ArrayList<>();
+        LocalDate rangeStart = null;
+        LocalDate rangeEnd = null;
+
+        for (LocalDate d : fullyBookedDates) {
+            if (rangeStart == null) {
+                rangeStart = d;
+                rangeEnd = d;
+            } else if (d.equals(rangeEnd.plusDays(1))) {
+                rangeEnd = d;
+            } else {
+                java.util.Map<String, String> map = new java.util.HashMap<>();
+                map.put("startDate", rangeStart.toString());
+                map.put("endDate", rangeEnd.toString());
+                map.put("status", "FULLY_BOOKED");
+                map.put("quantity", String.valueOf(totalUnits));
+                result.add(map);
+                rangeStart = d;
+                rangeEnd = d;
+            }
+        }
+        if (rangeStart != null) {
+            java.util.Map<String, String> map = new java.util.HashMap<>();
+            map.put("startDate", rangeStart.toString());
+            map.put("endDate", rangeEnd.toString());
+            map.put("status", "FULLY_BOOKED");
+            map.put("quantity", String.valueOf(totalUnits));
+            result.add(map);
+        }
+
+        return result;
     }
 
     @Transactional(readOnly = true)
@@ -221,8 +281,19 @@ public class RentalService {
                 .orElseThrow(() -> new ResourceNotFoundException("Herramienta no encontrada con ID: " + toolId));
 
         int totalUnits = (tool.getTotalQuantity() != null && tool.getTotalQuantity() > 0) ? tool.getTotalQuantity() : 5;
-        int rentedUnits = rentalRepository.sumRentedQuantityInPeriod(toolId, startDate, endDate);
-        int availableUnits = Math.max(0, totalUnits - rentedUnits);
+        List<Rental> activeRentals = rentalRepository.findActiveRentalsByToolId(toolId);
+        int maxRentedInPeriod = 0;
+        for (LocalDate d = startDate; !d.isAfter(endDate); d = d.plusDays(1)) {
+            final LocalDate cur = d;
+            int rentedOnDay = activeRentals.stream()
+                    .filter(r -> !cur.isBefore(r.getStartDate()) && !cur.isAfter(r.getEndDate()))
+                    .mapToInt(r -> r.getQuantity() != null ? r.getQuantity() : 1)
+                    .sum();
+            if (rentedOnDay > maxRentedInPeriod) {
+                maxRentedInPeriod = rentedOnDay;
+            }
+        }
+        int availableUnits = Math.max(0, totalUnits - maxRentedInPeriod);
         boolean isMaintenance = "MAINTENANCE".equalsIgnoreCase(tool.getStatus()) || "OUT_OF_SERVICE".equalsIgnoreCase(tool.getStatus());
 
         if (isMaintenance) {
@@ -232,7 +303,7 @@ public class RentalService {
         java.util.Map<String, Object> result = new java.util.HashMap<>();
         result.put("toolId", toolId);
         result.put("totalQuantity", totalUnits);
-        result.put("rentedQuantity", rentedUnits);
+        result.put("rentedQuantity", maxRentedInPeriod);
         result.put("availableQuantity", availableUnits);
         result.put("isAvailable", availableUnits > 0 && !isMaintenance);
         result.put("status", tool.getStatus());

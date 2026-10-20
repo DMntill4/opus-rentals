@@ -20,20 +20,20 @@ public interface RentalRepository extends JpaRepository<Rental, Long> {
     List<Rental> findByStatus(String status);
 
     @Query("SELECT COUNT(r) > 0 FROM Rental r WHERE r.tool.id = :toolId " +
-           "AND r.status NOT IN ('CANCELLED', 'RETURNED') " +
+           "AND r.status NOT IN ('CANCELLED', 'RETURNED', 'COMPLETED', 'REJECTED') " +
            "AND r.startDate <= :endDate AND r.endDate >= :startDate")
     boolean hasOverlappingRentals(@Param("toolId") Long toolId,
                                   @Param("startDate") LocalDate startDate,
                                   @Param("endDate") LocalDate endDate);
 
     @Query("SELECT COALESCE(SUM(r.quantity), 0) FROM Rental r WHERE r.tool.id = :toolId " +
-           "AND r.status NOT IN ('CANCELLED', 'RETURNED') " +
+           "AND r.status NOT IN ('CANCELLED', 'RETURNED', 'COMPLETED', 'REJECTED') " +
            "AND r.startDate <= :endDate AND r.endDate >= :startDate")
     int sumRentedQuantityInPeriod(@Param("toolId") Long toolId,
                                   @Param("startDate") LocalDate startDate,
                                   @Param("endDate") LocalDate endDate);
 
-    @Query("SELECT r FROM Rental r WHERE r.tool.id = :toolId AND r.status NOT IN ('CANCELLED', 'REJECTED')")
+    @Query("SELECT r FROM Rental r WHERE r.tool.id = :toolId AND r.status NOT IN ('CANCELLED', 'RETURNED', 'COMPLETED', 'REJECTED')")
     List<Rental> findActiveRentalsByToolId(@Param("toolId") Long toolId);
 
     long countByToolProviderId(Long providerId);

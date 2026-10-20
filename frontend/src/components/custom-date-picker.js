@@ -60,6 +60,7 @@ export class CustomDateRangePicker {
     onDateChange,
     maxDays = 30,
     containerId = null,
+    totalUnits = 5,
     bookedDateRanges = []
   } = {}) {
     const today = new Date();
@@ -69,6 +70,7 @@ export class CustomDateRangePicker {
     defaultEndObj.setDate(defaultEndObj.getDate() + 6); // 7 days default
     const defaultEnd = toIsoDate(defaultEndObj);
 
+    this.totalUnits = Number(totalUnits || 5);
     this.bookedDateRanges = Array.isArray(bookedDateRanges) ? bookedDateRanges : [];
     this.startDate = initialStartDate ? toIsoDate(parseIsoDate(initialStartDate)) : defaultStart;
     this.endDate = initialEndDate ? toIsoDate(parseIsoDate(initialEndDate)) : defaultEnd;
@@ -91,20 +93,40 @@ export class CustomDateRangePicker {
 
   isDateBooked(iso) {
     if (!this.bookedDateRanges || !this.bookedDateRanges.length) return false;
-    return this.bookedDateRanges.some(r => {
+    
+    const maxUnits = Number(this.totalUnits) > 0 ? Number(this.totalUnits) : 5;
+    let rentedOnIso = 0;
+    let hasExplicitFullBook = false;
+
+    this.bookedDateRanges.forEach(r => {
+      if (!r) return;
+      if (r.status === 'CANCELLED' || r.status === 'RETURNED' || r.status === 'COMPLETED' || r.status === 'REJECTED') {
+        return;
+      }
       const s = typeof r === 'string' ? r : (r.startDate || r.start);
       const e = typeof r === 'string' ? r : (r.endDate || r.end || s);
-      return iso >= s && iso <= e;
+      if (iso >= s && iso <= e) {
+        if (r.status === 'FULLY_BOOKED') {
+          hasExplicitFullBook = true;
+        }
+        rentedOnIso += (r.quantity !== undefined ? Number(r.quantity) : 1);
+      }
     });
+
+    if (hasExplicitFullBook) return true;
+    return rentedOnIso >= maxUnits;
   }
 
   hasBookedOverlap(startIso, endIso) {
     if (!this.bookedDateRanges || !this.bookedDateRanges.length) return false;
-    return this.bookedDateRanges.some(r => {
-      const s = typeof r === 'string' ? r : (r.startDate || r.start);
-      const e = typeof r === 'string' ? r : (r.endDate || r.end || s);
-      return startIso <= e && endIso >= s;
-    });
+    const s = parseIsoDate(startIso);
+    const e = parseIsoDate(endIso);
+    for (let d = new Date(s); d <= e; d.setDate(d.getDate() + 1)) {
+      if (this.isDateBooked(toIsoDate(d))) {
+        return true;
+      }
+    }
+    return false;
   }
 
   validateAndEnforceRange() {
@@ -297,7 +319,7 @@ export class CustomDateRangePicker {
           </div>
           <div class="flex items-center gap-1.5">
             <span class="w-3 h-3 rounded-md bg-rose-500/30 border border-rose-400"></span>
-            <span class="text-rose-600 dark:text-rose-400 font-bold">Alquilado (En Rojo)</span>
+            <span class="text-rose-600 dark:text-rose-400 font-bold">Agotado 100% (En Rojo)</span>
           </div>
           <div class="flex items-center gap-1.5">
             <span class="w-3 h-3 rounded-md bg-white dark:bg-slate-800 border border-slate-300"></span>
@@ -383,7 +405,7 @@ export class CustomDateRangePicker {
         const clickedDate = btn.dataset.date;
 
         if (this.isDateBooked(clickedDate)) {
-          this.errorMessage = `⛔ Esta maquinaria ya se encuentra alquilada el ${formatDate(clickedDate)} (marcado en rojo). Elige días libres.`;
+          this.errorMessage = `⛔ Esta maquinaria se encuentra 100% agotada el ${formatDate(clickedDate)} (marcado en rojo). Elige días con disponibilidad.`;
           this.render(parentElement);
           return;
         }
@@ -427,7 +449,7 @@ export class CustomDateRangePicker {
           } else {
             // Check if any booked dates are in the range [this.startDate, clickedDate]
             if (this.hasBookedOverlap(this.startDate, clickedDate)) {
-              this.errorMessage = `⛔ El rango seleccionado incluye días donde la máquina ya está alquilada (en rojo). Elige otro rango sin solapamiento.`;
+              this.errorMessage = `⛔ El rango seleccionado incluye días donde la máquina se encuentra 100% agotada (en rojo). Elige otro rango con disponibilidad.`;
               this.render(parentElement);
               return;
             }
@@ -459,6 +481,7 @@ export class CustomDateRangePicker {
 export function openDateRangeModal({
   startDate,
   endDate,
+  totalUnits = 5,
   bookedDateRanges = [],
   onConfirm
 }) {
@@ -475,6 +498,7 @@ export function openDateRangeModal({
   const picker = new CustomDateRangePicker({
     initialStartDate: currentStart,
     initialEndDate: currentEnd,
+    totalUnits: totalUnits,
     bookedDateRanges: bookedDateRanges,
     maxDays: 30,
     onDateChange: (result) => {
@@ -522,7 +546,7 @@ export function openDateRangeModal({
 
   footer.querySelector('.btn-confirm-cal')?.addEventListener('click', () => {
     if (picker.hasBookedOverlap(currentStart, currentEnd)) {
-      picker.errorMessage = '⛔ La fecha seleccionada incluye días ocupados/alquilados. Por favor selecciona días libres en el calendario.';
+      picker.errorMessage = '⛔ La fecha seleccionada incluye días 100% agotados (en rojo). Por favor selecciona días con disponibilidad en el calendario.';
       picker.render(calendarMount);
       return;
     }

@@ -280,6 +280,7 @@ export async function openRentalModal(tool, initialDates = {}) {
       openDateRangeModal({
         startDate,
         endDate,
+        totalUnits: tool.totalQuantity || tool.quantity || 5,
         bookedDateRanges: bookedRanges,
         onConfirm: (res) => {
           startDate = res.startDate;

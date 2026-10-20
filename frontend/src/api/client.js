@@ -274,26 +274,32 @@ class ApiClient {
       const totalUnits = Number(foundTool.totalQuantity || foundTool.quantity || 5);
       const isMaint = foundTool.status === 'MAINTENANCE' || foundTool.status === 'OUT_OF_SERVICE';
 
-      let rentedUnits = 0;
+      let maxRentedInPeriod = 0;
       if (sDate && eDate) {
-        this.mockRequests.forEach(r => {
-          if (toolId && String(r.toolId) !== String(toolId) && String(r.tool?.id) !== String(toolId)) return;
-          if (r.status === 'CANCELLED' || r.status === 'REJECTED' || r.status === 'RETURNED' || r.status === 'COMPLETED') return;
-          const rStart = r.startDate || '';
-          const rEnd = r.endDate || '';
-          if (rStart && rEnd) {
-            if (sDate <= rEnd && eDate >= rStart) {
-              rentedUnits += Number(r.quantity || 1);
+        const curDate = new Date(sDate + 'T00:00:00');
+        const endDateObj = new Date(eDate + 'T00:00:00');
+        while (curDate <= endDateObj) {
+          const dayStr = curDate.toISOString().split('T')[0];
+          let rentedOnDay = 0;
+          this.mockRequests.forEach(r => {
+            if (toolId && String(r.toolId) !== String(toolId) && String(r.tool?.id) !== String(toolId)) return;
+            if (r.status === 'CANCELLED' || r.status === 'REJECTED' || r.status === 'RETURNED' || r.status === 'COMPLETED') return;
+            if (r.startDate && r.endDate && dayStr >= r.startDate && dayStr <= r.endDate) {
+              rentedOnDay += Number(r.quantity || 1);
             }
+          });
+          if (rentedOnDay > maxRentedInPeriod) {
+            maxRentedInPeriod = rentedOnDay;
           }
-        });
+          curDate.setDate(curDate.getDate() + 1);
+        }
       }
 
-      const availableUnits = isMaint ? 0 : Math.max(0, totalUnits - rentedUnits);
+      const availableUnits = isMaint ? 0 : Math.max(0, totalUnits - maxRentedInPeriod);
       return {
         toolId: toolId ? Number(toolId) : 1,
         totalQuantity: totalUnits,
-        rentedQuantity: rentedUnits,
+        rentedQuantity: maxRentedInPeriod,
         availableQuantity: availableUnits,
         isAvailable: availableUnits > 0 && !isMaint,
         status: isMaint ? foundTool.status : (availableUnits > 0 ? 'AVAILABLE' : 'RENTED'),
@@ -305,14 +311,63 @@ class ApiClient {
     if (endpoint.includes('/booked-dates')) {
       const toolIdMatch = endpoint.match(/\/tool\/(\d+)\/booked-dates/);
       const toolId = toolIdMatch ? toolIdMatch[1] : null;
-      return this.mockRequests
-        .filter(r => (!toolId || String(r.toolId) === String(toolId) || String(r.tool?.id) === String(toolId)) && r.status !== 'CANCELLED' && r.status !== 'REJECTED')
-        .map(r => ({
-          startDate: r.startDate || '2026-10-19',
-          endDate: r.endDate || '2026-10-21',
-          status: r.status || 'APPROVED',
-          quantity: Number(r.quantity || 1)
-        }));
+      const foundTool = this.mockTools.find(t => String(t.id) === String(toolId)) || {};
+      const totalUnits = Number(foundTool.totalQuantity || foundTool.quantity || 5);
+
+      const activeReqs = this.mockRequests.filter(r =>
+        (!toolId || String(r.toolId) === String(toolId) || String(r.tool?.id) === String(toolId)) &&
+        r.status !== 'CANCELLED' && r.status !== 'REJECTED' && r.status !== 'RETURNED' && r.status !== 'COMPLETED'
+      );
+
+      const dateSet = new Set();
+      activeReqs.forEach(r => {
+        if (!r.startDate || !r.endDate) return;
+        const cur = new Date(r.startDate + 'T00:00:00');
+        const end = new Date(r.endDate + 'T00:00:00');
+        while (cur <= end) {
+          dateSet.add(cur.toISOString().split('T')[0]);
+          cur.setDate(cur.getDate() + 1);
+        }
+      });
+
+      const fullyBookedDates = [];
+      Array.from(dateSet).sort().forEach(dateStr => {
+        let rentedOnDate = 0;
+        activeReqs.forEach(r => {
+          if (dateStr >= r.startDate && dateStr <= r.endDate) {
+            rentedOnDate += Number(r.quantity || 1);
+          }
+        });
+        if (rentedOnDate >= totalUnits) {
+          fullyBookedDates.push(dateStr);
+        }
+      });
+
+      const ranges = [];
+      let curStart = null;
+      let curEnd = null;
+
+      fullyBookedDates.forEach(d => {
+        if (!curStart) {
+          curStart = d;
+          curEnd = d;
+        } else {
+          const nextDay = new Date(curEnd + 'T00:00:00');
+          nextDay.setDate(nextDay.getDate() + 1);
+          if (nextDay.toISOString().split('T')[0] === d) {
+            curEnd = d;
+          } else {
+            ranges.push({ startDate: curStart, endDate: curEnd, status: 'FULLY_BOOKED', quantity: totalUnits });
+            curStart = d;
+            curEnd = d;
+          }
+        }
+      });
+      if (curStart) {
+        ranges.push({ startDate: curStart, endDate: curEnd, status: 'FULLY_BOOKED', quantity: totalUnits });
+      }
+
+      return ranges;
     }
 
     if (endpoint.startsWith('/rentals/provider-requests') || endpoint.startsWith('/rentals/provider/')) {

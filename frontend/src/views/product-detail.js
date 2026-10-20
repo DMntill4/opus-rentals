@@ -398,6 +398,7 @@ export async function renderProductPageView(toolId) {
       openDateRangeModal({
         startDate,
         endDate,
+        totalUnits: tool.totalQuantity || tool.quantity || 5,
         bookedDateRanges: bookedRanges,
         onConfirm: async (res) => {
           startDate = res.startDate;
