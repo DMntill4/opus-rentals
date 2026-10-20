@@ -67,9 +67,34 @@ export async function renderProductPageView(toolId) {
   let endDate = toIsoDate(defaultEnd);
   let rentalDays = calculateRentalDays(startDate, endDate);
 
+  let availabilityInfo = {
+    totalQuantity: tool.totalQuantity || 5,
+    rentedQuantity: 0,
+    availableQuantity: tool.totalQuantity || 5,
+    isAvailable: tool.status === 'AVAILABLE'
+  };
+
+  async function fetchAvailability(sDate, eDate) {
+    try {
+      const res = await api.get(`/rentals/tool/${tool.id}/availability?startDate=${sDate}&endDate=${eDate}`);
+      const data = res?.data || res;
+      if (data && typeof data.availableQuantity === 'number') {
+        availabilityInfo = data;
+      }
+    } catch (e) {
+      console.warn('Could not fetch date availability', e);
+    }
+  }
+
+  await fetchAvailability(startDate, endDate);
+
   function render() {
     const dailyPrice = tool.dailyPrice || 580000;
-    const isAvailable = tool.status === 'AVAILABLE';
+    const totalUnits = availabilityInfo.totalQuantity || tool.totalQuantity || 5;
+    const availableUnits = typeof availabilityInfo.availableQuantity === 'number' ? availabilityInfo.availableQuantity : totalUnits;
+    const rentedUnits = availabilityInfo.rentedQuantity || 0;
+    const isMaintenance = tool.status === 'MAINTENANCE' || tool.status === 'OUT_OF_SERVICE';
+    const isAvailableForDates = availableUnits > 0 && !isMaintenance;
     const subtotal = dailyPrice * rentalDays;
     const vat = Math.round(subtotal * 0.19);
     const total = subtotal + vat;
@@ -201,15 +226,23 @@ export async function renderProductPageView(toolId) {
                 
                 <div class="bg-white rounded-xl border-2 border-slate-200 p-5 space-y-4 shadow-sm">
                   
-                  <div class="space-y-1">
-                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-black uppercase font-mono ${
-                      isAvailable ? 'bg-emerald-50 text-emerald-800 border border-emerald-300' : 'bg-slate-100 text-slate-700'
-                    }">
-                      <span class="w-2 h-2 rounded-full ${isAvailable ? 'bg-emerald-500' : 'bg-slate-400'}"></span>
-                      ${isAvailable ? 'Disponible para entrega' : 'Actualmente en Obra'}
-                    </span>
-                    <p class="text-[11px] text-slate-500 pt-1">
-                      Despacho inmediato desde patio central de maquinaria.
+                  <div class="space-y-1.5 p-3 rounded-xl border ${isAvailableForDates ? 'bg-emerald-50/70 border-emerald-300' : 'bg-rose-50/70 border-rose-300'}">
+                    <div class="flex items-center justify-between">
+                      <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-black uppercase font-mono ${
+                        isAvailableForDates ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-rose-100 text-rose-800 border border-rose-300'
+                      }">
+                        <span class="w-2 h-2 rounded-full ${isAvailableForDates ? 'bg-emerald-500' : 'bg-rose-500'}"></span>
+                        ${isAvailableForDates ? 'Disponible para entrega' : 'Sin unidades para estas fechas'}
+                      </span>
+                      <span class="text-xs font-mono font-black ${isAvailableForDates ? 'text-emerald-700' : 'text-rose-700'}">
+                        ${availableUnits} de ${totalUnits} disponibles
+                      </span>
+                    </div>
+                    <p class="text-[11px] text-slate-600 leading-snug">
+                      ${isAvailableForDates
+                        ? `Hay <strong>${availableUnits} unidad${availableUnits > 1 ? 'es' : ''}</strong> lista${availableUnits > 1 ? 's' : ''} para despacho en el lapso seleccionado.${rentedUnits > 0 ? ` (${rentedUnits} ya comprometidas en obra).` : ''}`
+                        : `Todas las ${totalUnits} unidades de esta máquina están reservadas para las fechas seleccionadas. Por favor elige otro rango en el calendario.`
+                      }
                     </p>
                   </div>
 
@@ -297,10 +330,11 @@ export async function renderProductPageView(toolId) {
                   <div class="space-y-2 pt-2">
                     <button 
                       id="btn-rent-now" 
-                      class="btn-primary w-full !py-3 text-xs font-black shadow-md flex items-center justify-center gap-2 cursor-pointer"
+                      class="${isAvailableForDates ? 'btn-primary cursor-pointer' : 'bg-slate-300 text-slate-500 cursor-not-allowed'} w-full !py-3 text-xs font-black shadow-md flex items-center justify-center gap-2"
+                      ${!isAvailableForDates ? 'disabled title="Sin stock disponible en estas fechas"' : ''}
                     >
                       ${renderIcon('CreditCard', 'w-4 h-4')}
-                      <span>Alquilar Ahora</span>
+                      <span>${isAvailableForDates ? 'Alquilar Ahora' : 'No Disponible en Estas Fechas'}</span>
                     </button>
 
                     <button 
@@ -365,10 +399,11 @@ export async function renderProductPageView(toolId) {
         startDate,
         endDate,
         bookedDateRanges: bookedRanges,
-        onConfirm: (res) => {
+        onConfirm: async (res) => {
           startDate = res.startDate;
           endDate = res.endDate;
           rentalDays = res.days;
+          await fetchAvailability(startDate, endDate);
           render();
         }
       });
@@ -381,24 +416,35 @@ export async function renderProductPageView(toolId) {
 
     // Quick presets
     container.querySelectorAll('.btn-detail-preset').forEach(btn => {
-      btn.addEventListener('click', () => {
+      btn.addEventListener('click', async () => {
         const days = parseInt(btn.dataset.days, 10);
         const s = parseIsoDate(startDate);
         const endObj = new Date(s);
         endObj.setDate(endObj.getDate() + (days - 1));
         endDate = toIsoDate(endObj);
         rentalDays = days;
+        await fetchAvailability(startDate, endDate);
         render();
       });
     });
 
     container.querySelector('#btn-rent-now')?.addEventListener('click', () => {
+      if (!isAvailableForDates) {
+        showToast('No hay unidades disponibles en inventario para estas fechas. Por favor selecciona otro rango en el calendario.', 'warning');
+        return;
+      }
       if (!auth.isAuthenticated()) {
         showToast('Debes iniciar sesión para realizar la reserva', 'warning');
         openAuthModal('login');
         return;
       }
-      openRentalModal(tool, { startDate, endDate, days: rentalDays });
+      openRentalModal(tool, { 
+        startDate, 
+        endDate, 
+        days: rentalDays,
+        initialAvailableUnits: availableUnits,
+        totalUnits: totalUnits
+      });
     });
 
     container.querySelector('#btn-contact-provider-wa')?.addEventListener('click', () => {

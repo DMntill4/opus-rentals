@@ -24,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
@@ -208,9 +209,36 @@ public class RentalService {
                     map.put("startDate", r.getStartDate().toString());
                     map.put("endDate", r.getEndDate().toString());
                     map.put("status", r.getStatus());
+                    map.put("quantity", String.valueOf(r.getQuantity() != null ? r.getQuantity() : 1));
                     return map;
                 })
                 .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public java.util.Map<String, Object> checkToolAvailability(Long toolId, LocalDate startDate, LocalDate endDate) {
+        Tool tool = toolRepository.findById(toolId)
+                .orElseThrow(() -> new ResourceNotFoundException("Herramienta no encontrada con ID: " + toolId));
+
+        int totalUnits = (tool.getTotalQuantity() != null && tool.getTotalQuantity() > 0) ? tool.getTotalQuantity() : 5;
+        int rentedUnits = rentalRepository.sumRentedQuantityInPeriod(toolId, startDate, endDate);
+        int availableUnits = Math.max(0, totalUnits - rentedUnits);
+        boolean isMaintenance = "MAINTENANCE".equalsIgnoreCase(tool.getStatus()) || "OUT_OF_SERVICE".equalsIgnoreCase(tool.getStatus());
+
+        if (isMaintenance) {
+            availableUnits = 0;
+        }
+
+        java.util.Map<String, Object> result = new java.util.HashMap<>();
+        result.put("toolId", toolId);
+        result.put("totalQuantity", totalUnits);
+        result.put("rentedQuantity", rentedUnits);
+        result.put("availableQuantity", availableUnits);
+        result.put("isAvailable", availableUnits > 0 && !isMaintenance);
+        result.put("status", tool.getStatus());
+        result.put("startDate", startDate.toString());
+        result.put("endDate", endDate.toString());
+        return result;
     }
 
     public RentalResponse mapToResponse(Rental rental) {

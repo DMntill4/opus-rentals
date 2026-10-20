@@ -1414,6 +1414,14 @@ export async function renderAdminDashboard() {
             email: 'despachos@caterpillar.com',
             phone: '+57 (1) 745-8900'
           },
+          items: [
+            {
+              name: r.toolName || 'Maquinaria Pesada',
+              days: r.totalDays || 1,
+              dailyPrice: r.dailyRate || Math.round((r.subtotal || r.totalAmount || 0) / (r.totalDays || 1)),
+              subtotal: r.subtotal || r.totalAmount || 0
+            }
+          ],
           tool: {
             name: r.toolName || 'Maquinaria Pesada',
             sku: `OP-FLEET-${r.toolId || r.id}`

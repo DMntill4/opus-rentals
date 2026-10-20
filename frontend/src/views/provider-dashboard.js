@@ -674,12 +674,24 @@ export async function renderProviderDashboard() {
               <form id="provider-profile-form" class="space-y-5">
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label class="block text-xs font-black uppercase tracking-wider text-slate-800 font-mono mb-1">Razón Social *</label>
-                    <input type="text" id="prof-company" class="input-field" value="${providerProfile.companyName}" required />
+                    <div class="flex items-center justify-between mb-1">
+                      <label class="block text-xs font-black uppercase tracking-wider text-slate-800 font-mono">Razón Social *</label>
+                      <span class="inline-flex items-center gap-1 text-[10px] font-mono text-slate-500 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
+                        ${renderIcon('Lock', 'w-3 h-3 text-slate-400')} Protegido DIAN
+                      </span>
+                    </div>
+                    <input type="text" id="prof-company" class="input-field bg-slate-100 text-slate-600 font-bold cursor-not-allowed select-none border-slate-200" value="${providerProfile.companyName}" readonly title="La razón social no puede ser editada directamente para preservar la validez de la facturación electrónica DIAN." />
+                    <p class="text-[10px] text-slate-400 mt-1">Identidad jurídica verificada ante Cámara de Comercio y DIAN.</p>
                   </div>
                   <div>
-                    <label class="block text-xs font-black uppercase tracking-wider text-slate-800 font-mono mb-1">NIT / RUT *</label>
-                    <input type="text" id="prof-taxid" class="input-field font-mono" value="${providerProfile.taxId}" required />
+                    <div class="flex items-center justify-between mb-1">
+                      <label class="block text-xs font-black uppercase tracking-wider text-slate-800 font-mono">NIT / RUT *</label>
+                      <span class="inline-flex items-center gap-1 text-[10px] font-mono text-slate-500 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
+                        ${renderIcon('Lock', 'w-3 h-3 text-slate-400')} Inmutable
+                      </span>
+                    </div>
+                    <input type="text" id="prof-taxid" class="input-field font-mono bg-slate-100 text-slate-600 cursor-not-allowed select-none border-slate-200" value="${providerProfile.taxId}" readonly title="El NIT se encuentra verificado." />
+                    <p class="text-[10px] text-slate-400 mt-1">Número de Identificación Tributaria registrado.</p>
                   </div>
                 </div>
 
@@ -696,8 +708,14 @@ export async function renderProviderDashboard() {
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label class="block text-xs font-black uppercase tracking-wider text-slate-800 font-mono mb-1">Correo Electrónico de Facturación *</label>
-                    <input type="email" id="prof-email" class="input-field font-mono" value="${providerProfile.email}" required />
+                    <div class="flex items-center justify-between mb-1">
+                      <label class="block text-xs font-black uppercase tracking-wider text-slate-800 font-mono">Correo Electrónico de Facturación *</label>
+                      <span class="inline-flex items-center gap-1 text-[10px] font-mono text-slate-500 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
+                        ${renderIcon('Lock', 'w-3 h-3 text-slate-400')} Bloqueado
+                      </span>
+                    </div>
+                    <input type="email" id="prof-email" class="input-field font-mono bg-slate-100 text-slate-600 cursor-not-allowed select-none border-slate-200" value="${providerProfile.email}" readonly title="El correo oficial del proveedor está vinculado a su cuenta y no se puede modificar arbitrariamente." />
+                    <p class="text-[10px] text-slate-400 mt-1">Para solicitar cambio de correo de autenticación, contacte a soporte.</p>
                   </div>
                   <div>
                     <label class="block text-xs font-black uppercase tracking-wider text-slate-800 font-mono mb-1">Ciudad Sede *</label>
@@ -838,30 +856,14 @@ export async function renderProviderDashboard() {
     container.querySelector('#provider-profile-form')?.addEventListener('submit', (e) => {
       e.preventDefault();
       const updated = {
-        companyName: container.querySelector('#prof-company')?.value?.trim(),
-        taxId: container.querySelector('#prof-taxid')?.value?.trim(),
+        companyName: providerProfile.companyName,
+        taxId: providerProfile.taxId,
+        email: providerProfile.email,
         phone: container.querySelector('#prof-phone')?.value?.trim(),
         whatsapp: container.querySelector('#prof-wa')?.value?.trim(),
-        email: container.querySelector('#prof-email')?.value?.trim(),
         city: container.querySelector('#prof-city')?.value?.trim(),
         yardAddress: container.querySelector('#prof-yard')?.value?.trim()
       };
-
-      // 1. Validar Razón Social
-      const compRes = validateCompanyName(updated.companyName);
-      if (!compRes.valid) {
-        showToast(compRes.error, 'error');
-        container.querySelector('#prof-company')?.focus();
-        return;
-      }
-
-      // 2. Validar NIT / RUT
-      const taxRes = validateTaxId(updated.taxId);
-      if (!taxRes.valid) {
-        showToast(taxRes.error, 'error');
-        container.querySelector('#prof-taxid')?.focus();
-        return;
-      }
 
       // 3. Validar Teléfono Fijo
       const phoneRes = validatePhone(updated.phone);
@@ -1010,15 +1012,22 @@ export async function renderProviderDashboard() {
     container.querySelectorAll('.btn-view-invoice').forEach(b => {
       b.addEventListener('click', () => {
         const req = requestsList.find(r => String(r.id) === String(b.dataset.id)) || requestsList[0];
+        const days = req.days || req.totalDays || 8;
+        const totalAmount = req.total || req.totalAmount || 5200000;
+        const subtotal = Math.round(totalAmount / 1.19);
+        const tax = totalAmount - subtotal;
+        const dailyRate = Math.round(subtotal / days);
+        const toolName = req.tool?.name || req.toolName || 'Excavadora Hidráulica CAT 320D2';
+
         openInvoiceViewer({
           invoiceNumber: 'OP-INV-' + (req.id || '4587'),
           issueDate: new Date().toLocaleDateString('es-CO', { day: 'numeric', month: 'short', year: 'numeric' }),
           client: {
-            name: req.client?.name || 'Constructora Bolívar S.A.S.',
-            taxId: '900.342.112-4',
-            address: 'Frente de Obra Carrera 7 # 127',
-            email: 'compras@constructorabolivar.com',
-            phone: '+57 (1) 745-8900'
+            name: req.client?.name || req.clientFullName || 'Constructora Bolívar S.A.S.',
+            taxId: req.client?.taxId || '900.342.112-4',
+            address: req.client?.address || 'Frente de Obra Carrera 7 # 127',
+            email: req.client?.email || req.clientEmail || 'compras@constructorabolivar.com',
+            phone: req.client?.phone || req.clientPhone || '+57 (1) 745-8900'
           },
           provider: {
             name: providerProfile.companyName,
@@ -1027,23 +1036,31 @@ export async function renderProviderDashboard() {
             email: providerProfile.email,
             phone: providerProfile.phone
           },
+          items: [
+            {
+              name: toolName,
+              days: days,
+              dailyPrice: dailyRate,
+              subtotal: subtotal
+            }
+          ],
           tool: {
-            name: req.tool?.name || 'Excavadora Hidráulica CAT 320D2',
+            name: toolName,
             sku: 'CAT-320D2-2026'
           },
           rentalPeriod: {
-            startDate: '16 oct 2026',
-            endDate: '24 oct 2026',
-            days: req.days || 8
+            startDate: req.startDate || '16 oct 2026',
+            endDate: req.endDate || '24 oct 2026',
+            days: days
           },
-          dailyRate: req.total ? Math.round(req.total / (req.days || 8)) : 650000,
-          subtotal: req.total || 5200000,
-          tax: Math.round((req.total || 5200000) * 0.19),
-          total: Math.round((req.total || 5200000) * 1.19),
+          dailyRate: dailyRate,
+          subtotal: subtotal,
+          tax: tax,
+          total: totalAmount,
           paymentMethod: 'Transferencia PSE Bancolombia',
           bank: 'Bancolombia Convenio Opus',
-          reference: 'OP-PSE-9941',
-          paymentDate: '15 oct 2026'
+          reference: 'OP-PSE-' + (req.id || '9941'),
+          paymentDate: req.startDate || '15 oct 2026'
         });
       });
     });

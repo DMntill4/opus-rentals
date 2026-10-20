@@ -84,6 +84,16 @@ public class RentalController {
         return ResponseEntity.ok(ApiResponse.ok(ranges));
     }
 
+    @GetMapping("/tool/{toolId}/availability")
+    @Operation(summary = "Check tool availability and remaining units for a date range")
+    public ResponseEntity<ApiResponse<java.util.Map<String, Object>>> checkToolAvailability(
+            @PathVariable Long toolId,
+            @RequestParam @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate startDate,
+            @RequestParam @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate endDate) {
+        java.util.Map<String, Object> availability = rentalService.checkToolAvailability(toolId, startDate, endDate);
+        return ResponseEntity.ok(ApiResponse.ok(availability));
+    }
+
     @PatchMapping("/{id}/status")
     @Operation(summary = "Update rental status", description = "Allows provider to approve/reject, client to cancel, or admin to update")
     public ResponseEntity<ApiResponse<RentalResponse>> updateRentalStatus(

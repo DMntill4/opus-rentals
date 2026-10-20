@@ -34,9 +34,13 @@ export async function openRentalModal(tool, initialDates = {}) {
   let startDate = initialDates.startDate || formatDateInput(tomorrow);
   let endDate = initialDates.endDate || formatDateInput(endDefault);
   let quantity = initialDates.quantity || 1;
-  const availableUnits = tool.availableQuantity || tool.totalQuantity || 5;
+  let totalUnits = initialDates.totalUnits || tool.totalQuantity || 5;
+  let availableUnits = initialDates.initialAvailableUnits !== undefined
+    ? initialDates.initialAvailableUnits
+    : (tool.availableQuantity !== undefined ? tool.availableQuantity : totalUnits);
+  let rentedUnits = 0;
   let isCheckingAvailability = false;
-  let isAvailable = true;
+  let isAvailable = availableUnits > 0 && tool.status !== 'MAINTENANCE' && tool.status !== 'OUT_OF_SERVICE';
 
   const content = document.createElement('div');
   content.className = 'p-6 space-y-6 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100';
@@ -46,16 +50,21 @@ export async function openRentalModal(tool, initialDates = {}) {
     updateCalculationUI();
 
     try {
-      const res = await api.get(`/tools/${tool.id}/availability`, {
-        from: startDate,
-        to: endDate
-      });
-      isAvailable = res.available !== false;
+      const res = await api.get(`/rentals/tool/${tool.id}/availability?startDate=${startDate}&endDate=${endDate}`);
+      const data = res?.data || res;
+      if (data) {
+        totalUnits = data.totalQuantity !== undefined ? data.totalQuantity : totalUnits;
+        availableUnits = data.availableQuantity !== undefined ? data.availableQuantity : totalUnits;
+        rentedUnits = data.rentedQuantity !== undefined ? data.rentedQuantity : 0;
+        isAvailable = data.isAvailable !== undefined ? data.isAvailable : (availableUnits > 0);
+      }
     } catch (err) {
-      console.warn('Availability checked via mock store', err);
-      isAvailable = true;
+      console.warn('Availability check failed, using fallback', err);
     } finally {
       isCheckingAvailability = false;
+      if (quantity > availableUnits && availableUnits > 0) {
+        quantity = availableUnits;
+      }
       updateCalculationUI();
     }
   }
@@ -118,34 +127,40 @@ export async function openRentalModal(tool, initialDates = {}) {
           </div>
 
           <!-- Quantity Units Selector -->
-          <div class="p-3.5 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl space-y-1.5">
+          <div class="p-3.5 bg-slate-50 dark:bg-slate-800/60 border ${availableUnits > 0 ? 'border-slate-200 dark:border-slate-700' : 'border-rose-300 dark:border-rose-800 bg-rose-50/50 dark:bg-rose-950/20'} rounded-xl space-y-1.5">
             <div class="flex items-center justify-between">
               <div>
                 <span class="text-xs font-bold text-slate-900 dark:text-white">Unidades a Alquilar</span>
                 <div class="text-[11px] text-slate-500 dark:text-slate-400">
-                  Flota disponible: <strong class="text-emerald-600 dark:text-emerald-400">${availableUnits} unidades</strong>
+                  Flota disponible para estas fechas: <strong class="${availableUnits > 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}">${availableUnits} de ${totalUnits} unidades</strong>
+                  ${rentedUnits > 0 ? `<span class="text-slate-400 text-[10px]">(${rentedUnits} ya reservadas)</span>` : ''}
                 </div>
               </div>
               <div class="flex items-center gap-2 bg-white dark:bg-slate-900 border-2 border-slate-300 dark:border-slate-600 rounded-xl p-1 shadow-2xs">
                 <button 
                   type="button" 
                   id="btn-qty-minus" 
-                  class="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center justify-center font-black text-slate-700 dark:text-slate-200 transition-colors cursor-pointer ${quantity <= 1 ? 'opacity-30 cursor-not-allowed' : ''}"
+                  class="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center justify-center font-black text-slate-700 dark:text-slate-200 transition-colors cursor-pointer ${quantity <= 1 || availableUnits === 0 ? 'opacity-30 cursor-not-allowed' : ''}"
                 >
                   -
                 </button>
                 <span id="rental-qty-display" class="w-7 text-center font-mono font-black text-sm text-slate-900 dark:text-white">
-                  ${quantity}
+                  ${availableUnits === 0 ? 0 : quantity}
                 </span>
                 <button 
                   type="button" 
                   id="btn-qty-plus" 
-                  class="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center justify-center font-black text-slate-700 dark:text-slate-200 transition-colors cursor-pointer ${quantity >= availableUnits ? 'opacity-30 cursor-not-allowed' : ''}"
+                  class="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center justify-center font-black text-slate-700 dark:text-slate-200 transition-colors cursor-pointer ${quantity >= availableUnits || availableUnits === 0 ? 'opacity-30 cursor-not-allowed' : ''}"
                 >
                   +
                 </button>
               </div>
             </div>
+            ${availableUnits === 0 ? `
+              <p class="text-[11px] text-rose-600 dark:text-rose-400 font-bold mt-1">
+                ⚠️ No hay unidades disponibles para el rango de fechas seleccionado.
+              </p>
+            ` : ''}
           </div>
 
         </div>
@@ -229,8 +244,8 @@ export async function openRentalModal(tool, initialDates = {}) {
           </div>
 
           <!-- Action Button -->
-          <button id="btn-proceed-checkout" ${!isAvailable || isCheckingAvailability ? 'disabled' : ''} class="w-full py-3 px-5 rounded-xl text-sm font-black text-white bg-[#FF7A00] hover:bg-[#E56E00] disabled:opacity-50 shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95 uppercase tracking-wide">
-            ${renderIcon('CreditCard', 'w-4 h-4')} Continuar al Pago (${formatCurrency(total)})
+          <button id="btn-proceed-checkout" ${!isAvailable || availableUnits === 0 || isCheckingAvailability ? 'disabled' : ''} class="w-full py-3 px-5 rounded-xl text-sm font-black text-white ${!isAvailable || availableUnits === 0 ? 'bg-slate-400 cursor-not-allowed opacity-60' : 'bg-[#FF7A00] hover:bg-[#E56E00] shadow-md active:scale-95 cursor-pointer'} transition-all flex items-center justify-center gap-2 uppercase tracking-wide">
+            ${renderIcon('CreditCard', 'w-4 h-4')} ${availableUnits === 0 ? 'Sin Flota Disponible Para Estas Fechas' : `Continuar al Pago (${formatCurrency(total)})`}
           </button>
         </div>
 
@@ -671,7 +686,338 @@ function showSuccessModal(rental, payment, tool, rentalData) {
 /**
  * Step 4: Official Clean Invoice Viewer
  */
-export function openInvoiceViewer(invoice) {
+export function openInvoiceViewer(rawInvoice = {}) {
+  const invoice = { ...rawInvoice };
+
+  const client = invoice.client || {
+    name: invoice.clientFullName || 'Constructora Bolívar S.A.S.',
+    taxId: invoice.clientDocument || 'NIT 900.342.112-4',
+    address: 'Frente de Obra Carrera 7 # 127',
+    email: invoice.clientEmail || 'compras@constructorabolivar.com',
+    phone: invoice.clientPhone || '+57 (1) 745-8900'
+  };
+
+  const provider = invoice.provider || {
+    name: invoice.providerCompanyName || 'Caterpillar Equipos SAS',
+    taxId: 'NIT 901.884.219-5',
+    address: 'Parque Industrial Cazucá - Km 4 Autopista Sur',
+    email: 'operaciones@caterpillar-colombia.com',
+    phone: '+57 (1) 745-8900'
+  };
+
+  const rentalPeriod = invoice.rentalPeriod || {
+    startDate: invoice.startDate || '16 oct 2026',
+    endDate: invoice.endDate || '24 oct 2026',
+    days: invoice.days || invoice.totalDays || 8
+  };
+
+  const days = rentalPeriod.days || 1;
+  const toolName = invoice.tool?.name || invoice.toolName || 'Excavadora Hidráulica CAT 320D2';
+  const dailyRate = invoice.dailyRate || Math.round((invoice.subtotal || invoice.total || 5200000) / days);
+  const calculatedSubtotal = invoice.subtotal || (dailyRate * days);
+
+  const items = (Array.isArray(invoice.items) && invoice.items.length > 0)
+    ? invoice.items
+    : [
+        {
+          name: toolName,
+          days: days,
+          dailyPrice: dailyRate,
+          subtotal: calculatedSubtotal
+        }
+      ];
+
+  const subtotal = invoice.subtotal || items.reduce((s, it) => s + (it.subtotal || 0), 0);
+  const tax = invoice.tax !== undefined ? invoice.tax : Math.round(subtotal * 0.19);
+  const total = invoice.total !== undefined ? invoice.total : (subtotal + tax);
+  const invoiceNumber = invoice.invoiceNumber || 'OP-INV-4587';
+  const issueDate = invoice.issueDate || '16 oct 2026';
+  const paymentMethod = invoice.paymentMethod || 'Transferencia PSE Bancolombia';
+  const bank = invoice.bank || 'Bancolombia Convenio Opus Rentals';
+  const reference = invoice.reference || 'OP-PSE-9941';
+  const paymentDate = invoice.paymentDate || issueDate;
+
+  function buildPrintableInvoiceHtml() {
+    return `<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Factura Electrónica ${invoiceNumber} · Opus Rentals</title>
+  <style>
+    @page { size: A4 portrait; margin: 12mm; }
+    * { box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      color: #0f172a;
+      background: #f8fafc;
+      margin: 0;
+      padding: 24px;
+    }
+    .invoice-card {
+      max-width: 820px;
+      margin: 0 auto;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 40px;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+    }
+    .header-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      border-bottom: 2px solid #0f2b48;
+      padding-bottom: 20px;
+      margin-bottom: 24px;
+    }
+    .brand-title {
+      font-size: 24px;
+      font-weight: 900;
+      color: #0f2b48;
+      letter-spacing: -0.5px;
+    }
+    .brand-subtitle {
+      font-size: 11px;
+      color: #64748b;
+      margin-top: 4px;
+    }
+    .inv-details {
+      text-align: right;
+    }
+    .inv-number {
+      font-size: 20px;
+      font-weight: 900;
+      color: #ff7a00;
+      font-family: monospace;
+    }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+      margin-bottom: 28px;
+      font-size: 12px;
+    }
+    .box-title {
+      font-weight: 800;
+      text-transform: uppercase;
+      font-size: 11px;
+      letter-spacing: 0.5px;
+      color: #0f2b48;
+      border-bottom: 1px solid #e2e8f0;
+      padding-bottom: 6px;
+      margin-bottom: 8px;
+    }
+    .row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 4px;
+      color: #475569;
+    }
+    .row strong {
+      color: #0f172a;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 24px;
+      font-size: 12px;
+    }
+    th {
+      background: #f1f5f9;
+      color: #334155;
+      font-weight: 800;
+      text-transform: uppercase;
+      font-size: 10px;
+      letter-spacing: 0.5px;
+      padding: 10px 12px;
+      text-align: left;
+      border-bottom: 1px solid #cbd5e1;
+    }
+    td {
+      padding: 12px;
+      border-bottom: 1px solid #f1f5f9;
+      color: #1e293b;
+    }
+    .text-right { text-align: right; }
+    .text-center { text-align: center; }
+    .totals-box {
+      width: 280px;
+      margin-left: auto;
+      font-size: 12px;
+      margin-bottom: 24px;
+    }
+    .total-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 6px 0;
+      color: #475569;
+    }
+    .grand-total {
+      border-top: 2px solid #0f2b48;
+      padding-top: 10px;
+      font-size: 16px;
+      font-weight: 900;
+      color: #0f2b48;
+    }
+    .dian-box {
+      background: #f8fafc;
+      border: 1px dashed #cbd5e1;
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-size: 10px;
+      color: #64748b;
+      margin-top: 24px;
+      line-height: 1.5;
+    }
+    .print-actions {
+      position: sticky;
+      top: 12px;
+      max-width: 820px;
+      margin: 0 auto 16px auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #0f2b48;
+      color: #ffffff;
+      padding: 12px 20px;
+      border-radius: 12px;
+      box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+    }
+    .btn-act {
+      background: #ff7a00;
+      color: #ffffff;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-weight: bold;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    .btn-close {
+      background: transparent;
+      color: #cbd5e1;
+      border: 1px solid #475569;
+      padding: 8px 14px;
+      border-radius: 6px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    @media print {
+      body { background: #ffffff; padding: 0; }
+      .no-print { display: none !important; }
+      .invoice-card { border: none; box-shadow: none; padding: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="print-actions no-print">
+    <div style="font-size: 13px; font-weight: bold;">
+      📄 Vista Oficial de Factura DIAN · ${invoiceNumber}
+    </div>
+    <div style="display: flex; gap: 8px;">
+      <button class="btn-act" onclick="window.print()">🖨️ Imprimir / Guardar como PDF</button>
+      <button class="btn-close" onclick="window.close()">✕ Cerrar</button>
+    </div>
+  </div>
+
+  <div class="invoice-card">
+    <div class="header-bar">
+      <div>
+        <div class="brand-title">OPUS RENTALS</div>
+        <div class="brand-subtitle">Plataforma B2B de Alquiler de Maquinaria Pesada · NIT 901.884.219-5</div>
+        <div class="brand-subtitle">Bogotá D.C., Colombia · soporte@opusrentals.com · Tel: +57 (1) 745-8900</div>
+      </div>
+      <div class="inv-details">
+        <div style="font-size: 11px; text-transform: uppercase; color: #64748b; font-weight: bold;">Factura Electrónica de Venta</div>
+        <div class="inv-number">${invoiceNumber}</div>
+        <div style="font-size: 11px; color: #475569; margin-top: 4px;">Fecha Emisión: <strong>${issueDate}</strong></div>
+        <div style="font-size: 11px; color: #475569;">Vencimiento: <strong>${issueDate}</strong></div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div>
+        <div class="box-title">Datos del Cliente (Adquiriente)</div>
+        <div class="row"><span>Nombre / Razón Social:</span><strong>${client.name}</strong></div>
+        <div class="row"><span>NIT / C.C.:</span><strong>${client.taxId}</strong></div>
+        <div class="row"><span>Dirección de Obra:</span><strong>${client.address}</strong></div>
+        <div class="row"><span>Correo Electrónico:</span><strong>${client.email}</strong></div>
+        <div class="row"><span>Teléfono de Contacto:</span><strong>${client.phone}</strong></div>
+      </div>
+      <div>
+        <div class="box-title">Datos del Proveedor (Emisor)</div>
+        <div class="row"><span>Razón Social:</span><strong>${provider.name}</strong></div>
+        <div class="row"><span>NIT:</span><strong>${provider.taxId}</strong></div>
+        <div class="row"><span>Patio de Maquinaria:</span><strong>${provider.address}</strong></div>
+        <div class="row"><span>Correo de Facturación:</span><strong>${provider.email}</strong></div>
+        <div class="row"><span>Teléfono Despachos:</span><strong>${provider.phone}</strong></div>
+      </div>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 30px;">#</th>
+          <th>Equipo / Maquinaria Pesada</th>
+          <th class="text-center" style="width: 70px;">Días</th>
+          <th class="text-right" style="width: 140px;">Tarifa Diaria</th>
+          <th class="text-right" style="width: 140px;">Subtotal</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${items.map((it, idx) => `
+          <tr>
+            <td class="text-center" style="color: #64748b;">${idx + 1}</td>
+            <td><strong>${it.name}</strong><br><span style="font-size: 10px; color: #64748b;">Periodo: ${rentalPeriod.startDate} a ${rentalPeriod.endDate}</span></td>
+            <td class="text-center">${it.days}</td>
+            <td class="text-right">${formatCurrency(it.dailyPrice)}</td>
+            <td class="text-right"><strong>${formatCurrency(it.subtotal)}</strong></td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+
+    <div class="totals-box">
+      <div class="total-row">
+        <span>Subtotal Operativo:</span>
+        <strong>${formatCurrency(subtotal)}</strong>
+      </div>
+      <div class="total-row">
+        <span>IVA General (19%):</span>
+        <strong>${formatCurrency(tax)}</strong>
+      </div>
+      <div class="total-row grand-total">
+        <span>Total Liquidado:</span>
+        <strong style="color: #ff7a00;">${formatCurrency(total)}</strong>
+      </div>
+    </div>
+
+    <div style="border-top: 1px solid #e2e8f0; padding-top: 16px; margin-top: 16px; font-size: 11px;">
+      <div class="box-title">Detalles de Liquidación y Seguros</div>
+      <div class="grid-2" style="margin-bottom: 12px;">
+        <div>
+          <div class="row"><span>Método de Pago:</span><strong>${paymentMethod}</strong></div>
+          <div class="row"><span>Entidad Financiera:</span><strong>${bank}</strong></div>
+          <div class="row"><span>Referencia Transaccional:</span><strong style="font-family: monospace;">${reference}</strong></div>
+        </div>
+        <div>
+          <div class="row"><span>Póliza de Seguro:</span><strong style="color: #059669;">SURA Todo Riesgo N° SURA-8842-TR</strong></div>
+          <div class="row"><span>Inspección Técnica:</span><strong>Aprobada en Patio Central</strong></div>
+          <div class="row"><span>Fecha de Liquidación:</span><strong>${paymentDate}</strong></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="dian-box">
+      <strong>Resolución DIAN N° 18764000129384</strong> de 2026-01-15. Rango autorizado desde OP-0001000 hasta OP-0099999.<br>
+      <strong>CUFE:</strong> 4b3d88a29e1f57cd00234a9b76c8912ef00388419bbcd019283746501928374a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0<br>
+      Documento soporte electrónico válido como título valor conforme al Código de Comercio y estatuto tributario colombiano.
+    </div>
+  </div>
+</body>
+</html>`;
+  }
+
   const content = document.createElement('div');
   content.className = 'bg-slate-100 dark:bg-slate-950 p-4 sm:p-8 min-h-screen text-slate-800 dark:text-slate-100';
 
@@ -684,6 +1030,9 @@ export function openInvoiceViewer(invoice) {
           ${renderIcon('ArrowLeft', 'w-4 h-4')} Volver
         </button>
         <div class="flex items-center gap-2">
+          <button id="invoice-btn-preview-pdf" class="flex items-center gap-1.5 px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition-all shadow-sm cursor-pointer">
+            ${renderIcon('Eye', 'w-3.5 h-3.5 text-white')} Ver PDF
+          </button>
           <button id="invoice-btn-download" class="flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors shadow-sm cursor-pointer">
             ${renderIcon('Download', 'w-3.5 h-3.5')} Descargar PDF
           </button>
@@ -707,9 +1056,9 @@ export function openInvoiceViewer(invoice) {
 
           <div class="sm:text-right">
             <div class="text-xs text-slate-400 font-medium uppercase tracking-wider">Factura electrónica DIAN</div>
-            <div class="text-xl font-black text-[#132e4f] dark:text-white font-display">N° ${invoice.invoiceNumber || 'OP-0004587'}</div>
-            <div class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Fecha de emisión: ${invoice.issueDate || '13 oct 2026'}</div>
-            <div class="text-[11px] text-slate-500 dark:text-slate-400">Fecha de vencimiento: ${invoice.issueDate || '13 oct 2026'}</div>
+            <div class="text-xl font-black text-[#132e4f] dark:text-white font-display">N° ${invoiceNumber}</div>
+            <div class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Fecha de emisión: ${issueDate}</div>
+            <div class="text-[11px] text-slate-500 dark:text-slate-400">Fecha de vencimiento: ${issueDate}</div>
           </div>
         </div>
 
@@ -723,23 +1072,23 @@ export function openInvoiceViewer(invoice) {
             <h4 class="font-bold text-slate-900 dark:text-white text-sm mb-3">Datos del cliente</h4>
             <div class="grid grid-cols-3 gap-2">
               <span class="text-slate-400">Nombre:</span>
-              <span class="col-span-2 font-semibold text-slate-800 dark:text-slate-200">${invoice.client.name}</span>
+              <span class="col-span-2 font-semibold text-slate-800 dark:text-slate-200">${client.name}</span>
             </div>
             <div class="grid grid-cols-3 gap-2">
               <span class="text-slate-400">Cédula / NIT:</span>
-              <span class="col-span-2 text-slate-700 dark:text-slate-300 font-mono">${invoice.client.taxId}</span>
+              <span class="col-span-2 text-slate-700 dark:text-slate-300 font-mono">${client.taxId}</span>
             </div>
             <div class="grid grid-cols-3 gap-2">
               <span class="text-slate-400">Correo:</span>
-              <span class="col-span-2 text-slate-700 dark:text-slate-300">${invoice.client.email}</span>
+              <span class="col-span-2 text-slate-700 dark:text-slate-300">${client.email}</span>
             </div>
             <div class="grid grid-cols-3 gap-2">
               <span class="text-slate-400">Teléfono:</span>
-              <span class="col-span-2 text-slate-700 dark:text-slate-300">${invoice.client.phone}</span>
+              <span class="col-span-2 text-slate-700 dark:text-slate-300">${client.phone}</span>
             </div>
             <div class="grid grid-cols-3 gap-2">
               <span class="text-slate-400">Dirección:</span>
-              <span class="col-span-2 text-slate-700 dark:text-slate-300">${invoice.client.address}</span>
+              <span class="col-span-2 text-slate-700 dark:text-slate-300">${client.address}</span>
             </div>
           </div>
 
@@ -748,23 +1097,23 @@ export function openInvoiceViewer(invoice) {
             <h4 class="font-bold text-slate-900 dark:text-white text-sm mb-3">Datos del proveedor</h4>
             <div class="grid grid-cols-3 gap-2">
               <span class="text-slate-400">Nombre:</span>
-              <span class="col-span-2 font-semibold text-slate-800 dark:text-slate-200">${invoice.provider.name}</span>
+              <span class="col-span-2 font-semibold text-slate-800 dark:text-slate-200">${provider.name}</span>
             </div>
             <div class="grid grid-cols-3 gap-2">
               <span class="text-slate-400">NIT:</span>
-              <span class="col-span-2 text-slate-700 dark:text-slate-300 font-mono">${invoice.provider.taxId}</span>
+              <span class="col-span-2 text-slate-700 dark:text-slate-300 font-mono">${provider.taxId}</span>
             </div>
             <div class="grid grid-cols-3 gap-2">
               <span class="text-slate-400">Correo:</span>
-              <span class="col-span-2 text-slate-700 dark:text-slate-300">${invoice.provider.email}</span>
+              <span class="col-span-2 text-slate-700 dark:text-slate-300">${provider.email}</span>
             </div>
             <div class="grid grid-cols-3 gap-2">
               <span class="text-slate-400">Teléfono:</span>
-              <span class="col-span-2 text-slate-700 dark:text-slate-300">${invoice.provider.phone}</span>
+              <span class="col-span-2 text-slate-700 dark:text-slate-300">${provider.phone}</span>
             </div>
             <div class="grid grid-cols-3 gap-2">
               <span class="text-slate-400">Dirección:</span>
-              <span class="col-span-2 text-slate-700 dark:text-slate-300">${invoice.provider.address}</span>
+              <span class="col-span-2 text-slate-700 dark:text-slate-300">${provider.address}</span>
             </div>
           </div>
         </div>
@@ -784,7 +1133,7 @@ export function openInvoiceViewer(invoice) {
                 </tr>
               </thead>
               <tbody class="divide-y divide-slate-100 dark:divide-slate-800 text-slate-700 dark:text-slate-300">
-                ${invoice.items.map((it, idx) => `
+                ${items.map((it, idx) => `
                   <tr>
                     <td class="py-3 pr-4 text-slate-400 font-bold">${idx + 1}</td>
                     <td class="py-3 px-4 font-semibold text-slate-900 dark:text-white">${it.name}</td>
@@ -802,15 +1151,15 @@ export function openInvoiceViewer(invoice) {
             <div class="w-64 space-y-2 text-xs">
               <div class="flex justify-between text-slate-600 dark:text-slate-400">
                 <span>Subtotal</span>
-                <span class="font-semibold text-slate-800 dark:text-slate-200">${formatCurrency(invoice.subtotal)}</span>
+                <span class="font-semibold text-slate-800 dark:text-slate-200">${formatCurrency(subtotal)}</span>
               </div>
               <div class="flex justify-between text-slate-600 dark:text-slate-400">
                 <span>IVA (19%)</span>
-                <span class="font-semibold text-slate-800 dark:text-slate-200">${formatCurrency(invoice.tax)}</span>
+                <span class="font-semibold text-slate-800 dark:text-slate-200">${formatCurrency(tax)}</span>
               </div>
               <div class="border-t border-slate-200 dark:border-slate-700 pt-2 flex justify-between items-baseline">
                 <span class="text-sm font-bold text-slate-900 dark:text-white">Total</span>
-                <span class="text-xl font-bold text-[#132e4f] dark:text-blue-400 font-display">${formatCurrency(invoice.total)}</span>
+                <span class="text-xl font-bold text-[#132e4f] dark:text-blue-400 font-display">${formatCurrency(total)}</span>
               </div>
             </div>
           </div>
@@ -822,19 +1171,19 @@ export function openInvoiceViewer(invoice) {
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
             <div class="grid grid-cols-3 gap-2">
               <span class="text-slate-400">Método de pago:</span>
-              <span class="col-span-2 text-slate-800 dark:text-slate-200 font-medium">${invoice.paymentMethod}</span>
+              <span class="col-span-2 text-slate-800 dark:text-slate-200 font-medium">${paymentMethod}</span>
             </div>
             <div class="grid grid-cols-3 gap-2">
               <span class="text-slate-400">Entidad:</span>
-              <span class="col-span-2 text-slate-800 dark:text-slate-200 font-medium">${invoice.bank}</span>
+              <span class="col-span-2 text-slate-800 dark:text-slate-200 font-medium">${bank}</span>
             </div>
             <div class="grid grid-cols-3 gap-2">
               <span class="text-slate-400">Referencia:</span>
-              <span class="col-span-2 text-slate-800 dark:text-slate-200 font-mono font-medium">${invoice.reference}</span>
+              <span class="col-span-2 text-slate-800 dark:text-slate-200 font-mono font-medium">${reference}</span>
             </div>
             <div class="grid grid-cols-3 gap-2">
               <span class="text-slate-400">Fecha de pago:</span>
-              <span class="col-span-2 text-slate-800 dark:text-slate-200 font-medium">${invoice.paymentDate}</span>
+              <span class="col-span-2 text-slate-800 dark:text-slate-200 font-medium">${paymentDate}</span>
             </div>
           </div>
         </div>
@@ -842,7 +1191,7 @@ export function openInvoiceViewer(invoice) {
         <!-- Footer -->
         <div class="border-t border-slate-200 dark:border-slate-800 pt-6 text-center space-y-2 text-[11px] text-slate-400 dark:text-slate-500">
           <p>Opus Rentals · NIT 901.884.219-5 · Bogotá D.C., Colombia · contacto@opusrentals.com · +57 317 654 3210</p>
-          <p class="text-[10px]">Factura electrónica generada conforme a las directrices de la DIAN. Respaldado por póliza todo riesgo.</p>
+          <p class="text-[10px]">Factura electrónica generada conforme a las directrices de la DIAN. Respaldado por póliza todo riesgo SURA.</p>
         </div>
 
       </div>
@@ -854,12 +1203,58 @@ export function openInvoiceViewer(invoice) {
     modal.close();
   });
 
-  content.querySelector('#invoice-btn-download')?.addEventListener('click', () => {
-    showToast('Descargando factura en formato PDF oficial...', 'success');
+  // Action: Ver PDF (Vista Previa en ventana dedicada)
+  content.querySelector('#invoice-btn-preview-pdf')?.addEventListener('click', () => {
+    const printableHtml = buildPrintableInvoiceHtml();
+    const win = window.open('', '_blank');
+    if (win) {
+      win.document.write(printableHtml);
+      win.document.close();
+      showToast('Factura abierta en visor PDF', 'success');
+    } else {
+      showToast('Permite las ventanas emergentes para ver el PDF', 'warning');
+    }
   });
 
+  // Action: Descargar PDF
+  content.querySelector('#invoice-btn-download')?.addEventListener('click', () => {
+    const printableHtml = buildPrintableInvoiceHtml();
+    try {
+      const blob = new Blob([printableHtml], { type: 'text/html;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Factura_${invoiceNumber}.html`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast(`Factura ${invoiceNumber} descargada exitosamente`, 'success');
+    } catch (e) {
+      console.warn('Direct blob download failed, triggering window print', e);
+      const win = window.open('', '_blank');
+      if (win) {
+        win.document.write(printableHtml);
+        win.document.close();
+        setTimeout(() => win.print(), 350);
+      }
+    }
+  });
+
+  // Action: Imprimir
   content.querySelector('#invoice-btn-print')?.addEventListener('click', () => {
-    window.print();
+    const printableHtml = buildPrintableInvoiceHtml();
+    const win = window.open('', '_blank');
+    if (win) {
+      win.document.write(printableHtml);
+      win.document.close();
+      setTimeout(() => {
+        win.focus();
+        win.print();
+      }, 400);
+    } else {
+      window.print();
+    }
   });
 
   modal.open({

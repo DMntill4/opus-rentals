@@ -109,9 +109,6 @@ class ApiClient {
 
     // 2. Tools
     if (endpoint.startsWith('/tools')) {
-      if (endpoint.includes('/availability')) {
-        return { available: true, bookedDateRanges: [] };
-      }
       if (method === 'GET') {
         const [path, qs] = endpoint.split('?');
         const params = new URLSearchParams(qs || '');
@@ -266,15 +263,55 @@ class ApiClient {
       });
     }
 
+    if (endpoint.includes('/availability')) {
+      const toolIdMatch = endpoint.match(/\/(?:tool|tools)\/(\d+)\/availability/) || endpoint.match(/\/tool\/(\d+)/);
+      const toolId = toolIdMatch ? toolIdMatch[1] : null;
+      const urlObj = new URL('http://dummy.local' + (endpoint.startsWith('/') ? endpoint : '/' + endpoint));
+      const sDate = urlObj.searchParams.get('startDate') || '';
+      const eDate = urlObj.searchParams.get('endDate') || '';
+
+      const foundTool = this.mockTools.find(t => String(t.id) === String(toolId)) || {};
+      const totalUnits = Number(foundTool.totalQuantity || foundTool.quantity || 5);
+      const isMaint = foundTool.status === 'MAINTENANCE' || foundTool.status === 'OUT_OF_SERVICE';
+
+      let rentedUnits = 0;
+      if (sDate && eDate) {
+        this.mockRequests.forEach(r => {
+          if (toolId && String(r.toolId) !== String(toolId) && String(r.tool?.id) !== String(toolId)) return;
+          if (r.status === 'CANCELLED' || r.status === 'REJECTED' || r.status === 'RETURNED' || r.status === 'COMPLETED') return;
+          const rStart = r.startDate || '';
+          const rEnd = r.endDate || '';
+          if (rStart && rEnd) {
+            if (sDate <= rEnd && eDate >= rStart) {
+              rentedUnits += Number(r.quantity || 1);
+            }
+          }
+        });
+      }
+
+      const availableUnits = isMaint ? 0 : Math.max(0, totalUnits - rentedUnits);
+      return {
+        toolId: toolId ? Number(toolId) : 1,
+        totalQuantity: totalUnits,
+        rentedQuantity: rentedUnits,
+        availableQuantity: availableUnits,
+        isAvailable: availableUnits > 0 && !isMaint,
+        status: isMaint ? foundTool.status : (availableUnits > 0 ? 'AVAILABLE' : 'RENTED'),
+        startDate: sDate,
+        endDate: eDate
+      };
+    }
+
     if (endpoint.includes('/booked-dates')) {
       const toolIdMatch = endpoint.match(/\/tool\/(\d+)\/booked-dates/);
       const toolId = toolIdMatch ? toolIdMatch[1] : null;
       return this.mockRequests
-        .filter(r => (!toolId || String(r.toolId) === String(toolId)) && r.status !== 'CANCELLED' && r.status !== 'REJECTED')
+        .filter(r => (!toolId || String(r.toolId) === String(toolId) || String(r.tool?.id) === String(toolId)) && r.status !== 'CANCELLED' && r.status !== 'REJECTED')
         .map(r => ({
           startDate: r.startDate || '2026-10-19',
           endDate: r.endDate || '2026-10-21',
-          status: r.status || 'APPROVED'
+          status: r.status || 'APPROVED',
+          quantity: Number(r.quantity || 1)
         }));
     }
 
