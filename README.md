@@ -18,39 +18,38 @@
 
 </div>
 
----
-
 ## 1. INICIO RÁPIDO
 
-### Opción A: Despliegue con Docker Compose (Recomendado para producción/evaluación)
-Ejecuta la base de datos MySQL, el backend en Spring Boot y el frontend con un solo comando:
+### Comando Universal de Ejecución (Monorepo)
+Para levantar toda la plataforma (Base de Datos MySQL, Backend Spring Boot y Frontend Web), simplemente clona y ejecuta en la raíz del proyecto:
+
+```bash
+git clone https://github.com/DMntill4/opus-rentals.git
+cd opus-rentals
+npm run dev
+```
+
+**¿Qué realiza automáticamente `npm run dev`?**
+1. **Detección inteligente de Docker**: Si el sistema cuenta con Docker activo, arranca los contenedores de MySQL 8.0 y Spring Boot 3 (`opus_mysql_db` y `opus_backend`).
+2. **Respaldo automático sin Docker**: Si el computador no tiene Docker o carece de permisos de root, inicia el Frontend con el almacén de datos mock interactivo sin bloquearse ni arrojar errores.
+3. **Instalación automática de dependencias**: En un clon limpio, detecta si falta `node_modules` e instala las dependencias necesarias de inmediato.
+4. **Puntos de acceso**:
+   - Frontend Web: `http://localhost:5173`
+   - Backend API (si Docker está activo): `http://localhost:8080/api/v1`
+   - Documentación Swagger: `http://localhost:8080/swagger-ui.html`
+
+---
+
+### Modos Alternativos de Despliegue
+
+#### Despliegue 100% Contenedorizado con Docker Compose (Producción)
 ```bash
 docker compose up -d --build
 ```
 - Frontend Web: `http://localhost`
 - Backend API: `http://localhost:8080/api/v1`
-- Swagger UI interactivo: `http://localhost:8080/swagger-ui.html`
 
-### Opción B: Script Asistente para Linux (Sustentaciones Universitarias)
-En entornos Linux (Ubuntu, Debian, Fedora), clona y ejecuta el asistente interactivo:
-```bash
-git clone https://github.com/DMntill4/opus-rentals.git
-cd opus-rentals
-./run-presentation.sh
-```
-Detecta automáticamente si el equipo cuenta con Docker, Node.js o Java, y ofrece el modo óptimo para iniciar la aplicación sin errores.
-
-### Opción C: Modo Frontend Autónomo (Sin Docker y Sin Base de Datos)
-Ideal si el computador de la universidad no tiene Docker ni permisos de administrador:
-```bash
-cd frontend
-npm install
-npm run dev:mock
-```
-- Frontend Web: `http://localhost:5173`
-- Incluye 100% de la UI funcional: catálogo, anticolisión de fechas, facturación DIAN, generación de PDF, perfil de proveedor y métricas de analítica.
-
-### Opción D: Ejecución Local Nativa (Java 21 + MySQL 8 + Node.js)
+#### Ejecución Local Manual (Sin Docker: Java 21 + MySQL 8 + Node.js)
 
 **1. Base de Datos MySQL:**
 ```bash
