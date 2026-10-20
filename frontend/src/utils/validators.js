@@ -7,8 +7,12 @@
 export const COLOMBIAN_CITIES = [
   'Bogotá D.C.',
   'Bogotá',
+  'Bogotá & Sabana',
+  'Bogotá D.C. & Sabana',
   'Medellín',
+  'Medellín y Área Metropolitana',
   'Cali',
+  'Cali - Yumbo',
   'Barranquilla',
   'Bucaramanga',
   'Cartagena',
@@ -176,31 +180,21 @@ export function validateCompanyName(companyName) {
  */
 export function validateCity(city) {
   if (!city || typeof city !== 'string') {
-    return { valid: false, error: 'La ciudad es obligatoria.' };
+    return { valid: false, error: 'La ciudad o zona de cobertura es obligatoria.' };
   }
   const trimmed = city.trim();
   if (trimmed.length < 3) {
-    return { valid: false, error: 'El nombre de la ciudad debe tener al menos 3 caracteres.' };
+    return { valid: false, error: 'El nombre de la ciudad o zona debe tener al menos 3 caracteres.' };
   }
 
   if (/\d/.test(trimmed)) {
-    return { valid: false, error: 'Una ciudad no puede contener números (ej. "Medellín" en lugar de "Medellín123").' };
+    return { valid: false, error: 'Una ciudad o zona no puede contener números.' };
   }
 
-  const cityRegex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s.'-]+$/;
+  // Permite letras en español, espacios, puntos, guiones, ampersands (&), barras, comas y paréntesis
+  const cityRegex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s.'\-,/&()]+$/;
   if (!cityRegex.test(trimmed)) {
-    return { valid: false, error: 'El nombre de la ciudad contiene caracteres especiales no válidos.' };
-  }
-
-  // Comprobar coincidencia o similitud con catálogo de ciudades reales
-  const normalized = trimmed.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-  const found = COLOMBIAN_CITIES.some(c => {
-    const normC = c.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-    return normC === normalized || normC.includes(normalized) || normalized.includes(normC);
-  });
-
-  if (!found && trimmed.length < 4) {
-    return { valid: false, error: 'Por favor ingresa una ciudad colombiana válida (ej. Bogotá, Medellín, Cali, Barranquilla).' };
+    return { valid: false, error: 'El nombre de la ciudad o zona contiene caracteres no válidos.' };
   }
 
   return { valid: true, error: null };
@@ -229,32 +223,29 @@ export function validateCountry(country) {
 }
 
 /**
- * 6. Validación de Teléfono / WhatsApp
- * Rechaza: letras ("300abc"), arrobas ("@"), caracteres especiales, y longitudes distintas a 10 dígitos.
+ * 6. Validación de Teléfono / Celular / WhatsApp / Línea PBX
+ * Acepta tanto celulares (10 dígitos) como líneas fijas (7 a 10 dígitos) y formatos corporativos (+57, paréntesis, guiones).
  */
 export function validatePhone(phone) {
   if (!phone || typeof phone !== 'string') {
-    return { valid: false, error: 'El número de celular es obligatorio.' };
+    return { valid: false, error: 'El número de teléfono o celular es obligatorio.' };
   }
   const trimmed = phone.trim();
 
-  // Si contiene arroba o símbolos especiales
-  if (/[@#\$%&\*\(\)\=\+\/\\\{\}\[\];:,<>\?~`!^|]/.test(trimmed)) {
-    return { valid: false, error: 'El número de celular no puede contener arrobas (@) ni caracteres especiales.' };
+  // Rechaza caracteres peligrosos (@, #, $, %, etc), pero permite formato estándar (+, -, (, ), ., espacios)
+  if (/[@#\$%&\*=\/\\\{\}\[\];:,<>\?~`!^|_]/.test(trimmed)) {
+    return { valid: false, error: 'El número de contacto no puede contener caracteres como @, #, $, etc.' };
   }
 
-  // Si contiene letras
+  // Rechaza letras
   if (/[a-zA-Z]/.test(trimmed)) {
-    return { valid: false, error: 'El número de celular no puede contener letras. Solo números.' };
+    return { valid: false, error: 'El número de teléfono no puede contener letras. Solo números y prefijos telefónicos.' };
   }
 
-  // Extraer solo dígitos
+  // Extraer solo dígitos numéricos
   const digitsOnly = trimmed.replace(/\D/g, '');
-  if (digitsOnly.length !== 10) {
-    return { valid: false, error: 'El número de celular en Colombia debe tener exactamente 10 dígitos (ej. 3101234567).' };
-  }
-  if (!digitsOnly.startsWith('3')) {
-    return { valid: false, error: 'El número de celular debe iniciar con 3 (ej. 3101234567).' };
+  if (digitsOnly.length < 7 || digitsOnly.length > 13) {
+    return { valid: false, error: 'El número debe contener entre 7 y 12 dígitos numéricos (ej. 3101234567, (601) 745-8900 o +57 310 123 4567).' };
   }
 
   return { valid: true, error: null };
@@ -264,7 +255,7 @@ export function validatePhone(phone) {
  * 7. Validación Estricta de Documento de Identidad por Tipo
  * - CC (Cédula de Ciudadanía): SOLO dígitos numéricos, entre 6 y 10 dígitos. Sin letras ni símbolos.
  * - CE (Cédula de Extranjería): SOLO dígitos numéricos, entre 6 y 10 dígitos.
- * - NIT: SOLO números con dígito de verificación opcional (ej. 901234567 o 901234567-1).
+ * - NIT: Números con dígito de verificación opcional y prefijo opcional (ej. 901234567, 901.234.567-1 o NIT-20000000).
  * - PASAPORTE: Alfanumérico (letras y números), entre 6 y 15 caracteres.
  */
 export function validateDocument(docNumber, docType = 'CC') {
@@ -285,9 +276,13 @@ export function validateDocument(docNumber, docType = 'CC') {
   }
 
   if (normalizedType === 'NIT') {
-    const nitPattern = /^\d{8,10}(-\d{1})?$/;
-    if (!nitPattern.test(trimmed)) {
-      return { valid: false, error: 'El NIT debe contener únicamente números (entre 8 y 10 dígitos, ej. 901234567 o 901234567-1).' };
+    const validCharsRegex = /^(?:NIT\s*[-:]?\s*)?[0-9.\-\s]+$/i;
+    if (!validCharsRegex.test(trimmed)) {
+      return { valid: false, error: 'El NIT solo puede contener números, puntos, guión o el prefijo NIT (ej. 901.234.567-1 o NIT-20000000).' };
+    }
+    const digitsOnly = trimmed.replace(/\D/g, '');
+    if (digitsOnly.length < 6 || digitsOnly.length > 12) {
+      return { valid: false, error: 'El NIT debe tener entre 6 y 12 dígitos numéricos (ej. 901234567, 901.234.567-1 o NIT-20000000).' };
     }
     return { valid: true, error: null };
   }
@@ -322,7 +317,7 @@ export function maskDocumentInput(value, docType = 'CC') {
     return value.replace(/[^a-zA-Z0-9]/g, '').toUpperCase().substring(0, 15);
   }
   if (normalizedType === 'NIT') {
-    return value.replace(/[^\d-]/g, '').substring(0, 12);
+    return value.replace(/[^0-9a-zA-Z.\-\s]/g, '').substring(0, 18);
   }
   // CC / CE: solo números, max 10 dígitos
   return value.replace(/\D/g, '').substring(0, 10);
@@ -330,8 +325,7 @@ export function maskDocumentInput(value, docType = 'CC') {
 
 export function maskPhoneInput(value) {
   if (!value) return '';
-  // Elimina cualquier carácter que no sea dígito numérico, max 10 dígitos
-  return value.replace(/\D/g, '').substring(0, 10);
+  return value.replace(/[^0-9+\s().-]/g, '').substring(0, 18);
 }
 
 /**

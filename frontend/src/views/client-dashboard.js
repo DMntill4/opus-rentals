@@ -122,6 +122,7 @@ function renderOrderTimeline(rental) {
 
   let activeStep = 1;
   if (rental.status === 'APPROVED') activeStep = 2;
+  else if (rental.status === 'DISPATCHED' || rental.status === 'IN_TRANSIT') activeStep = 3;
   else if (rental.status === 'IN_PROGRESS' || rental.status === 'ACTIVE') activeStep = 4;
   else if (rental.status === 'RETURNED' || rental.status === 'COMPLETED') activeStep = 5;
 
@@ -147,9 +148,9 @@ function renderOrderTimeline(rental) {
       <!-- Modern Temu / Amazon Stepper -->
       <div class="relative flex items-center justify-between w-full pt-2 pb-1">
         <!-- Progress Bar Background Line -->
-        <div class="absolute left-6 right-6 top-5 h-1 bg-slate-200 dark:bg-slate-700 -z-0"></div>
+        <div class="absolute left-4 right-4 top-6 h-1 bg-slate-200 dark:bg-slate-700 -z-0"></div>
         <!-- Active Progress Line -->
-        <div class="absolute left-6 top-5 h-1 bg-gradient-to-r from-emerald-500 via-[#FF7A00] to-orange-500 -z-0 transition-all duration-500" style="width: ${((activeStep - 1) / (steps.length - 1)) * 88}%"></div>
+        <div class="absolute left-4 top-6 h-1 bg-gradient-to-r from-emerald-500 via-[#FF7A00] to-orange-500 -z-0 transition-all duration-500" style="width: calc((100% - 2rem) * ${(activeStep - 1) / (steps.length - 1)})"></div>
 
         ${steps.map((st) => {
           const isDone = st.num < activeStep;
@@ -195,12 +196,17 @@ function openClaimModal(rental, onSubmitted) {
       </div>
 
       <div>
-        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Tipo de Solicitud / Novedad</label>
+        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Tipo de Solicitud / Novedad *</label>
         <select id="claim-type" class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 font-bold focus:outline-none focus:ring-2 focus:ring-[#FF7A00]">
           <option value="WARRANTY_REPLACEMENT">Garantía Técnica - Falla en Obra / Solicitud de Reemplazo</option>
           <option value="DAMAGE_REPORT">Reporte de Siniestro o Avería de la Maquinaria</option>
           <option value="REFUND_REQUEST">Solicitud de Reembolso Parcial o Total</option>
         </select>
+      </div>
+
+      <div>
+        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Motivo / Asunto de la Reclamación *</label>
+        <input type="text" id="claim-reason" class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 font-bold focus:outline-none focus:ring-2 focus:ring-[#FF7A00]" placeholder="Ej: Falla hidráulica del brazo, motor no enciende..." required />
       </div>
 
       <div id="refund-amount-group" class="hidden">
@@ -209,7 +215,7 @@ function openClaimModal(rental, onSubmitted) {
       </div>
 
       <div>
-        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Descripción Detallada de los Hechos en Obra</label>
+        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Descripción Detallada de los Hechos en Obra *</label>
         <textarea id="claim-desc" rows="4" class="w-full text-xs p-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-[#FF7A00]" placeholder="Describe qué ocurrió con la maquinaria en el frente de obra, horómetro de falla o motivo de la reclamación..."></textarea>
       </div>
 
@@ -235,10 +241,17 @@ function openClaimModal(rental, onSubmitted) {
 
   content.querySelector('#btn-submit-claim')?.addEventListener('click', async () => {
     const claimType = typeSelect?.value;
+    const reason = content.querySelector('#claim-reason')?.value?.trim();
     const description = content.querySelector('#claim-desc')?.value?.trim();
     const amountVal = content.querySelector('#claim-amount')?.value;
     const errBox = content.querySelector('#claim-error');
     errBox.classList.add('hidden');
+
+    if (!reason || reason.length < 3) {
+      errBox.textContent = 'Ingresa el motivo o asunto de la reclamación (al menos 3 caracteres).';
+      errBox.classList.remove('hidden');
+      return;
+    }
 
     if (!description || description.length < 10) {
       errBox.textContent = 'Ingresa una descripción de al menos 10 caracteres explicando los hechos.';
@@ -248,7 +261,9 @@ function openClaimModal(rental, onSubmitted) {
 
     const payload = {
       claimType,
+      reason,
       description,
+      requestedAction: claimType === 'REFUND_REQUEST' ? 'PARTIAL_REFUND' : (claimType === 'DAMAGE_REPORT' ? 'TECHNICIAN_VISIT' : 'REPLACEMENT'),
       requestedAmount: claimType === 'REFUND_REQUEST' ? (parseFloat(amountVal) || null) : null
     };
 

@@ -217,7 +217,10 @@ class ApiClient {
       return { id: 'cli-001', fullName: 'Juan Pérez García', identificationNumber: '1.032.456.789' };
     }
 
-    if (endpoint === '/providers') {
+    if (endpoint.startsWith('/providers')) {
+      if (method === 'PUT') {
+        return { success: true, message: 'Perfil de proveedor actualizado exitosamente', ...body };
+      }
       return [
         { id: 'prov-001', companyName: 'Constructoras del Norte S.A.S.', taxId: '901.234.567-8', contactPhone: '+57 317 654 3210', city: 'Bucaramanga, Santander', verified: true },
         { id: 'prov-002', companyName: 'Equipos & Maquinaria Colombia', taxId: '900.876.543-2', contactPhone: '+57 310 888 7766', city: 'Bogotá D.C.', verified: false },

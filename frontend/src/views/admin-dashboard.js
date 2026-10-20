@@ -741,9 +741,15 @@ export async function renderAdminDashboard() {
                           </span>
                         </td>
                         <td class="py-3.5 px-4 text-right">
-                          <button class="btn-toggle-user px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 font-bold text-xs cursor-pointer ${u.active ? 'text-rose-600 hover:border-rose-400' : 'text-emerald-600 hover:border-emerald-400'}" data-id="${u.id}" data-name="${u.name}" data-active="${u.active}">
-                            ${u.active ? 'Suspender' : 'Reactivar'}
-                          </button>
+                          ${(u.rawRole === 'ROLE_ADMIN' || u.email === auth.getUser()?.email || String(u.id) === String(auth.getUser()?.id || auth.getUser()?.userId)) ? `
+                            <span class="px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 text-[11px] font-bold text-slate-400 bg-slate-100 dark:bg-slate-800 cursor-not-allowed">
+                              Sesión Actual (Protegido)
+                            </span>
+                          ` : `
+                            <button class="btn-toggle-user px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 font-bold text-xs cursor-pointer ${u.active ? 'text-rose-600 hover:border-rose-400' : 'text-emerald-600 hover:border-emerald-400'}" data-id="${u.id}" data-name="${u.name}" data-active="${u.active}">
+                              ${u.active ? 'Suspender' : 'Reactivar'}
+                            </button>
+                          `}
                         </td>
                       </tr>
                     `).join('')}
@@ -1225,6 +1231,14 @@ export async function renderAdminDashboard() {
         const currentActive = btn.dataset.active === 'true';
         const newActive = !currentActive;
         const name = btn.dataset.name;
+
+        const currentAdminId = auth.getUser()?.id || auth.getUser()?.userId;
+        const currentAdminEmail = auth.getUser()?.email;
+        const targetUser = rawUsers.find(u => String(u.userId) === String(userId));
+        if (targetUser && (targetUser.role === 'ROLE_ADMIN' || targetUser.email === currentAdminEmail || String(userId) === String(currentAdminId))) {
+          showToast('No está permitido suspender o desactivar tu propia cuenta de Administrador.', 'warning');
+          return;
+        }
 
         try {
           btn.disabled = true;

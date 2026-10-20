@@ -111,10 +111,12 @@ public class RentalService {
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
 
         boolean isAdmin = "ROLE_ADMIN".equals(user.getRole().getName());
-        boolean isProvider = rental.getTool() != null && 
+        boolean isProvider = (rental.getTool() != null && 
                              rental.getTool().getProvider() != null && 
                              rental.getTool().getProvider().getUser() != null && 
-                             rental.getTool().getProvider().getUser().getId().equals(user.getId());
+                             rental.getTool().getProvider().getUser().getId().equals(user.getId()))
+                             || (rental.getTool() != null && rental.getTool().getProvider() != null &&
+                                 providerRepository.findByUser(user).map(p -> p.getId().equals(rental.getTool().getProvider().getId())).orElse(false));
         boolean isClient = rental.getClient() != null && 
                            rental.getClient().getUser() != null && 
                            rental.getClient().getUser().getId().equals(user.getId());

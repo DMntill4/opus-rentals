@@ -587,6 +587,7 @@ async function openCheckoutModal(tool, rentalData) {
  * Step 3: Success and Printable Invoice View
  */
 function showSuccessModal(rental, payment, tool, rentalData) {
+  const createdRental = rental;
   const content = document.createElement('div');
   content.className = 'p-6 text-center space-y-5 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100';
 

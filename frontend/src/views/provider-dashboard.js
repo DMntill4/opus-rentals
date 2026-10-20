@@ -494,8 +494,9 @@ export async function renderProviderDashboard() {
                         </tr>
                       ` : filteredRequests.map(r => {
                         const isPending = r.status === 'PENDING';
-                        const isActive = r.status === 'IN_PROGRESS' || r.status === 'APPROVED';
-                        const isCompleted = r.status === 'COMPLETED';
+                        const isApproved = r.status === 'APPROVED';
+                        const isInProgress = r.status === 'IN_PROGRESS' || r.status === 'ACTIVE' || r.status === 'DISPATCHED' || r.status === 'IN_TRANSIT';
+                        const isCompleted = r.status === 'COMPLETED' || r.status === 'RETURNED';
 
                         return `
                           <tr class="hover:bg-slate-50/80 transition-colors">
@@ -523,14 +524,26 @@ export async function renderProviderDashboard() {
                                 <button class="btn-confirm-action px-3 py-1.5 rounded-lg text-xs font-black bg-[#FF7A00] hover:bg-[#E56E00] text-white shadow-xs cursor-pointer" data-id="${r.id}">
                                   Aprobar Despacho
                                 </button>
-                                <button class="btn-reject-action px-2.5 py-1.5 rounded-lg text-xs font-bold border border-slate-300 text-rose-600 hover:bg-rose-50 cursor-pointer" data-id="${r.id}">
+                                <button class="btn-reject-action px-2.5 py-1.5 rounded-lg text-xs font-bold border border-rose-300 text-rose-600 hover:bg-rose-50 cursor-pointer" data-id="${r.id}">
                                   Rechazar
                                 </button>
                               ` : ''}
 
-                              ${isActive ? `
+                              ${isApproved ? `
+                                <button class="btn-dispatch-action px-3 py-1.5 rounded-lg text-xs font-black bg-blue-600 hover:bg-blue-700 text-white shadow-xs cursor-pointer" data-id="${r.id}">
+                                  Despachar Cama Baja
+                                </button>
+                                <button class="btn-cancel-action px-2.5 py-1.5 rounded-lg text-xs font-bold border border-rose-300 text-rose-600 hover:bg-rose-50 cursor-pointer" data-id="${r.id}">
+                                  Cancelar
+                                </button>
+                              ` : ''}
+
+                              ${isInProgress ? `
                                 <button class="btn-return-action px-3 py-1.5 rounded-lg text-xs font-black bg-[#1A1A1A] hover:bg-slate-800 text-white shadow-xs cursor-pointer" data-id="${r.id}">
                                   Registrar Devolución
+                                </button>
+                                <button class="btn-cancel-action px-2.5 py-1.5 rounded-lg text-xs font-bold border border-rose-300 text-rose-600 hover:bg-rose-50 cursor-pointer" data-id="${r.id}">
+                                  Cancelar
                                 </button>
                               ` : ''}
 
@@ -891,6 +904,27 @@ export async function renderProviderDashboard() {
 
       Object.assign(providerProfile, updated);
       localStorage.setItem(`opus_provider_profile_${providerId}`, JSON.stringify(providerProfile));
+
+      // Attempt backend persistence to MySQL
+      const targetProvId = currentProvider?.id || (Number(providerId) ? Number(providerId) : null);
+      if (targetProvId) {
+        api.put(`/providers/${targetProvId}`, {
+          companyName: updated.companyName,
+          taxId: updated.taxId,
+          address: updated.yardAddress,
+          contacts: [
+            { contactType: 'PHONE', contactValue: updated.phone },
+            { contactType: 'WHATSAPP', contactValue: updated.whatsapp },
+            { contactType: 'EMAIL', contactValue: updated.email }
+          ],
+          coverageZones: [
+            { state: 'Cundinamarca', city: updated.city }
+          ]
+        }).catch(apiErr => {
+          console.warn('Backend provider update warning:', apiErr);
+        });
+      }
+
       showToast('Configuración de empresa validada y guardada correctamente', 'success');
       render();
     });
@@ -923,11 +957,11 @@ export async function renderProviderDashboard() {
           await api.patch(`/rentals/${b.dataset.id}/confirm`).catch(() => {});
         }
         const req = requestsList.find(r => String(r.id) === String(b.dataset.id));
-        if (req) req.status = 'IN_PROGRESS';
+        if (req) req.status = 'APPROVED';
         notificationsStore.add({
           category: 'RENTAL',
           type: 'success',
-          title: 'Despacho Aprobado',
+          title: 'Alquiler Aprobado',
           message: `Has aprobado el alquiler #${b.dataset.id}. Maquinaria lista para ser cargada en cama baja.`,
           link: '#/provider'
         });
@@ -936,8 +970,35 @@ export async function renderProviderDashboard() {
       });
     });
 
-    container.querySelectorAll('.btn-reject-action').forEach(b => {
+    container.querySelectorAll('.btn-dispatch-action').forEach(b => {
       b.addEventListener('click', async () => {
+        try {
+          await api.patch(`/rentals/${b.dataset.id}/status`, { status: 'IN_PROGRESS' });
+        } catch (e) {
+          await api.patch(`/rentals/${b.dataset.id}/start`).catch(() => {});
+        }
+        const req = requestsList.find(r => String(r.id) === String(b.dataset.id));
+        if (req) req.status = 'IN_PROGRESS';
+        notificationsStore.add({
+          category: 'RENTAL',
+          type: 'info',
+          title: 'Maquinaria en Cama Baja',
+          message: `El equipo del contrato #${b.dataset.id} ha sido despachado hacia el frente de obra.`,
+          link: '#/provider'
+        });
+        showToast(`Alquiler #${b.dataset.id} despachado en cama baja hacia obra`, 'success');
+        render();
+      });
+    });
+
+    container.querySelectorAll('.btn-reject-action, .btn-cancel-action').forEach(b => {
+      b.addEventListener('click', async () => {
+        const confirmed = await modal.confirm(
+          `¿Confirmas que deseas cancelar la orden de alquiler #${b.dataset.id}? La maquinaria volverá a estar disponible en tu patio.`,
+          'Cancelar Alquiler'
+        );
+        if (!confirmed) return;
+
         try {
           await api.patch(`/rentals/${b.dataset.id}/status`, { status: 'CANCELLED' });
         } catch (e) {
@@ -948,11 +1009,11 @@ export async function renderProviderDashboard() {
         notificationsStore.add({
           category: 'RENTAL',
           type: 'warning',
-          title: 'Solicitud Cancelada',
-          message: `Se canceló la solicitud #${b.dataset.id}.`,
+          title: 'Alquiler Cancelado',
+          message: `Se canceló la orden #${b.dataset.id}. La maquinaria ha sido liberada en tu inventario.`,
           link: '#/provider'
         });
-        showToast(`Solicitud #${b.dataset.id} cancelada`, 'info');
+        showToast(`Alquiler #${b.dataset.id} cancelado correctamente`, 'info');
         render();
       });
     });

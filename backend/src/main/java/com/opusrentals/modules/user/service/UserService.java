@@ -49,6 +49,9 @@ public class UserService {
     public UserProfileResponse toggleUserStatus(Long id, Boolean active) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con ID: " + id));
+        if ("ROLE_ADMIN".equals(user.getRole().getName()) || "admin@opusrentals.com".equalsIgnoreCase(user.getEmail())) {
+            throw new com.opusrentals.shared.exception.BadRequestException("No está permitido suspender o desactivar a un Administrador del sistema");
+        }
         user.setIsActive(active);
         User saved = userRepository.save(user);
         return mapToProfileResponse(saved);
@@ -119,14 +122,17 @@ public class UserService {
         Client client = clientRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Cliente no encontrado con ID: " + id));
 
+        User user = client.getUser();
+        if (user != null && ("ROLE_ADMIN".equals(user.getRole().getName()) || "admin@opusrentals.com".equalsIgnoreCase(user.getEmail()))) {
+            throw new com.opusrentals.shared.exception.BadRequestException("No está permitido eliminar o suspender a un Administrador del sistema");
+        }
+
         var clientRentals = rentalRepository.findByClientIdOrderByIdDesc(id);
         if (clientRentals != null && !clientRentals.isEmpty()) {
             // Soft delete user to preserve transactional integrity with rentals/invoices
-            User user = client.getUser();
             user.setIsActive(false);
             userRepository.save(user);
         } else {
-            User user = client.getUser();
             clientRepository.delete(client);
             userRepository.delete(user);
         }
@@ -211,14 +217,17 @@ public class UserService {
         Provider provider = providerRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Proveedor no encontrado con ID: " + id));
 
+        User user = provider.getUser();
+        if (user != null && ("ROLE_ADMIN".equals(user.getRole().getName()) || "admin@opusrentals.com".equalsIgnoreCase(user.getEmail()))) {
+            throw new com.opusrentals.shared.exception.BadRequestException("No está permitido eliminar o suspender a un Administrador del sistema");
+        }
+
         var providerTools = toolRepository.findByProviderId(id);
         if (providerTools != null && !providerTools.isEmpty()) {
             // Soft delete user to preserve machinery catalog & history
-            User user = provider.getUser();
             user.setIsActive(false);
             userRepository.save(user);
         } else {
-            User user = provider.getUser();
             providerRepository.delete(provider);
             userRepository.delete(user);
         }

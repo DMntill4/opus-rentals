@@ -21,7 +21,7 @@ public class UpdateProviderRequest {
     @Pattern(regexp = "^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ0-9\\s.,&'/()-]+$", message = "La razón social contiene caracteres especiales no válidos")
     private String companyName;
 
-    @Pattern(regexp = "^(?i)(?:NIT\\s*[-:]?\\s*)?[0-9.-]*$", message = "El NIT solo puede contener números, puntos o guión de verificación")
+    @Pattern(regexp = "^(?i)(?:NIT\\s*[-:]?\\s*)?[0-9.\\-\\s]*$", message = "El NIT solo puede contener números, puntos, espacios o guión de verificación")
     private String taxId;
 
     private String address;
