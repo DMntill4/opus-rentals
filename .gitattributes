@@ -1,0 +1,5 @@
+# Ensure shell scripts always checkout with LF line endings on all OSes
+*.sh text eol=lf
+*mvnw text eol=lf
+*.sql text eol=lf
+*.md text eol=lf

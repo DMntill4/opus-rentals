@@ -22,16 +22,35 @@
 
 ## 1. INICIO RÁPIDO
 
-### Opción A: Despliegue con Docker Compose (Recomendado)
+### Opción A: Despliegue con Docker Compose (Recomendado para producción/evaluación)
 Ejecuta la base de datos MySQL, el backend en Spring Boot y el frontend con un solo comando:
 ```bash
 docker compose up -d --build
 ```
-- Frontend Web: `http://localhost:5173`
+- Frontend Web: `http://localhost`
 - Backend API: `http://localhost:8080/api/v1`
 - Swagger UI interactivo: `http://localhost:8080/swagger-ui.html`
 
-### Opción B: Ejecución Local
+### Opción B: Script Asistente para Linux (Sustentaciones Universitarias)
+En entornos Linux (Ubuntu, Debian, Fedora), clona y ejecuta el asistente interactivo:
+```bash
+git clone https://github.com/DMntill4/opus-rentals.git
+cd opus-rentals
+./run-presentation.sh
+```
+Detecta automáticamente si el equipo cuenta con Docker, Node.js o Java, y ofrece el modo óptimo para iniciar la aplicación sin errores.
+
+### Opción C: Modo Frontend Autónomo (Sin Docker y Sin Base de Datos)
+Ideal si el computador de la universidad no tiene Docker ni permisos de administrador:
+```bash
+cd frontend
+npm install
+npm run dev:mock
+```
+- Frontend Web: `http://localhost:5173`
+- Incluye 100% de la UI funcional: catálogo, anticolisión de fechas, facturación DIAN, generación de PDF, perfil de proveedor y métricas de analítica.
+
+### Opción D: Ejecución Local Nativa (Java 21 + MySQL 8 + Node.js)
 
 **1. Base de Datos MySQL:**
 ```bash

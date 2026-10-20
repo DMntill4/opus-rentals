@@ -2,8 +2,8 @@ import { mockCategories, mockTools, mockRequests, mockAdminUsers, mockAdminKpis 
 
 const API_BASE_URL = import.meta.env?.VITE_API_BASE_URL || 'http://localhost:8080/api/v1';
 
-// Control flag: Attempt live Spring Boot backend first, with automatic mock fallback if backend is offline
-export const USE_MOCK_BACKEND = false;
+// Control flag: Attempt live Spring Boot backend first, with automatic mock fallback if backend is offline. Can also be forced via VITE_USE_MOCK=true or npm run dev:mock
+export const USE_MOCK_BACKEND = import.meta.env?.VITE_USE_MOCK === 'true' || import.meta.env?.MODE === 'mock' || false;
 
 class ApiClient {
   constructor(baseUrl = API_BASE_URL) {
