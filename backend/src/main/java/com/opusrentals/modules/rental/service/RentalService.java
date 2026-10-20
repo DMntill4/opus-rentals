@@ -60,8 +60,8 @@ public class RentalService {
         Tool tool = toolRepository.findById(request.getToolId())
                 .orElseThrow(() -> new ResourceNotFoundException("Herramienta no encontrada"));
 
-        if (!"AVAILABLE".equals(tool.getStatus())) {
-            throw new BadRequestException("La herramienta no está disponible actualmente para alquiler (Estado: " + tool.getStatus() + ")");
+        if ("MAINTENANCE".equalsIgnoreCase(tool.getStatus()) || "OUT_OF_SERVICE".equalsIgnoreCase(tool.getStatus())) {
+            throw new BadRequestException("La maquinaria se encuentra en mantenimiento técnico o fuera de servicio y no admite nuevas reservas.");
         }
 
         // Check date collisions taking into account units/quantity
@@ -127,15 +127,28 @@ public class RentalService {
             throw new BadRequestException("No tiene permisos para modificar el estado de este alquiler");
         }
 
+        if (request.getReason() != null && !request.getReason().trim().isEmpty()) {
+            String currentNotes = rental.getNotes() != null ? rental.getNotes() + " | " : "";
+            rental.setNotes(currentNotes + "Motivo: " + request.getReason().trim());
+        }
+
         rental.setStatus(targetStatus);
 
         if ("APPROVED".equals(targetStatus) || "IN_PROGRESS".equals(targetStatus)) {
             invoiceService.createInvoiceForRental(rental);
             rental.getTool().setStatus("RENTED");
             toolRepository.save(rental.getTool());
-        } else if ("CANCELLED".equals(targetStatus) || "RETURNED".equals(targetStatus)) {
+        } else if ("CANCELLED".equals(targetStatus) || "RETURNED".equals(targetStatus) || "COMPLETED".equals(targetStatus)) {
             rental.getTool().setStatus("AVAILABLE");
             toolRepository.save(rental.getTool());
+            if ("CANCELLED".equals(targetStatus)) {
+                Optional<Invoice> invOpt = invoiceRepository.findByRentalId(rental.getId());
+                if (invOpt.isPresent()) {
+                    Invoice inv = invOpt.get();
+                    inv.setStatus("REFUNDED");
+                    invoiceRepository.save(inv);
+                }
+            }
         }
 
         Rental updated = rentalRepository.save(rental);

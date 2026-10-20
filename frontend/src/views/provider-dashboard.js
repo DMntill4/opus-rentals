@@ -992,29 +992,11 @@ export async function renderProviderDashboard() {
     });
 
     container.querySelectorAll('.btn-reject-action, .btn-cancel-action').forEach(b => {
-      b.addEventListener('click', async () => {
-        const confirmed = await modal.confirm(
-          `¿Confirmas que deseas cancelar la orden de alquiler #${b.dataset.id}? La maquinaria volverá a estar disponible en tu patio.`,
-          'Cancelar Alquiler'
-        );
-        if (!confirmed) return;
-
-        try {
-          await api.patch(`/rentals/${b.dataset.id}/status`, { status: 'CANCELLED' });
-        } catch (e) {
-          await api.patch(`/rentals/${b.dataset.id}/cancel`).catch(() => {});
-        }
+      b.addEventListener('click', () => {
         const req = requestsList.find(r => String(r.id) === String(b.dataset.id));
-        if (req) req.status = 'CANCELLED';
-        notificationsStore.add({
-          category: 'RENTAL',
-          type: 'warning',
-          title: 'Alquiler Cancelado',
-          message: `Se canceló la orden #${b.dataset.id}. La maquinaria ha sido liberada en tu inventario.`,
-          link: '#/provider'
-        });
-        showToast(`Alquiler #${b.dataset.id} cancelado correctamente`, 'info');
-        render();
+        if (req) {
+          openProviderCancelModal(req);
+        }
       });
     });
 
@@ -1141,19 +1123,40 @@ export async function renderProviderDashboard() {
     content.querySelector('#btn-cancel-insp').addEventListener('click', () => modal.close());
 
     content.querySelector('#btn-complete-insp').addEventListener('click', async () => {
-      try {
-        await api.patch(`/rentals/${req.id}/complete`);
-      } catch (e) {}
       const isDamaged = content.querySelector('input[name="insp-status"]:checked')?.value === 'DAMAGED';
-      if (req) req.status = 'COMPLETED';
+      const dmgDestination = content.querySelector('#dmg-new-status')?.value || 'MAINTENANCE';
+      const nextToolStatus = isDamaged ? dmgDestination : 'AVAILABLE';
+      const notes = content.querySelector('#insp-notes')?.value?.trim();
+
+      try {
+        await api.patch(`/rentals/${req.id}/status`, { 
+          status: 'RETURNED', 
+          reason: notes || (isDamaged ? 'Devolución con novedades en inspección' : 'Devolución conforme en patio') 
+        });
+      } catch (e) {
+        await api.patch(`/rentals/${req.id}/complete`).catch(() => {});
+      }
+
+      if (req) req.status = 'RETURNED';
+
+      // Update corresponding tool status in local state & database
+      const toolId = req.toolId || req.tool?.id;
+      if (toolId) {
+        const foundTool = toolsList.find(t => String(t.id) === String(toolId));
+        if (foundTool) {
+          foundTool.status = nextToolStatus;
+        }
+        await api.patch(`/tools/${toolId}/status`, { status: nextToolStatus }).catch(() => {});
+      }
+
       notificationsStore.add({
         category: isDamaged ? 'DAMAGE' : 'INSPECTION',
         type: isDamaged ? 'warning' : 'success',
         title: isDamaged ? 'Devolución con Novedad Registrada' : 'Devolución Conforme Registrada',
-        message: `Inspección de equipo #${req?.id} completada.${isDamaged ? ' Se radicó reporte de daño.' : ' Equipo listo para nuevo despacho.'}`,
+        message: `Inspección de equipo #${req?.id} completada.${isDamaged ? ' Se radicó reporte de daño.' : ' Maquinaria liberada y disponible en patio.'}`,
         link: '#/provider'
       });
-      showToast('Recepción en patio completada con éxito', 'success');
+      showToast('Recepción e inspección en patio completada con éxito. Maquinaria liberada en catálogo.', 'success');
       modal.close();
       render();
     });
@@ -1162,6 +1165,131 @@ export async function renderProviderDashboard() {
       title: 'Acta de Recepción e Inspección Técnica',
       content: content,
       maxWidth: 'max-w-lg',
+    });
+  }
+
+  /**
+   * Modal: Cancelación por Proveedor con Justificación Obligatoria y 100% Reembolso
+   */
+  function openProviderCancelModal(req) {
+    if (!req) return;
+    const clientName = req.client?.name || req.clientFullName || 'Cliente Constructora';
+    const toolName = req.tool?.name || req.toolName || 'Maquinaria Industrial';
+    const totalRefund = req.total || req.totalAmount || req.subtotal || 0;
+
+    const content = document.createElement('div');
+    content.className = 'space-y-4 text-xs';
+    content.innerHTML = `
+      <div class="p-4 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-2xl space-y-1.5">
+        <div class="flex items-center justify-between">
+          <span class="font-mono font-bold text-amber-900 dark:text-amber-200 text-xs">Orden de Alquiler #${req.id}</span>
+          <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-amber-200 text-amber-900 uppercase">Cancelación & Reembolso</span>
+        </div>
+        <div class="font-bold text-slate-900 dark:text-white text-sm">${toolName}</div>
+        <div class="text-[11px] text-slate-600 dark:text-slate-400">Cliente Contratista: <strong>${clientName}</strong></div>
+      </div>
+
+      <!-- Mandatory 100% Refund Guarantee Box -->
+      <div class="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/30 border-2 border-emerald-300 dark:border-emerald-800 space-y-2">
+        <div class="flex items-center justify-between">
+          <span class="font-bold text-emerald-900 dark:text-emerald-300 flex items-center gap-1.5">
+            ${renderIcon('DollarSign', 'w-4 h-4 text-emerald-600')} Reembolso Total Automático al Cliente (100%)
+          </span>
+          <span class="font-mono font-black text-sm text-emerald-700 dark:text-emerald-300">
+            ${formatCurrency(totalRefund)}
+          </span>
+        </div>
+        <p class="text-[11px] text-emerald-800 dark:text-emerald-400 leading-relaxed">
+          Al cancelar la orden como proveedor, el sistema emitirá de forma obligatoria la nota de crédito y reversará los fondos pagados por el cliente a su cuenta de origen (Tarjeta / PSE) sin penalidad.
+        </p>
+      </div>
+
+      <!-- Justification Form Field -->
+      <div>
+        <label class="block font-bold text-slate-800 dark:text-slate-200 mb-1">
+          Motivo / Justificación de la Cancelación para el Cliente *
+        </label>
+        <textarea 
+          id="provider-cancel-reason" 
+          rows="3" 
+          class="w-full p-3 rounded-xl border-2 border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs focus:outline-none focus:border-[#FF7A00]" 
+          placeholder="Ej: Falla mecánica imprevista detectada durante el peritaje técnico previo al despacho, unidad en reparación urgente..."
+        ></textarea>
+        <p class="text-[10px] text-slate-500 mt-1">Este motivo será notificado de inmediato al cliente en su panel y mediante alerta telemática.</p>
+        <div id="provider-cancel-error" class="hidden text-rose-600 font-bold text-[11px] mt-1"></div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-200 dark:border-slate-800">
+        <button id="btn-abort-cancel" class="px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-bold hover:bg-slate-100 cursor-pointer">
+          Regresar sin Cancelar
+        </button>
+        <button id="btn-confirm-cancel-refund" class="px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-black flex items-center gap-1.5 shadow-md cursor-pointer transition-all">
+          ${renderIcon('Trash2', 'w-4 h-4')} Cancelar y Emitir Reembolso
+        </button>
+      </div>
+    `;
+
+    content.querySelector('#btn-abort-cancel').addEventListener('click', () => modal.close());
+
+    content.querySelector('#btn-confirm-cancel-refund').addEventListener('click', async () => {
+      const reason = content.querySelector('#provider-cancel-reason')?.value?.trim();
+      const errBox = content.querySelector('#provider-cancel-error');
+      errBox.classList.add('hidden');
+
+      if (!reason || reason.length < 10) {
+        errBox.textContent = 'Por favor ingresa una justificación detallada de al menos 10 caracteres para el cliente.';
+        errBox.classList.remove('hidden');
+        return;
+      }
+
+      const confirmBtn = content.querySelector('#btn-confirm-cancel-refund');
+      confirmBtn.disabled = true;
+      confirmBtn.textContent = 'Procesando Reembolso...';
+
+      try {
+        await api.patch(`/rentals/${req.id}/status`, { status: 'CANCELLED', reason });
+      } catch (e) {
+        await api.patch(`/rentals/${req.id}/cancel`, { reason }).catch(() => {});
+      }
+
+      req.status = 'CANCELLED';
+
+      // Free tool capacity back to AVAILABLE
+      const toolId = req.toolId || req.tool?.id;
+      if (toolId) {
+        const foundTool = toolsList.find(t => String(t.id) === String(toolId));
+        if (foundTool) foundTool.status = 'AVAILABLE';
+        await api.patch(`/tools/${toolId}/status`, { status: 'AVAILABLE' }).catch(() => {});
+      }
+
+      // Notify Client with reason & refund details
+      notificationsStore.add({
+        category: 'REFUND',
+        type: 'warning',
+        title: `Alquiler #${req.id} Cancelado por Proveedor`,
+        message: `El proveedor canceló la orden #${req.id}. Motivo: "${reason}". Se emitió orden de reembolso del 100% (${formatCurrency(totalRefund)}) a tu cuenta bancaria / tarjeta.`,
+        link: '#/client'
+      });
+
+      // Provider log notification
+      notificationsStore.add({
+        category: 'RENTAL',
+        type: 'info',
+        title: 'Cancelación y Reembolso Registrado',
+        message: `Se canceló la orden #${req.id} y se emitió orden de reembolso de ${formatCurrency(totalRefund)}. Maquinaria liberada a "Disponible en Patio".`,
+        link: '#/provider'
+      });
+
+      showToast(`Alquiler #${req.id} cancelado. Reembolso del 100% emitido al cliente con éxito.`, 'success');
+      modal.close();
+      render();
+    });
+
+    modal.open({
+      title: 'Cancelar Orden de Alquiler y Emitir Reembolso',
+      content,
+      maxWidth: 'max-w-lg'
     });
   }
 

@@ -53,38 +53,51 @@ export function renderNavbar(activeRoute = 'catalog') {
         <div class="flex items-center justify-between h-20 gap-4 lg:gap-8">
           
           <!-- Brand Logo -->
-          <a href="#/home" class="flex items-center gap-3 flex-shrink-0 group" title="Opus Rentals - Inicio">
+          <a href="${isAuth && isProvider && !isAdmin ? '#/provider' : '#/home'}" class="flex items-center gap-3 flex-shrink-0 group" title="Opus Rentals">
             <img src="/assets/brand/logo.png" alt="Opus Rentals" class="w-10 h-10 object-contain drop-shadow-sm group-hover:scale-105 transition-transform" onerror="this.onerror=null; this.src='/assets/brand/opus-logo-orange.svg'" />
             <div class="flex flex-col">
               <span class="text-xl sm:text-2xl font-black font-display tracking-tight text-[#1A1A1A] leading-none">
                 OPUS <span class="text-[#FF7A00]">RENTALS</span>
               </span>
               <span class="text-[9px] font-mono font-bold uppercase tracking-wider text-amber-700 mt-0.5">
-                Maquinaria Pesada & Construcción
+                ${isAuth && isProvider && !isAdmin ? 'Portal B2B de Proveedor' : 'Maquinaria Pesada & Construcción'}
               </span>
             </div>
           </a>
 
-          <!-- Prominent Search Bar (Ultra-sleek Industrial Style) -->
+          <!-- Prominent Search Bar OR Provider Command Header -->
           <div class="flex-1 max-w-2xl mx-auto hidden sm:block px-4">
-            <form id="navbar-search-form" class="relative flex items-center bg-white rounded-2xl border-2 border-slate-300 hover:border-slate-400 focus-within:border-[#FF7A00] focus-within:ring-4 focus-within:ring-[#FF7A00]/20 shadow-xs transition-all p-1">
-              <div class="pl-3 pr-2 text-slate-400 flex items-center pointer-events-none">
-                ${renderIcon('Search', 'w-4 h-4 text-slate-400')}
+            ${isAuth && isProvider && !isAdmin ? `
+              <div class="flex items-center justify-between bg-slate-50 dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 px-4 py-2 rounded-2xl shadow-xs">
+                <div class="flex items-center gap-3">
+                  <div class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></div>
+                  <div class="flex flex-col">
+                    <span class="text-xs font-black text-slate-900 dark:text-white uppercase font-mono">Terminal de Proveedor & Despacho de Flota</span>
+                    <span class="text-[10px] text-slate-500 font-mono">Gestión de maquinaria pesada, contratos y logística en obra</span>
+                  </div>
+                </div>
+                <span class="text-[10px] font-black uppercase font-mono bg-[#FF7A00]/10 text-[#FF7A00] px-2.5 py-1 rounded-lg border border-[#FF7A00]/20">B2B Activo</span>
               </div>
-              <input 
-                type="text" 
-                id="navbar-search-input"
-                placeholder="Buscar excavadora CAT, rodillo, Bobcat, generador diésel..." 
-                class="flex-1 py-1.5 px-1 text-xs sm:text-sm text-slate-900 placeholder-slate-400 bg-transparent focus:outline-none font-medium"
-              />
-              <button 
-                type="submit" 
-                class="px-4 py-2 bg-[#FF7A00] hover:bg-[#E56E00] text-white font-black text-xs rounded-xl flex items-center gap-1.5 shadow-sm transition-all active:scale-95 cursor-pointer"
-                aria-label="Buscar"
-              >
-                <span>Buscar</span>
-              </button>
-            </form>
+            ` : `
+              <form id="navbar-search-form" class="relative flex items-center bg-white rounded-2xl border-2 border-slate-300 hover:border-slate-400 focus-within:border-[#FF7A00] focus-within:ring-4 focus-within:ring-[#FF7A00]/20 shadow-xs transition-all p-1">
+                <div class="pl-3 pr-2 text-slate-400 flex items-center pointer-events-none">
+                  ${renderIcon('Search', 'w-4 h-4 text-slate-400')}
+                </div>
+                <input 
+                  type="text" 
+                  id="navbar-search-input"
+                  placeholder="Buscar excavadora CAT, rodillo, Bobcat, generador diésel..." 
+                  class="flex-1 py-1.5 px-1 text-xs sm:text-sm text-slate-900 placeholder-slate-400 bg-transparent focus:outline-none font-medium"
+                />
+                <button 
+                  type="submit" 
+                  class="px-4 py-2 bg-[#FF7A00] hover:bg-[#E56E00] text-white font-black text-xs rounded-xl flex items-center gap-1.5 shadow-sm transition-all active:scale-95 cursor-pointer"
+                  aria-label="Buscar"
+                >
+                  <span>Buscar</span>
+                </button>
+              </form>
+            `}
           </div>
 
           <!-- User Actions & Orders -->
@@ -105,9 +118,9 @@ export function renderNavbar(activeRoute = 'catalog') {
             ` : ''}
 
             ${isAuth && isProvider && !isAdmin ? `
-              <a href="#/provider" class="flex items-center gap-2 px-3 py-2 rounded-xl text-slate-700 hover:text-slate-950 hover:bg-slate-100 text-xs font-bold transition-all">
-                ${renderIcon('Truck', 'w-4 h-4 text-amber-600')}
-                <span class="hidden md:inline">Mi Flota</span>
+              <a href="#/provider" class="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-orange-50 dark:bg-orange-950/40 text-[#FF7A00] hover:bg-orange-100 border border-[#FF7A00]/30 text-xs font-black transition-all">
+                ${renderIcon('Truck', 'w-4 h-4 text-[#FF7A00]')}
+                <span class="hidden md:inline">Panel de Proveedor</span>
               </a>
             ` : ''}
 
@@ -164,81 +177,136 @@ export function renderNavbar(activeRoute = 'catalog') {
         </div>
       </div>
 
-      <!-- Categories Strip with Animated Sliding Orange Indicator -->
+      <!-- Categories Strip with Animated Sliding Orange Indicator OR Provider Navigation Strip -->
       <div class="bg-slate-50 border-t border-slate-200 text-xs">
         <div class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between overflow-x-auto no-scrollbar py-2 gap-4">
           
-          <div id="navbar-categories-container" class="relative flex items-center gap-1 sm:gap-2 flex-shrink-0 p-1 bg-slate-200/60 rounded-xl">
-            <!-- Animated Gliding Orange Indicator Pill -->
-            <div 
-              id="navbar-active-pill" 
-              class="absolute rounded-lg bg-[#FF7A00] pill-active-glow pointer-events-none z-0 transition-all duration-350 ease-[cubic-bezier(0.25,1,0.5,1)]"
-              style="left: 4px; top: 4px; height: 32px; width: 110px; opacity: 1;"
-            ></div>
-
-            <!-- Toda la Flota Item -->
-            <a 
-              href="#/catalog" 
-              class="nav-cat-item relative z-10 flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all duration-200 select-none cursor-pointer text-white font-black"
-              data-cat-id="cat-all"
-              data-cat-name="toda la flota"
-            >
-              ${renderIcon('Menu', 'w-3.5 h-3.5 text-white transition-colors')}
-              <span>Toda la Flota</span>
-            </a>
-
-            <!-- Category Items -->
-            ${topCategories.map(cat => `
+          ${isAuth && isProvider && !isAdmin ? `
+            <div id="navbar-categories-container" class="relative flex items-center gap-1 sm:gap-2 flex-shrink-0 p-1 bg-slate-200/60 rounded-xl">
               <a 
-                href="#/catalog?category=${cat.id}" 
-                class="nav-cat-item relative z-10 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-200 select-none cursor-pointer text-slate-700 hover:text-slate-950"
-                data-cat-id="${cat.id}"
-                data-cat-name="${cat.name.toLowerCase()}"
-                data-cat-db="${(cat.dbName || '').toLowerCase()}"
+                href="#/provider" 
+                class="nav-cat-item relative z-10 flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all duration-200 select-none cursor-pointer bg-[#FF7A00] text-white font-black shadow-xs"
               >
-                ${renderIcon(cat.icon, 'w-3.5 h-3.5 text-slate-500 transition-colors')}
-                <span>${cat.name}</span>
+                ${renderIcon('LayoutDashboard', 'w-3.5 h-3.5 text-white')}
+                <span>Panel Operativo</span>
               </a>
-            `).join('')}
-          </div>
+              <a 
+                href="#/provider" 
+                class="nav-cat-item relative z-10 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-200 select-none cursor-pointer text-slate-700 hover:text-slate-950"
+                onclick="document.getElementById('inventory-section')?.scrollIntoView({behavior:'smooth'})"
+              >
+                ${renderIcon('Truck', 'w-3.5 h-3.5 text-slate-500')}
+                <span>Mi Flota de Maquinaria</span>
+              </a>
+              <a 
+                href="#/provider" 
+                class="nav-cat-item relative z-10 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-200 select-none cursor-pointer text-slate-700 hover:text-slate-950"
+                onclick="document.getElementById('requests-section')?.scrollIntoView({behavior:'smooth'})"
+              >
+                ${renderIcon('Clock', 'w-3.5 h-3.5 text-slate-500')}
+                <span>Despachos & Solicitudes</span>
+              </a>
+              <a 
+                href="#/provider" 
+                class="nav-cat-item relative z-10 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-200 select-none cursor-pointer text-slate-700 hover:text-slate-950"
+                onclick="document.getElementById('quality-section')?.scrollIntoView({behavior:'smooth'})"
+              >
+                ${renderIcon('ShieldCheck', 'w-3.5 h-3.5 text-slate-500')}
+                <span>Auditoría de Calidad</span>
+              </a>
+              <a 
+                href="#/provider" 
+                class="nav-cat-item relative z-10 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-200 select-none cursor-pointer text-slate-700 hover:text-slate-950"
+                onclick="document.getElementById('profile-section')?.scrollIntoView({behavior:'smooth'})"
+              >
+                ${renderIcon('UserCheck', 'w-3.5 h-3.5 text-slate-500')}
+                <span>Perfil de Empresa</span>
+              </a>
+            </div>
 
-          <div class="hidden xl:flex items-center gap-2 text-slate-600 font-mono text-[11px] flex-shrink-0">
-            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span>Atención a Obra:</span>
-            <span class="font-bold text-slate-900">+57 (1) 745-8900</span>
-          </div>
+            <div class="hidden xl:flex items-center gap-2 text-slate-600 font-mono text-[11px] flex-shrink-0">
+              <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span>Línea Directa Proveedores:</span>
+              <span class="font-bold text-slate-900">+57 (1) 745-8901</span>
+            </div>
+          ` : `
+            <div id="navbar-categories-container" class="relative flex items-center gap-1 sm:gap-2 flex-shrink-0 p-1 bg-slate-200/60 rounded-xl">
+              <!-- Animated Gliding Orange Indicator Pill -->
+              <div 
+                id="navbar-active-pill" 
+                class="absolute rounded-lg bg-[#FF7A00] pill-active-glow pointer-events-none z-0 transition-all duration-350 ease-[cubic-bezier(0.25,1,0.5,1)]"
+                style="left: 4px; top: 4px; height: 32px; width: 110px; opacity: 1;"
+              ></div>
+
+              <!-- Toda la Flota Item -->
+              <a 
+                href="#/catalog" 
+                class="nav-cat-item relative z-10 flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all duration-200 select-none cursor-pointer text-white font-black"
+                data-cat-id="cat-all"
+                data-cat-name="toda la flota"
+              >
+                ${renderIcon('Menu', 'w-3.5 h-3.5 text-white transition-colors')}
+                <span>Toda la Flota</span>
+              </a>
+
+              <!-- Category Items -->
+              ${topCategories.map(cat => `
+                <a 
+                  href="#/catalog?category=${cat.id}" 
+                  class="nav-cat-item relative z-10 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-200 select-none cursor-pointer text-slate-700 hover:text-slate-950"
+                  data-cat-id="${cat.id}"
+                  data-cat-name="${cat.name.toLowerCase()}"
+                  data-cat-db="${(cat.dbName || '').toLowerCase()}"
+                >
+                  ${renderIcon(cat.icon, 'w-3.5 h-3.5 text-slate-500 transition-colors')}
+                  <span>${cat.name}</span>
+                </a>
+              `).join('')}
+            </div>
+
+            <div class="hidden xl:flex items-center gap-2 text-slate-600 font-mono text-[11px] flex-shrink-0">
+              <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span>Atención a Obra:</span>
+              <span class="font-bold text-slate-900">+57 (1) 745-8900</span>
+            </div>
+          `}
 
         </div>
       </div>
 
       <!-- Mobile Search Form -->
-      <div class="sm:hidden px-4 py-2 border-t border-slate-200 bg-white">
-        <form id="navbar-search-form-mobile" class="flex items-center rounded-xl border border-slate-300 overflow-hidden bg-slate-50">
-          <input 
-            type="text" 
-            id="navbar-search-input-mobile"
-            placeholder="Buscar maquinaria..." 
-            class="flex-1 px-3 py-2 text-xs bg-transparent focus:outline-none"
-          />
-          <button type="submit" class="p-2 text-slate-500">
-            ${renderIcon('Search', 'w-4 h-4')}
-          </button>
-        </form>
-      </div>
+      ${!isProvider || isAdmin ? `
+        <div class="sm:hidden px-4 py-2 border-t border-slate-200 bg-white">
+          <form id="navbar-search-form-mobile" class="flex items-center rounded-xl border border-slate-300 overflow-hidden bg-slate-50">
+            <input 
+              type="text" 
+              id="navbar-search-input-mobile"
+              placeholder="Buscar maquinaria..." 
+              class="flex-1 px-3 py-2 text-xs bg-transparent focus:outline-none"
+            />
+            <button type="submit" class="p-2 text-slate-500">
+              ${renderIcon('Search', 'w-4 h-4')}
+            </button>
+          </form>
+        </div>
+      ` : ''}
 
       <!-- Mobile Navigation Drawer -->
       <div id="mobile-menu" class="hidden sm:hidden border-t border-slate-200 bg-white px-4 py-3 space-y-1 shadow-lg">
-        <a href="#/home" class="block px-3 py-2 rounded-lg text-sm font-semibold text-slate-700 hover:bg-slate-50">Inicio</a>
-        <a href="#/catalog" class="block px-3 py-2 rounded-lg text-sm font-semibold text-slate-700 hover:bg-slate-50">Catálogo Completo</a>
-        ${isAuth && isClient && !isAdmin ? `
-          <a href="#/client" class="block px-3 py-2 rounded-lg text-sm font-semibold text-slate-700 hover:bg-slate-50">Mis Alquileres</a>
-        ` : ''}
         ${isAuth && isProvider && !isAdmin ? `
-          <a href="#/provider" class="block px-3 py-2 rounded-lg text-sm font-semibold text-slate-700 hover:bg-slate-50">Mi Flota Proveedor</a>
-        ` : ''}
-        ${isAuth && isAdmin ? `
-          <a href="#/admin" class="block px-3 py-2 rounded-lg text-sm font-semibold text-slate-700 hover:bg-slate-50">Panel Administrador</a>
-        ` : ''}
+          <a href="#/provider" class="block px-3 py-2 rounded-lg text-sm font-semibold text-slate-900 hover:bg-slate-50 font-bold">Panel de Proveedor</a>
+          <a href="#/provider" class="block px-3 py-2 rounded-lg text-sm font-semibold text-slate-700 hover:bg-slate-50">Mi Flota de Maquinaria</a>
+          <a href="#/provider" class="block px-3 py-2 rounded-lg text-sm font-semibold text-slate-700 hover:bg-slate-50">Despachos & Cama Baja</a>
+        ` : `
+          <a href="#/home" class="block px-3 py-2 rounded-lg text-sm font-semibold text-slate-700 hover:bg-slate-50">Inicio</a>
+          <a href="#/catalog" class="block px-3 py-2 rounded-lg text-sm font-semibold text-slate-700 hover:bg-slate-50">Catálogo Completo</a>
+          ${isAuth && isClient && !isAdmin ? `
+            <a href="#/client" class="block px-3 py-2 rounded-lg text-sm font-semibold text-slate-700 hover:bg-slate-50">Mis Alquileres</a>
+          ` : ''}
+          ${isAuth && isAdmin ? `
+            <a href="#/admin" class="block px-3 py-2 rounded-lg text-sm font-semibold text-slate-700 hover:bg-slate-50">Panel Administrador</a>
+          ` : ''}
+        `}
       </div>
 
     </header>

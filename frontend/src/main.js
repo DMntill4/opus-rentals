@@ -126,6 +126,14 @@ function router() {
   const routeKey = cleanRoute in routes ? cleanRoute : '#/home';
   
   // Role & Permission Route Guards
+  // Providers have a dedicated workspace and do not browse the consumer rental catalog
+  if (auth.isAuthenticated() && auth.isProvider() && !auth.isAdmin()) {
+    if (routeKey === '#/home' || routeKey === '#/' || routeKey === '' || routeKey === '#/catalog' || routeKey.startsWith('#/product/')) {
+      window.location.hash = '#/provider';
+      return;
+    }
+  }
+
   if (routeKey === '#/admin') {
     if (!auth.isAuthenticated()) {
       showToast('Debes iniciar sesión para acceder al panel de administración', 'warning');

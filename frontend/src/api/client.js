@@ -295,10 +295,14 @@ class ApiClient {
             req.status = 'APPROVED';
           } else if (action === 'start') {
             req.status = 'IN_PROGRESS';
-          } else if (action === 'complete') {
-            req.status = 'COMPLETED';
+          } else if (action === 'complete' || action === 'return') {
+            req.status = 'RETURNED';
           } else if (action === 'cancel') {
             req.status = 'CANCELLED';
+          }
+          if (req.status === 'COMPLETED' || req.status === 'RETURNED' || req.status === 'CANCELLED') {
+            const tool = this.mockTools.find(t => String(t.id) === String(req.toolId || req.tool?.id));
+            if (tool) tool.status = 'AVAILABLE';
           }
         }
         return { success: true, id, status: req?.status || 'UPDATED' };

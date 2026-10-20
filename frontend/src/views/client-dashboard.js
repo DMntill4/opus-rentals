@@ -188,11 +188,13 @@ function openClaimModal(rental, onSubmitted) {
 
   const toolName = rental.toolName || rental.items?.[0]?.toolName || 'Equipo';
 
+  const maxRefund = rental.totalAmount || rental.total || rental.estimatedTotal || (rental.subtotal ? Math.round(rental.subtotal * 1.19) : 4462500);
+
   content.innerHTML = `
     <div class="space-y-4">
       <div class="p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-xl text-xs space-y-1">
         <div class="font-bold text-amber-900 dark:text-amber-300">Orden #${rental.id} · ${toolName}</div>
-        <div class="text-[11px] text-amber-800 dark:text-amber-400">Proveedor: <strong>${rental.providerCompanyName || 'Proveedor Opus'}</strong></div>
+        <div class="text-[11px] text-amber-800 dark:text-amber-400">Proveedor: <strong>${rental.providerCompanyName || 'Proveedor Opus'}</strong> · Total Facturado: <strong>${formatCurrency(maxRefund)}</strong></div>
       </div>
 
       <div>
@@ -209,14 +211,56 @@ function openClaimModal(rental, onSubmitted) {
         <input type="text" id="claim-reason" class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 font-bold focus:outline-none focus:ring-2 focus:ring-[#FF7A00]" placeholder="Ej: Falla hidráulica del brazo, motor no enciende..." required />
       </div>
 
-      <div id="refund-amount-group" class="hidden">
-        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Monto de Reembolso Solicitado (COP)</label>
-        <input type="number" id="claim-amount" class="w-full text-xs px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 font-mono font-bold" placeholder="Ej: 500000" />
+      <div id="refund-amount-group" class="hidden space-y-1.5 p-3 rounded-xl bg-orange-50/70 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-900/40">
+        <div class="flex items-center justify-between">
+          <label class="block text-xs font-bold text-slate-800 dark:text-slate-200">Monto de Reembolso Solicitado (COP) *</label>
+          <span class="text-[10px] font-mono font-bold text-[#FF7A00]">Máx: ${formatCurrency(maxRefund)}</span>
+        </div>
+        <div class="flex gap-2">
+          <input 
+            type="number" 
+            id="claim-amount" 
+            min="1000" 
+            max="${maxRefund}" 
+            class="flex-1 text-xs px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 font-mono font-bold" 
+            placeholder="Ej: ${Math.round(maxRefund / 2)}" 
+          />
+          <button 
+            type="button" 
+            id="btn-claim-max-amount" 
+            class="px-2.5 py-1 text-[11px] font-black rounded-lg bg-orange-100 dark:bg-orange-900/40 text-orange-800 dark:text-orange-200 hover:bg-orange-200 cursor-pointer whitespace-nowrap"
+          >
+            100% Total
+          </button>
+        </div>
+        <p class="text-[10px] text-slate-500">El valor solicitado no puede superar el total pagado de la orden (${formatCurrency(maxRefund)}).</p>
       </div>
 
       <div>
         <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Descripción Detallada de los Hechos en Obra *</label>
-        <textarea id="claim-desc" rows="4" class="w-full text-xs p-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-[#FF7A00]" placeholder="Describe qué ocurrió con la maquinaria en el frente de obra, horómetro de falla o motivo de la reclamación..."></textarea>
+        <textarea id="claim-desc" rows="3" class="w-full text-xs p-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-[#FF7A00]" placeholder="Describe qué ocurrió con la maquinaria en el frente de obra, horómetro de falla o motivo de la reclamación..."></textarea>
+      </div>
+
+      <!-- Mandatory Evidence Section -->
+      <div>
+        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+          Pruebas Técnicas & Evidencia de Falla en Obra *
+        </label>
+        <div class="space-y-2">
+          <input 
+            type="text" 
+            id="claim-evidence-url" 
+            class="w-full text-xs px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 font-mono text-slate-800 dark:text-slate-200" 
+            placeholder="Enlace a fotos/video de la falla o informe de obra (Drive, Dropbox, Cloud)" 
+          />
+          <textarea 
+            id="claim-evidence-notes" 
+            rows="2" 
+            class="w-full text-xs p-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 focus:outline-none focus:border-[#FF7A00]" 
+            placeholder="Detalle de pruebas técnicas (ej: foto del horómetro con 12 hrs, fisura en manguera hidráulica, bitácora del ingeniero residente)..."
+          ></textarea>
+        </div>
+        <p class="text-[10px] text-slate-500 mt-1">Obligatorio: Toda solicitud de garantía o reembolso requiere soporte probatorio del frente de obra.</p>
       </div>
 
       <div id="claim-error" class="hidden text-xs text-rose-600 bg-rose-50 p-2.5 rounded-lg border border-rose-200"></div>
@@ -231,6 +275,12 @@ function openClaimModal(rental, onSubmitted) {
 
   const typeSelect = content.querySelector('#claim-type');
   const amountGroup = content.querySelector('#refund-amount-group');
+  const amountInput = content.querySelector('#claim-amount');
+  
+  content.querySelector('#btn-claim-max-amount')?.addEventListener('click', () => {
+    if (amountInput) amountInput.value = maxRefund;
+  });
+
   typeSelect?.addEventListener('change', () => {
     if (typeSelect.value === 'REFUND_REQUEST') {
       amountGroup?.classList.remove('hidden');
@@ -244,6 +294,8 @@ function openClaimModal(rental, onSubmitted) {
     const reason = content.querySelector('#claim-reason')?.value?.trim();
     const description = content.querySelector('#claim-desc')?.value?.trim();
     const amountVal = content.querySelector('#claim-amount')?.value;
+    const evidenceUrl = content.querySelector('#claim-evidence-url')?.value?.trim();
+    const evidenceNotes = content.querySelector('#claim-evidence-notes')?.value?.trim();
     const errBox = content.querySelector('#claim-error');
     errBox.classList.add('hidden');
 
@@ -259,17 +311,39 @@ function openClaimModal(rental, onSubmitted) {
       return;
     }
 
+    if (claimType === 'REFUND_REQUEST') {
+      const parsedAmount = parseFloat(amountVal);
+      if (isNaN(parsedAmount) || parsedAmount <= 0) {
+        errBox.textContent = 'Ingresa un monto de reembolso válido mayor a cero.';
+        errBox.classList.remove('hidden');
+        return;
+      }
+      if (parsedAmount > maxRefund) {
+        errBox.textContent = `El monto solicitado (${formatCurrency(parsedAmount)}) supera el valor total pagado del alquiler (${formatCurrency(maxRefund)}).`;
+        errBox.classList.remove('hidden');
+        return;
+      }
+    }
+
+    if (!evidenceUrl && (!evidenceNotes || evidenceNotes.length < 10)) {
+      errBox.textContent = 'Es obligatorio adjuntar un enlace o describir las pruebas técnicas de la falla en obra (mínimo 10 caracteres).';
+      errBox.classList.remove('hidden');
+      return;
+    }
+
     const payload = {
       claimType,
       reason,
       description,
+      evidenceUrl: evidenceUrl || null,
+      evidenceNotes: evidenceNotes || null,
       requestedAction: claimType === 'REFUND_REQUEST' ? 'PARTIAL_REFUND' : (claimType === 'DAMAGE_REPORT' ? 'TECHNICIAN_VISIT' : 'REPLACEMENT'),
       requestedAmount: claimType === 'REFUND_REQUEST' ? (parseFloat(amountVal) || null) : null
     };
 
     try {
       await api.post(`/rentals/${rental.id}/claims`, payload);
-      showToast('Novedad radicada exitosamente. El equipo de soporte y el proveedor la revisarán.', 'success');
+      showToast('Novedad y pruebas radicadas exitosamente. El equipo técnico y proveedor las revisarán.', 'success');
       modal.close();
       if (onSubmitted) onSubmitted();
     } catch (err) {

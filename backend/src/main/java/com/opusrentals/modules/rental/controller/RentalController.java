@@ -94,14 +94,60 @@ public class RentalController {
         return ResponseEntity.ok(ApiResponse.ok("Estado de la reserva actualizado exitosamente", response));
     }
 
+    @PatchMapping("/{id}/complete")
+    @Operation(summary = "Mark rental as complete/returned")
+    public ResponseEntity<ApiResponse<RentalResponse>> completeRental(
+            @PathVariable Long id,
+            @RequestBody(required = false) ProcessRentalStatusRequest request,
+            Authentication authentication) {
+        ProcessRentalStatusRequest req = request != null ? request : new ProcessRentalStatusRequest();
+        req.setStatus("RETURNED");
+        RentalResponse response = rentalService.updateRentalStatus(id, authentication.getName(), req);
+        return ResponseEntity.ok(ApiResponse.ok("Recepción de equipo y devolución completada", response));
+    }
+
+    @PatchMapping("/{id}/return")
+    @Operation(summary = "Mark rental as returned")
+    public ResponseEntity<ApiResponse<RentalResponse>> returnRental(
+            @PathVariable Long id,
+            @RequestBody(required = false) ProcessRentalStatusRequest request,
+            Authentication authentication) {
+        return completeRental(id, request, authentication);
+    }
+
+    @PatchMapping("/{id}/confirm")
+    @Operation(summary = "Approve/Confirm rental dispatch")
+    public ResponseEntity<ApiResponse<RentalResponse>> confirmRental(
+            @PathVariable Long id,
+            @RequestBody(required = false) ProcessRentalStatusRequest request,
+            Authentication authentication) {
+        ProcessRentalStatusRequest req = request != null ? request : new ProcessRentalStatusRequest();
+        req.setStatus("APPROVED");
+        RentalResponse response = rentalService.updateRentalStatus(id, authentication.getName(), req);
+        return ResponseEntity.ok(ApiResponse.ok("Alquiler aprobado para alistamiento", response));
+    }
+
+    @PatchMapping("/{id}/start")
+    @Operation(summary = "Dispatch rental to job site")
+    public ResponseEntity<ApiResponse<RentalResponse>> startRental(
+            @PathVariable Long id,
+            @RequestBody(required = false) ProcessRentalStatusRequest request,
+            Authentication authentication) {
+        ProcessRentalStatusRequest req = request != null ? request : new ProcessRentalStatusRequest();
+        req.setStatus("IN_PROGRESS");
+        RentalResponse response = rentalService.updateRentalStatus(id, authentication.getName(), req);
+        return ResponseEntity.ok(ApiResponse.ok("Maquinaria despachada hacia el frente de obra", response));
+    }
+
     @PostMapping("/{id}/cancel")
-    @Operation(summary = "Cancel a rental booking", description = "Allows client to cancel their rental booking")
+    @Operation(summary = "Cancel a rental booking", description = "Allows client or provider to cancel rental booking")
     public ResponseEntity<ApiResponse<RentalResponse>> cancelRental(
             @PathVariable Long id,
+            @RequestBody(required = false) ProcessRentalStatusRequest request,
             Authentication authentication) {
-        ProcessRentalStatusRequest request = new ProcessRentalStatusRequest();
-        request.setStatus("CANCELLED");
-        RentalResponse response = rentalService.updateRentalStatus(id, authentication.getName(), request);
+        ProcessRentalStatusRequest req = request != null ? request : new ProcessRentalStatusRequest();
+        req.setStatus("CANCELLED");
+        RentalResponse response = rentalService.updateRentalStatus(id, authentication.getName(), req);
         return ResponseEntity.ok(ApiResponse.ok("Reserva cancelada exitosamente", response));
     }
 
@@ -109,7 +155,8 @@ public class RentalController {
     @Operation(summary = "Cancel a rental booking (PATCH)")
     public ResponseEntity<ApiResponse<RentalResponse>> cancelRentalPatch(
             @PathVariable Long id,
+            @RequestBody(required = false) ProcessRentalStatusRequest request,
             Authentication authentication) {
-        return cancelRental(id, authentication);
+        return cancelRental(id, request, authentication);
     }
 }

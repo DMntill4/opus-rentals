@@ -1091,9 +1091,15 @@ export async function renderAdminDashboard() {
                           <button class="btn-admin-edit-client px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 hover:border-[#FF7A00] font-bold text-xs text-slate-700 dark:text-slate-200 cursor-pointer inline-flex items-center gap-1" data-id="${c.id}">
                             ${renderIcon('Sliders', 'w-3 h-3 text-[#FF7A00]')} Editar
                           </button>
-                          <button class="btn-admin-delete-client px-2.5 py-1.5 rounded-lg border border-rose-200 dark:border-rose-900/50 hover:bg-rose-50 dark:hover:bg-rose-950/30 text-rose-600 font-bold text-xs cursor-pointer inline-flex items-center gap-1" data-id="${c.id}" data-name="${c.firstName} ${c.lastName}">
-                            ${renderIcon('Trash2', 'w-3 h-3')} Desactivar
-                          </button>
+                          ${c.isActive ? `
+                            <button class="btn-admin-toggle-client-status px-2.5 py-1.5 rounded-lg border border-rose-200 dark:border-rose-900/50 hover:bg-rose-50 dark:hover:bg-rose-950/30 text-rose-600 font-bold text-xs cursor-pointer inline-flex items-center gap-1" data-id="${c.id}" data-user-id="${c.userId}" data-action="deactivate" data-name="${c.firstName} ${c.lastName}">
+                              ${renderIcon('Trash2', 'w-3 h-3')} Desactivar
+                            </button>
+                          ` : `
+                            <button class="btn-admin-toggle-client-status px-2.5 py-1.5 rounded-lg border border-emerald-300 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 text-emerald-700 dark:text-emerald-300 font-bold text-xs cursor-pointer inline-flex items-center gap-1" data-id="${c.id}" data-user-id="${c.userId}" data-action="reactivate" data-name="${c.firstName} ${c.lastName}">
+                              ${renderIcon('CheckCircle', 'w-3 h-3 text-emerald-600')} Reactivar
+                            </button>
+                          `}
                         </td>
                       </tr>
                     `).join('')}
@@ -1200,26 +1206,64 @@ export async function renderAdminDashboard() {
       });
     });
 
-    container.querySelectorAll('.btn-admin-delete-client').forEach(btn => {
+    container.querySelectorAll('.btn-admin-toggle-client-status').forEach(btn => {
       btn.addEventListener('click', async () => {
         const id = btn.dataset.id;
+        const userId = btn.dataset.userId;
+        const action = btn.dataset.action;
         const name = btn.dataset.name;
-        const confirmed = await modal.confirmDialog({
-          title: `¿Desactivar o Eliminar Cliente?`,
-          message: `Esta acción modificará el estado del cliente "${name}". Si tiene contratos asociados, se mantendrán por integridad referencial 4FN.`,
-          confirmText: 'Sí, proceder',
-          isDestructive: true
-        });
 
-        if (!confirmed) return;
+        if (action === 'reactivate') {
+          try {
+            btn.disabled = true;
+            btn.textContent = 'Reactivando...';
+            if (userId) {
+              await api.patch(`/admin/users/${userId}/status`, { isActive: true });
+            }
+            const foundClient = rawClients.find(c => String(c.id) === String(id));
+            if (foundClient) foundClient.isActive = true;
+            const foundUser = rawUsers.find(u => String(u.userId) === String(userId));
+            if (foundUser) {
+              foundUser.isActive = true;
+              foundUser.active = true;
+            }
+            showToast(`Cliente "${name}" reactivado exitosamente`, 'success');
+            render();
+          } catch (err) {
+            showToast(`Error al reactivar cliente: ${err.message}`, 'error');
+            render();
+          }
+        } else {
+          const confirmed = await modal.confirmDialog({
+            title: `¿Desactivar Cliente?`,
+            message: `Esta acción suspenderá el acceso del cliente "${name}". Sus contratos y facturas históricas se mantendrán intactos.`,
+            confirmText: 'Sí, desactivar',
+            isDestructive: true
+          });
 
-        try {
-          await api.delete(`/clients/${id}`);
-          showToast(`Cliente "${name}" procesado exitosamente en base de datos`, 'success');
-          await loadAllData();
-          render();
-        } catch (err) {
-          showToast(`Error al eliminar cliente: ${err.message}`, 'error');
+          if (!confirmed) return;
+
+          try {
+            btn.disabled = true;
+            btn.textContent = 'Desactivando...';
+            if (userId) {
+              await api.patch(`/admin/users/${userId}/status`, { isActive: false });
+            } else {
+              await api.delete(`/clients/${id}`);
+            }
+            const foundClient = rawClients.find(c => String(c.id) === String(id));
+            if (foundClient) foundClient.isActive = false;
+            const foundUser = rawUsers.find(u => String(u.userId) === String(userId));
+            if (foundUser) {
+              foundUser.isActive = false;
+              foundUser.active = false;
+            }
+            showToast(`Cliente "${name}" desactivado en el sistema`, 'info');
+            render();
+          } catch (err) {
+            showToast(`Error al desactivar cliente: ${err.message}`, 'error');
+            render();
+          }
         }
       });
     });
