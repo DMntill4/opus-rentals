@@ -140,6 +140,13 @@ public class PaymentService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
+    public List<PaymentResponse> getPaymentsByClientId(Long clientId) {
+        return paymentRepository.findByClientId(clientId).stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
     private PaymentResponse mapToResponse(Payment payment) {
         return PaymentResponse.builder()
                 .id(payment.getId())

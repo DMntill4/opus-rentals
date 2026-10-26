@@ -24,19 +24,19 @@ Configure `.env` in the root folder or supply the values directly as system envi
 ```ini
 # MySQL Database
 DB_HOST=localhost
-DB_PORT=3306
+DB_PORT=3307
 DB_NAME=opus_rentals_db
 DB_USER=opus_user
 DB_PASSWORD=opus_secure_password_2026
 
 # Backend Application
-SERVER_PORT=8080
+SERVER_PORT=8081
 JWT_SECRET=404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
 JWT_EXPIRATION_MS=86400000
 CORS_ALLOWED_ORIGINS=http://localhost:5173,http://localhost:3000,http://localhost:80
 
 # Frontend Client
-VITE_API_BASE_URL=http://localhost:8080/api/v1
+VITE_API_BASE_URL=http://localhost:8081/api/v1
 ```
 
 ---

@@ -267,7 +267,7 @@ export async function renderAdminDashboard() {
               <button id="btn-admin-diag" class="btn-primary !py-2.5 !px-3.5 text-xs font-black flex items-center gap-2 shadow-sm cursor-pointer">
                 ${renderIcon('Activity', 'w-3.5 h-3.5')} Comprobar Conexión BD
               </button>
-              <a href="http://localhost:8080/swagger-ui.html" target="_blank" rel="noopener noreferrer" class="btn-dark !py-2.5 !px-3.5 text-xs font-black flex items-center gap-2 shadow-sm">
+              <a href="http://localhost:8081/swagger-ui.html" target="_blank" rel="noopener noreferrer" class="btn-dark !py-2.5 !px-3.5 text-xs font-black flex items-center gap-2 shadow-sm">
                 ${renderIcon('ExternalLink', 'w-3.5 h-3.5')} Swagger API Docs
               </a>
             </div>
@@ -445,7 +445,7 @@ export async function renderAdminDashboard() {
                       ${renderIcon('Server', 'w-4 h-4 text-emerald-500')}
                       <div>
                         <div class="font-bold text-slate-900 dark:text-white">Pool de Conexiones HikariCP</div>
-                        <div class="text-[11px] text-slate-500">MySQL 8.0 en puerto 3306 con transacciones ACID y JPA Hibernate.</div>
+                        <div class="text-[11px] text-slate-500">MySQL 8.0 en puerto 3307 con transacciones ACID y JPA Hibernate.</div>
                       </div>
                     </div>
                     <span class="px-2.5 py-1 rounded-lg bg-emerald-100 text-emerald-800 font-mono font-black text-[11px]">SALUDABLE</span>

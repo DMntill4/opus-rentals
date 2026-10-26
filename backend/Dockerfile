@@ -27,6 +27,6 @@ USER spring:spring
 # Copy built artifact
 COPY --from=builder /app/target/*.war app.war
 
-EXPOSE 8080
+EXPOSE 8081
 
 ENTRYPOINT ["java", "-Djava.security.egd=file:/dev/./urandom", "-jar", "app.war"]

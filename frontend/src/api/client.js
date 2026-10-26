@@ -1,6 +1,6 @@
 import { mockCategories, mockTools, mockRequests, mockAdminUsers, mockAdminKpis } from './mock-store.js';
 
-const API_BASE_URL = import.meta.env?.VITE_API_BASE_URL || 'http://localhost:8080/api/v1';
+const API_BASE_URL = import.meta.env?.VITE_API_BASE_URL || 'http://localhost:8081/api/v1';
 
 // Control flag: Attempt live Spring Boot backend first, with automatic mock fallback if backend is offline. Can also be forced via VITE_USE_MOCK=true or npm run dev:mock
 export const USE_MOCK_BACKEND = import.meta.env?.VITE_USE_MOCK === 'true' || import.meta.env?.MODE === 'mock' || false;
@@ -455,6 +455,10 @@ class ApiClient {
     }
 
     // 6. Billing
+    if (endpoint.startsWith('/pagos/cliente/')) {
+      return [];
+    }
+
     if (endpoint.startsWith('/billing/payments')) {
       return { id: `PAY-${Date.now().toString().slice(-6)}`, amount: body.amount || 255000, invoiceId: 'TR-0004587', status: 'APPROVED' };
     }

@@ -4,7 +4,11 @@ import com.opusrentals.modules.billing.dto.request.ProcessPaymentRequest;
 import com.opusrentals.modules.billing.dto.response.PaymentMethodResponse;
 import com.opusrentals.modules.billing.dto.response.PaymentResponse;
 import com.opusrentals.modules.billing.service.PaymentService;
+import com.opusrentals.modules.user.entity.User;
+import com.opusrentals.modules.user.repository.ClientRepository;
+import com.opusrentals.modules.user.repository.UserRepository;
 import com.opusrentals.shared.dto.ApiResponse;
+import com.opusrentals.shared.exception.ResourceNotFoundException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -13,6 +17,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,6 +30,8 @@ import java.util.List;
 public class PaymentController {
 
     private final PaymentService paymentService;
+    private final UserRepository userRepository;
+    private final ClientRepository clientRepository;
 
     @GetMapping("/payment-methods")
     @Operation(summary = "Get active payment methods (Public)", description = "Lists credit cards, PSE, digital wallets, cash, etc.")
@@ -47,6 +55,25 @@ public class PaymentController {
     public ResponseEntity<ApiResponse<List<PaymentResponse>>> getPaymentsByInvoice(@PathVariable Long invoiceId) {
         List<PaymentResponse> payments = paymentService.getPaymentsByInvoiceId(invoiceId);
         return ResponseEntity.ok(ApiResponse.ok(payments));
+    }
+
+    @GetMapping("/pagos/cliente/{clientId}")
+    @SecurityRequirement(name = "Bearer Authentication")
+    @Operation(summary = "Get payment history for the authenticated client")
+    public ResponseEntity<ApiResponse<List<PaymentResponse>>> getPaymentsByClient(
+            @PathVariable Long clientId,
+            Authentication authentication) {
+        User user = userRepository.findByEmail(authentication.getName())
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
+        Long authenticatedClientId = clientRepository.findByUser(user)
+                .orElseThrow(() -> new ResourceNotFoundException("Perfil de cliente no encontrado"))
+                .getId();
+
+        if (!authenticatedClientId.equals(clientId)) {
+            throw new AccessDeniedException("No puedes consultar pagos de otro cliente");
+        }
+
+        return ResponseEntity.ok(ApiResponse.ok(paymentService.getPaymentsByClientId(clientId)));
     }
 
     @GetMapping("/payments")

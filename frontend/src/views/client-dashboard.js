@@ -75,14 +75,61 @@ export async function renderClientDashboard() {
         <div id="client-rentals-container" class="space-y-4">
           ${renderTableSkeleton(3)}
         </div>
+
+        <section class="mt-8 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+          <div class="px-5 py-4 border-b border-slate-200">
+            <h2 class="text-base font-black text-slate-900">Historial de Pagos</h2>
+          </div>
+          <div id="client-payments-container" class="overflow-x-auto">
+            ${renderTableSkeleton(2)}
+          </div>
+        </section>
       </div>
 
     </div>
   `;
 
   const rentalsContainer = container.querySelector('#client-rentals-container');
+  const paymentsContainer = container.querySelector('#client-payments-container');
   const refreshBtn = container.querySelector('#btn-refresh-rentals');
   if (refreshBtn) refreshBtn.addEventListener('click', loadClientRentals);
+
+  async function loadClientPayments() {
+    try {
+      const clientId = user.profile?.id || user.id;
+      const payments = await api.get(`/pagos/cliente/${clientId}`);
+
+      if (!payments || payments.length === 0) {
+        paymentsContainer.innerHTML = '<p class="p-8 text-center text-sm text-slate-500">No hay pagos.</p>';
+        return;
+      }
+
+      paymentsContainer.innerHTML = `
+        <table class="w-full min-w-[560px] text-left">
+          <thead class="bg-slate-50 border-b border-slate-200">
+            <tr class="text-[10px] uppercase tracking-wider text-slate-500 font-black">
+              <th class="px-5 py-3">Fecha</th>
+              <th class="px-5 py-3">Monto</th>
+              <th class="px-5 py-3">Metodo de pago</th>
+              <th class="px-5 py-3">Estado</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            ${payments.map(payment => `
+              <tr class="text-sm text-slate-700">
+                <td class="px-5 py-4">${formatDate(payment.paymentDate)}</td>
+                <td class="px-5 py-4 font-bold">${formatCurrency(payment.amount || 0)}</td>
+                <td class="px-5 py-4">${payment.paymentMethodName}</td>
+                <td class="px-5 py-4">${getPaymentStatusBadge(payment.paymentStatus)}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+    } catch (err) {
+      paymentsContainer.innerHTML = '<p class="p-8 text-center text-sm text-rose-500">Error al cargar.</p>';
+    }
+  }
 
   async function loadClientRentals() {
     try {
@@ -548,6 +595,7 @@ function openClaimModal(rental, onSubmitted) {
   }
 
   await loadClientRentals();
+  await loadClientPayments();
 }
 
 export default renderClientDashboard;

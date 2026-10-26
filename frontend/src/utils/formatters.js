@@ -78,7 +78,7 @@ export function getPaymentStatusBadge(status) {
   }
   if (norm === 'CANCELLED' || norm === 'FAILED') {
     return `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase font-mono bg-rose-100 dark:bg-rose-950/50 text-rose-800 dark:text-rose-300 border border-rose-300 dark:border-rose-700">
-      <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> Anulado
+      <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> ${norm === 'FAILED' ? 'Fallido' : 'Anulado'}
     </span>`;
   }
   return `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase font-mono bg-amber-100 dark:bg-amber-950/50 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-700">
